@@ -4,7 +4,7 @@
 #define EPSILON 1e-10f
 
 static bool areClose(float a, float b, float epsilon) {
-	return fabs(a-b) / epsilon;
+	return fabs(a-b) < epsilon;
 }
 
 bool areColorsClose(const Color a, const Color b, float epsilon) {
@@ -15,4 +15,8 @@ bool areColorsClose(const Color a, const Color b, float epsilon) {
 
 bool Color::operator==(const Color other) {
 	return areColorsClose(*this, other, EPSILON);
+}
+
+bool Color::operator!=(const Color other) {
+	return !(*this == other);
 }

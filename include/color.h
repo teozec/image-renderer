@@ -4,6 +4,7 @@
 struct Color {
 	float r, g, b;
 	bool operator==(const Color other);
+	bool operator!=(const Color other);
 };
 
 bool areColorsClose(const Color a, const Color b, float epsilon);
