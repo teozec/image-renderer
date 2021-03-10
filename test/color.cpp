@@ -12,7 +12,7 @@ int main()
 	assert(!(c1==c2));
 	assert(c1!=c2);
     
-    assert((c1+c2)==Color{6.0, 9.0, 12.0});
+	assert((c1+c2)==(Color{6.0, 9.0, 12.0}));
 
 	Color c3{1e-11, 2e-11, 3e-11};
 	Color c4{5e-11, 7e-11, 9e-11};
