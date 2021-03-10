@@ -10,7 +10,7 @@ enable_testing()
 
 # Library
 add_library(trace
-	src/colors.cpp
+	src/color.cpp
 	)
 
 # This is needed if we keep .h files in the "include" directory
@@ -27,7 +27,7 @@ target_link_libraries(image-renderer PUBLIC trace)
 
 # color-test
 add_executable(color-test
-	test/colors.cpp
+	test/color.cpp
 	)
 target_link_libraries(color-test PUBLIC trace)
 add_test(NAME color-test
