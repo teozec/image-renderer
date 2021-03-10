@@ -4,7 +4,7 @@
 #define EPSILON 1e-10f
 
 Color Color::operator+(const Color other) {
-    return Color{other.r+r, other.g+g, other.b+b};
+	return Color{other.r+r, other.g+g, other.b+b};
 }
 
 static bool areClose(float a, float b, float epsilon) {

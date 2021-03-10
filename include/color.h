@@ -4,7 +4,7 @@
 struct Color {
 	float r, g, b;
     
-    Color operator+(const Color other);
+	Color operator+(const Color other);
 	bool operator==(const Color other);
 	bool operator!=(const Color other);
 };
