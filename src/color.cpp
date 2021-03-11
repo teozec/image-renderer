@@ -7,6 +7,10 @@ Color Color::operator+(const Color other) {
 	return Color{other.r+r, other.g+g, other.b+b};
 }
 
+Color Color::operator*(const Color other) {
+	return Color{other.r*r, other.g*g, other.b*b};
+}
+
 static bool areClose(float a, float b, float epsilon) {
 	return fabs(a-b) < epsilon;
 }
