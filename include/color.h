@@ -7,6 +7,7 @@ struct Color {
 	Color() = default;
 	Color operator+(const Color other);
 	Color operator*(const float c);
+	Color operator*(const Color other);
 	bool operator==(const Color other);
 	bool operator!=(const Color other);
 };
