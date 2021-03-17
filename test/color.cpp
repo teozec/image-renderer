@@ -6,8 +6,8 @@ using namespace std;
 
 int main()
 {
-	Color c1 = {1.0, 2.0, 3.0};
-	Color c2 = {5.0, 7.0, 9.0};
+	Color c1{1.0, 2.0, 3.0};
+	Color c2{5.0, 7.0, 9.0};
 
 	assert(c1==c1);
 	assert(!(c1!=c1));

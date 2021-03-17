@@ -19,7 +19,7 @@ struct HdrImage {
 	}
 
 	int pixelOffset(int x, int y) {
-		return 0;
+		return x*height + y;
 	}
 
 	Color getPixel(int x, int y) {

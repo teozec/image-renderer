@@ -4,7 +4,6 @@
 struct Color {
 	float r, g, b;
     
-	Color() = default;
 	Color operator+(const Color other);
 	Color operator*(const float c);
 	Color operator*(const Color other);
