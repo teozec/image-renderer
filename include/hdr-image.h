@@ -6,20 +6,15 @@
 #include "color.h"
 
 struct HdrImage {
-	int width, height;
+	const int width, height;
 	std::vector<Color> pixels;
-
-	HdrImage(const int width, const int height) {
-		this->width = width;
-		this->height = height;
-	}
 
 	bool validCoordinates(const int x, const int y) {
 		return x >= 0 and x < width and y >= 0 and y < height;
 	}
 
 	int pixelOffset(int x, int y) {
-		return 0;
+		return x*height + y;
 	}
 
 	Color getPixel(int x, int y) {
