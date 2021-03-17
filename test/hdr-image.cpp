@@ -1,4 +1,5 @@
 #include "hdr-image.h"
+#include "color.h"
 #undef NDEBUG
 #include <cassert>
 
@@ -20,6 +21,11 @@ int main() {
 	// Test pixelOffset	
 	assert(img.pixelOffset(0, 0) == 0);
 	assert(img.pixelOffset(3, 2) == (3*4 + 2));
+
+	// Test getPixel
+	Color ref{1.0, 2.0, 3.0};
+	img.setPixel(3, 2, ref);
+	assert(img.getPixel(3, 2) == ref);
 	
 	return 0;
 }
