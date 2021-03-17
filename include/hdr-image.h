@@ -34,8 +34,7 @@ struct HdrImage {
 		pixels[pixelOffset(x, y)] = c;
 	}
 	
-	void savePfm(std::ofstream &stream, float value) {
-	}
+	void savePfm(std::ostream &stream);
 };
 
 #endif // HDR_IMAGE_H
