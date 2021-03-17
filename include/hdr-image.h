@@ -3,6 +3,9 @@
 
 #include <fstream>
 #include <vector>
+#undef NDEBUG
+#include <cassert>
+
 #include "color.h"
 
 struct HdrImage {
@@ -18,7 +21,8 @@ struct HdrImage {
 	}
 
 	Color getPixel(int x, int y) {
-		return Color{0.f, 0.f, 0.f};
+		assert(validCoordinates(x, y));
+		return pixels[pixelOffset(x, y)];
 	}
 
 	void setPixel(int x, int y, Color c) {
