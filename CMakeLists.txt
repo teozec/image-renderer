@@ -11,6 +11,7 @@ enable_testing()
 # Library
 add_library(trace
 	src/color.cpp
+	src/hdr-image.cpp
 	)
 
 # This is needed if we keep .h files in the "include" directory
@@ -32,6 +33,15 @@ add_executable(color-test
 target_link_libraries(color-test PUBLIC trace)
 add_test(NAME color-test
 	COMMAND color-test
+	)
+
+# hdr-image-test
+add_executable(hdr-image-test
+	test/hdr-image.cpp
+	)
+target_link_libraries(hdr-image-test PUBLIC trace)
+add_test(NAME hdr-image-test
+	COMMAND hdr-image-test
 	)
 
 target_compile_features(image-renderer PUBLIC cxx_std_17)
