@@ -26,6 +26,8 @@ struct HdrImage {
 	}
 
 	void setPixel(int x, int y, Color c) {
+		assert(validCoordinates(x, y));
+		pixels[pixelOffset(x, y)] = c;
 	}
 	
 	void savePfm(std::ofstream &stream, float value) {
