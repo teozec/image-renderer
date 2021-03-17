@@ -12,6 +12,10 @@ struct HdrImage {
 	const int width, height;
 	std::vector<Color> pixels;
 
+	HdrImage(const int width, const int height) : width(width), height(height) {
+		pixels.reserve(width * height);
+	}
+
 	bool validCoordinates(const int x, const int y) {
 		return x >= 0 and x < width and y >= 0 and y < height;
 	}
@@ -25,7 +29,7 @@ struct HdrImage {
 		return pixels[pixelOffset(x, y)];
 	}
 
-	void setPixel(int x, int y, Color c) {
+	void setPixel(const int x, const int y, const Color c) {
 		assert(validCoordinates(x, y));
 		pixels[pixelOffset(x, y)] = c;
 	}
