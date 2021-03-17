@@ -16,11 +16,11 @@ struct HdrImage {
 		return x >= 0 and x < width and y >= 0 and y < height;
 	}
 
-	int pixelOffset(int x, int y) {
+	int pixelOffset(const int x, const int y) {
 		return x*height + y;
 	}
 
-	Color getPixel(int x, int y) {
+	Color getPixel(const int x, const int y) {
 		assert(validCoordinates(x, y));
 		return pixels[pixelOffset(x, y)];
 	}
