@@ -1,4 +1,5 @@
 #include <ostream>
+#include <iomanip>
 #include <cstdint>
 #include "hdr-image.h"
 
@@ -20,7 +21,8 @@ static bool isLittleEndian() {
 void HdrImage::savePfm(ostream &stream) {
 	const float endianness = isLittleEndian() ? -1.0f : 1.0f;
 
-	stream << "PF\n" << width << " " << height << "\n" << endianness;
+	stream << "PF\n" << width << ' ' << height << '\n' <<
+		std::fixed << std::setprecision(1) << endianness << '\n';
 	for (int y = height-1; y >= 0; y--) {
 		for (int x = 0; x < width; x++) {
 			Color c = getPixel(x, y);
