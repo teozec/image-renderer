@@ -1,14 +1,14 @@
 #include <ostream>
+#include <istream>
 #include <iomanip>
 #include <cstdint>
 #include <iomanip>
+#include <string>
 #include "hdr-image.h"
 
 using namespace std;
 
-enum class Endianness { littleEndian, bigEndian };
-
-static void writeFloat(stringstream &stream, const float value, const Endianness endianness) {
+static void writeFloat(ostream &stream, const float value, const Endianness endianness) {
 
 	// Convert "value" in a sequence of 32 bit
 	uint32_t doubleWord{*((uint32_t *)&value)};
@@ -34,13 +34,31 @@ static void writeFloat(stringstream &stream, const float value, const Endianness
 	}
 }
 
-bool isLittleEndian() {
+static bool isLittleEndian() {
 	uint16_t word{0x1234};
 	uint8_t *ptr{(uint8_t *)&word};
 	return ptr[0] == 0x34;
 }
 
-void HdrImage::savePfm(stringstream &stream) {
+void parseImageSize(const string line, int &width, int &height) {
+	try {
+		width = stoi(line);
+		height = stoi(line.substr(line.find(' ')));
+	} catch (invalid_argument e) {
+		throw InvalidPfmFileFormat("Invalid size specification");
+	}
+}
+
+Endianness parseEndianness(const string line) {
+	if (line == "1.0")
+		return Endianness::bigEndian;
+	else if (line == "-1.0")
+		return Endianness::littleEndian;
+	else
+		throw InvalidPfmFileFormat("Invalid endianness specification");
+}
+
+void HdrImage::savePfm(ostream &stream) {
 
 	//Define the endianness to use
 	const Endianness endianness = Endianness::littleEndian;

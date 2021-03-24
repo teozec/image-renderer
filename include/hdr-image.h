@@ -3,9 +3,12 @@
 
 #include <fstream>
 #include <vector>
+#include <string>
 #undef NDEBUG
 #include <cassert>
 #include "color.h"
+
+enum class Endianness { littleEndian, bigEndian };
 
 struct HdrImage {
 	const int width, height;
@@ -33,7 +36,14 @@ struct HdrImage {
 		pixels[pixelOffset(x, y)] = c;
     }
 
-    void savePfm(std::stringstream &stream);
+    void savePfm(std::ostream &stream);
 };
+
+class InvalidPfmFileFormat : public std::runtime_error {
+	using std::runtime_error::runtime_error;
+};
+
+void parseImageSize(std::string line, int &width, int &height);
+Endianness parseEndianness(std::string line);
 
 #endif // HDR_IMAGE_H

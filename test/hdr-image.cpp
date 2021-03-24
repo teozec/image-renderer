@@ -59,6 +59,32 @@ int main() {
 	char pfmBuf[pfmLen];
 	buf.read(pfmBuf, pfmLen);
 	assert(!memcmp(pfmBuf, pfmRef, pfmLen));
+
+	// Test parseEndianness
+	assert(parseEndianness("1.0") == Endianness::bigEndian);
+	assert(parseEndianness("-1.0") == Endianness::littleEndian);
+	try {
+		parseEndianness("2.0");
+	} catch (InvalidPfmFileFormat e) {
+	}
+	try {
+		parseEndianness("ciao");
+	} catch (InvalidPfmFileFormat e) {
+	}
 	
+	// Test parseImageSize
+	int width, height;
+	parseImageSize("3 2", width, height);
+	assert(width == 3 and height == 2);
+
+	try {
+		parseImageSize("-1 3", width, height);
+	} catch (InvalidPfmFileFormat e) {
+	}
+	try {
+		parseImageSize("ciao", width, height);
+	} catch (InvalidPfmFileFormat e) {
+	}
+
 	return 0;
 }
