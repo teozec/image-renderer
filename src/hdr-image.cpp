@@ -1,4 +1,5 @@
-#include <sstream>
+#include <ostream>
+#include <iomanip>
 #include <cstdint>
 #include <iomanip>
 #include "hdr-image.h"
@@ -42,20 +43,12 @@ bool isLittleEndian() {
 void HdrImage::savePfm(stringstream &stream) {
 
 	//Define the endianness to use
-	Endianness endianness;
-	float endiannessFloat; // oppure const e richiamare funzione?
-	if(isLittleEndian()){
-		endianness = Endianness::littleEndian;
-		endiannessFloat = -1.f;
-	}
-	else {
-		endianness = Endianness::bigEndian;
-		endiannessFloat = 1.f;
-	}
+	const Endianness endianness = Endianness::littleEndian;
+	const float endiannessFloat = -1.f;
 
 	//Write PFM file
-	stream	<< "PF\n" << width << " " << height << "\n"
-			<< fixed << setprecision(1) << endiannessFloat << endl;
+	stream	<< "PF\n" << width << ' ' << height << '\n'
+			<< fixed << setprecision(1) << endiannessFloat << '\n';
 
 	for (int y = height-1; y >= 0; y--) {
 		for (int x = 0; x < width; x++) {
