@@ -5,7 +5,6 @@
 #include <vector>
 #undef NDEBUG
 #include <cassert>
-
 #include "color.h"
 
 struct HdrImage {
@@ -32,9 +31,9 @@ struct HdrImage {
 	void setPixel(const int x, const int y, const Color c) {
 		assert(validCoordinates(x, y));
 		pixels[pixelOffset(x, y)] = c;
-	}
-	
-	void savePfm(std::ostream &stream);
+    }
+
+    void savePfm(std::stringstream &stream);
 };
 
 #endif // HDR_IMAGE_H
