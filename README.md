@@ -16,7 +16,7 @@ make
 
 The executable files are generated in the `build` directory.
 
-Please notice that [`cmake`](https://cmake.org/) 3.12 and a C++17 compiler are required.
+Please notice that [`cmake`](https://cmake.org/) (version >= 3.12) and a C++17 compiler are required.
 
 ## Contributing
 
@@ -24,4 +24,4 @@ If you find any problem or wish to contribute, please open an issue or a pull re
 
 ## License
 
-image-renderer is free software, and it is released under version 3 of the [GNU Public License](https://www.gnu.org/licenses/gpl-3.0.html).
+image-renderer is free software, and it is released under version 3 of the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html).
