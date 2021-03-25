@@ -28,7 +28,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 enum class Endianness { littleEndian, bigEndian };
 
 struct HdrImage {
-	const int width, height;
+	int width, height;
 	std::vector<Color> pixels;
 
 	// Construct
@@ -66,6 +66,7 @@ struct HdrImage {
 	}
 
 	void savePfm(std::ostream &stream);
+	void readPfmFile(std::istream &stream) {
 };
 
 class InvalidPfmFileFormat : public std::runtime_error {

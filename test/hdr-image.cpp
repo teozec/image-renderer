@@ -96,11 +96,42 @@ int main() {
 
 	try {
 		parseImageSize("-1 3", width, height);
+		assert(false);
 	} catch (InvalidPfmFileFormat e) {
+	} catch (exception e) {
+		assert(false);
 	}
+
 	try {
 		parseImageSize("ciao", width, height);
+		assert(false);
 	} catch (InvalidPfmFileFormat e) {
+	} catch (exception e) {
+		assert(false);
+	}
+
+	try {
+		parseImageSize("1 3 4", width, height);
+		assert(false);
+	} catch (InvalidPfmFileFormat e) {
+	} catch (exception e) {
+		assert(false);
+	}
+
+	try {
+		parseImageSize(" 3 4", width, height);
+		assert(false);
+	} catch (InvalidPfmFileFormat e) {
+	} catch (exception e) {
+		assert(false);
+	}
+
+	try {
+		parseImageSize("3 4 ", width, height);
+		assert(false);
+	} catch (InvalidPfmFileFormat e) {
+	} catch (exception e) {
+		assert(false);
 	}
 
 	return 0;

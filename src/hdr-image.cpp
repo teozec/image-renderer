@@ -26,16 +26,15 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 using namespace std;
 
 static void writeFloat(ostream &stream, const float value, const Endianness endianness) {
-
 	// Convert "value" in a sequence of 32 bit
 	uint32_t doubleWord{*((uint32_t *)&value)};
 
 	// Extract the four bytes in "doubleWord" using bit-level operators
 	uint8_t bytes[] = {
-			static_cast<uint8_t>(doubleWord & 0xFF),
-			static_cast<uint8_t>((doubleWord >> 8) & 0xFF),
-			static_cast<uint8_t>((doubleWord >> 16) & 0xFF),
-			static_cast<uint8_t>((doubleWord >> 24) & 0xFF),
+		static_cast<uint8_t>(doubleWord & 0xFF),
+		static_cast<uint8_t>((doubleWord >> 8) & 0xFF),
+		static_cast<uint8_t>((doubleWord >> 16) & 0xFF),
+		static_cast<uint8_t>((doubleWord >> 24) & 0xFF),
 	};
 
 	switch (endianness) {
@@ -51,6 +50,28 @@ static void writeFloat(ostream &stream, const float value, const Endianness endi
 	}
 }
 
+static float readFloat(istream &stream, Endianness endianness) {
+	uint8_t bytes[4];
+
+	for (int i{}; i < 4; i++)
+		stream >> bytes[i];
+
+	float value = 0.f;
+	switch (endianness) {
+	case Endianness::littleEndian:
+		for (int i{}; i < 4; ++i)
+			*(uint32_t*)(&value) += ((uint32_t) bytes[i]) << (8*i);
+		break;
+	case Endianness::bigEndian:
+		for (int i{}; i < 4; ++i)
+			*(uint32_t*)(&value) += ((uint32_t) bytes[i]) << (8*(3-i));
+		break;
+	}
+	return value;
+}
+
+
+
 static bool isLittleEndian() {
 	uint16_t word{0x1234};
 	uint8_t *ptr{(uint8_t *)&word};
@@ -58,12 +79,11 @@ static bool isLittleEndian() {
 }
 
 void parseImageSize(const string line, int &width, int &height) {
-	try {
-		width = stoi(line);
-		height = stoi(line.substr(line.find(' ')));
-	} catch (invalid_argument e) {
+	char c;
+	istringstream s(line);
+	s >> noskipws >> width >> c >> height;
+	if (s.fail() or !s.eof() or c != ' ' or width <= 0 or height <= 0)
 		throw InvalidPfmFileFormat("Invalid size specification");
-	}
 }
 
 Endianness parseEndianness(const string line) {
@@ -76,7 +96,6 @@ Endianness parseEndianness(const string line) {
 }
 
 void HdrImage::savePfm(ostream &stream) {
-
 	//Define the endianness to use
 	const Endianness endianness = Endianness::littleEndian;
 	const float endiannessFloat = -1.f;
@@ -95,7 +114,7 @@ void HdrImage::savePfm(ostream &stream) {
 	}
 }
 
-void HdrImage::readPfmFile(stringstream &stream) {
+void HdrImage::readPfmFile(istream &stream) {
 
 	// Get the magic from PFM
 	getline(stream, string magic);
