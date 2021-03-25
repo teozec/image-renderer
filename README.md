@@ -5,7 +5,14 @@ It is based on the lectures of the _Numerical tecniques for photorealistic image
 
 ## Installation
 
-After obtaining the source code (e.g. by cloning from [our GitHub repository](https://github.com/teozec/image-renderer)), compile it using the following procedure in the code directory:
+After obtaining the source code (e.g. by cloning from [our GitHub repository](https://github.com/teozec/image-renderer)) you can build the project with `cmake`. Here we show the default Unix Makefile and the Xcode generators.
+
+
+Be sure you have installed [`cmake`](https://cmake.org/) version >= 3.12 and a `C++17` compiler.
+
+#### Unix Makefile
+
+Run the following shell commands from the project directory:
 
 ```bash
 mkdir build
@@ -16,7 +23,45 @@ make
 
 The executable files are generated in the `build` directory.
 
-Please notice that [`cmake`](https://cmake.org/) (version >= 3.12) and a C++17 compiler are required.
+#### Xcode
+
+First of all you need to add few lines in the `CMakeList.txt` file:
+
+```
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENTIONS OFF)
+``` 
+Save it and move to the project directory and then run
+
+```bash
+mkdir build
+cd build
+cmake -G "Xcode" ..
+```
+
+Now that it is all set you can open up the Xcode project built in the `build` directory and compile it from within the IDE.
+
+<!---
+## Examples
+
+```bash
+image-renderer file.txt
+```
+
+## Usage
+
+```man
+usage:	image-renderer [-h] [-o OUTPUT] FILE
+
+positional arguments:	
+	FILE		A suitable .txt file
+	
+optional arguments:
+	-h			Show this help message
+	-o OUTPUT	Specify output name
+```
+--->
 
 ## Contributing
 
