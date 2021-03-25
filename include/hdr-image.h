@@ -19,6 +19,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #define HDR_IMAGE_H
 
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <string>
 #undef NDEBUG
@@ -37,13 +38,13 @@ struct HdrImage {
 	}
 
 	// Construct from stream
-	HdrImage(std::istream &stream) {
+	HdrImage(std::istream &stream){
 		readPfmFile(stream);
 	}
 
 	// Construct from PFM file
 	HdrImage(const std::string &fileName){
-		std::istream stream{fileName};
+		std::istringstream stream(fileName);
 		readPfmFile(stream);
 	}
 
@@ -66,7 +67,7 @@ struct HdrImage {
 	}
 
 	void savePfm(std::ostream &stream);
-	void readPfmFile(std::istream &stream) {
+	void readPfmFile(std::istream &stream);
 };
 
 class InvalidPfmFileFormat : public std::runtime_error {

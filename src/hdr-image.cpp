@@ -70,8 +70,6 @@ static float readFloat(istream &stream, Endianness endianness) {
 	return value;
 }
 
-
-
 static bool isLittleEndian() {
 	uint16_t word{0x1234};
 	uint8_t *ptr{(uint8_t *)&word};
@@ -104,8 +102,8 @@ void HdrImage::savePfm(ostream &stream) {
 	stream	<< "PF\n" << width << ' ' << height << '\n'
 			<< fixed << setprecision(1) << endiannessFloat << '\n';
 
-	for (int y = height-1; y >= 0; y--) {
-		for (int x = 0; x < width; x++) {
+	for (int y{height-1}; y >= 0; y--) {
+		for (int x{}; x < width; x++) {
 			Color c = getPixel(x, y);
 			writeFloat(stream, c.r, endianness);
 			writeFloat(stream, c.g, endianness);
@@ -117,29 +115,33 @@ void HdrImage::savePfm(ostream &stream) {
 void HdrImage::readPfmFile(istream &stream) {
 
 	// Get the magic from PFM
-	getline(stream, string magic);
+	string magic;
+	getline(stream, magic);
 	if (magic != "PF"){
 		throw InvalidPfmFileFormat("Invalid magic in PFM file");
 	}
 
 	// Get the width and height from PFM
+	string imgSize;
 	int width, height;
-	getline(stream, string imgSize);
-	parseImgSize(imgSize, width, height);
+	getline(stream, imgSize);
+	parseImageSize(imgSize, width, height);
+	this->width = width;
+	this->height = height;
 
 	// Get the endianness of PFM file
-	getline(stream, Endianness endianness);
+	string endStr;
+	Endianness endianness;
+	getline(stream, endStr);
+	endianness = parseEndianness(endStr);
 
 	// Get the actual image
-	HdrImage result = HdrImage(width, height);
-	for (y{height-1}; y>=0; y--){
-		for (x{0}; x<width; x++){
+	for (int y{height-1}; y >= 0; y--){
+		for (int x{}; x < width; x++){
 			float r = readFloat(stream, endianness);
 			float g = readFloat(stream, endianness);
 			float b = readFloat(stream, endianness);
-			result.setPixel(x, y, Color{r, g, b})
+			this->setPixel(x, y, Color{r, g, b});
 		}
 	}
-
-	return result;
 }
