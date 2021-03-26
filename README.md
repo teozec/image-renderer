@@ -25,7 +25,7 @@ The executable files are generated in the `build` directory.
 
 #### Xcode
 
-First of all you need to add few lines in the `CMakeList.txt` file:
+First of all you need to add few lines in the `CMakeLists.txt` file:
 
 ```
 set(CMAKE_CXX_STANDARD 17)
