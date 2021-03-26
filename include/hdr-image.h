@@ -32,20 +32,35 @@ struct HdrImage {
 	int width, height;
 	std::vector<Color> pixels;
 
-	// Construct
+	// Constructor
 	HdrImage(const int width, const int height) : width(width), height(height) {
 		pixels.reserve(width * height);
 	}
 
-	// Construct from stream
+	/* Copy Constructor
+	HdrImage(const HdrImage &img) : width(img.width), height(img.height), pixels(img.pixels) {
+	}*/
+
+	// Constructor from stream
 	HdrImage(std::istream &stream){
-		readPfmFile(stream);
+		HdrImage result = readPfmFile(stream);
+		width = result.width;
+		height = result.height;
+		for (int i{}; i < pixels.size(); i++){
+			pixels.push_back(result.pixels[i]);
+		}
 	}
 
-	// Construct from PFM file
+	// Constructor from PFM file
 	HdrImage(const std::string &fileName){
-		std::istringstream stream(fileName);
-		readPfmFile(stream);
+		std::ifstream stream{fileName};
+		HdrImage result = readPfmFile(stream);
+		stream.close();
+		width = result.width;
+		height = result.height;
+		for (int i{}; i < pixels.size(); i++){
+			pixels.push_back(result.pixels[i]);
+		}
 	}
 
 	bool validCoordinates(const int x, const int y) {
@@ -67,7 +82,7 @@ struct HdrImage {
 	}
 
 	void savePfm(std::ostream &stream);
-	void readPfmFile(std::istream &stream);
+	HdrImage readPfmFile(std::istream &stream);
 };
 
 class InvalidPfmFileFormat : public std::runtime_error {
