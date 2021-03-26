@@ -33,6 +33,8 @@ int main() {
 	// Test constructor
 	assert(img.width == 7);
 	assert(img.height == 4);
+	// Further tests available on readPfmFile section
+
 
 	// Test validCoordinates
 	assert(img.validCoordinates(0, 0));
@@ -60,7 +62,7 @@ int main() {
 	img2.setPixel(1, 1, Color{4.0e2, 5.0e2, 6.0e2});
 	img2.setPixel(2, 1, Color{7.0e2, 8.0e2, 9.0e2});
 
-	const uint8_t pfmRef[] = {
+	const uint8_t lePfmRef[] = {
 		0x50, 0x46, 0x0a, 0x33, 0x20, 0x32, 0x0a, 0x2d, 0x31, 0x2e, 0x30, 0x0a,
 		0x00, 0x00, 0xc8, 0x42, 0x00, 0x00, 0x48, 0x43, 0x00, 0x00, 0x96, 0x43,
 		0x00, 0x00, 0xc8, 0x43, 0x00, 0x00, 0xfa, 0x43, 0x00, 0x00, 0x16, 0x44,
@@ -69,13 +71,13 @@ int main() {
 		0x00, 0x00, 0x20, 0x42, 0x00, 0x00, 0x48, 0x42, 0x00, 0x00, 0x70, 0x42,
 		0x00, 0x00, 0x8c, 0x42, 0x00, 0x00, 0xa0, 0x42, 0x00, 0x00, 0xb4, 0x42,
 	};
-	const int pfmLen = 84;
+	const int lePfmLen = 84;
 	stringstream buf;
 	img2.savePfm(buf);
 
-	char pfmBuf[pfmLen];
-	buf.read(pfmBuf, pfmLen);
-	assert(!memcmp(pfmBuf, pfmRef, pfmLen));
+	char pfmBuf[lePfmLen];
+	buf.read(pfmBuf, lePfmLen);
+	assert(!memcmp(pfmBuf, lePfmRef, lePfmLen));
 
 	// Test parseEndianness
 	assert(parseEndianness("1.0") == Endianness::bigEndian);
@@ -133,6 +135,17 @@ int main() {
 	} catch (exception e) {
 		assert(false);
 	}
+
+	// Test readPfmFile
+	HdrImage leImg{"reference_le.pfm"};
+
+	assert(leImg.width == 3);
+	assert(leImg.height == 2);
+
+	//assert(leImg.getPixel(0,0) == (Color{1.0e1, 2.0e1, 3.0e1})); SEGMENTATION FAULT
+
+
+
 
 	return 0;
 }
