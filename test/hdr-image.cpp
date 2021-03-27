@@ -140,10 +140,10 @@ int main() {
 	leImg.savePfm(leOutStream);
 	char leBuf[leLen];
 	leOutStream.read(leBuf, leLen);
-	for (int i{}; i<leLen; i++)
-		printf("%.2x ", (uint8_t)leBuf[i]);
-	printf("\n");
 	assert(!memcmp(leBuf, leRef, leLen));
+	assert(leImg.width == 3);
+	assert(leImg.height == 2);
+	assert(leImg.getPixel(0,0) == (Color{1.0e1, 2.0e1, 3.0e1}));
 
 	stringstream beInStream;
 	beInStream.write(beRef, beLen);
@@ -152,17 +152,10 @@ int main() {
 	beImg.savePfm(beOutStream, Endianness::bigEndian);
 	char beBuf[beLen];
 	beOutStream.read(beBuf, beLen);
-	for (int i{}; i<beLen; i++)
-		printf("%.2x ", (uint8_t)beBuf[i]);
-	printf("\n");
 	assert(!memcmp(beBuf, beRef, beLen));
-
-	//HdrImage leImg{buf};
-
-	//assert(leImg.width == 3);
-	//assert(leImg.height == 2);
-
-	//assert(leImg.getPixel(0,0) == (Color{1.0e1, 2.0e1, 3.0e1})); //SEGMENTATION FAULT
+	assert(beImg.width == 3);
+	assert(beImg.height == 2);
+	assert(beImg.getPixel(0,0) == (Color{1.0e1, 2.0e1, 3.0e1}));
 
 	return 0;
 }

@@ -54,7 +54,7 @@ static float readFloat(istream &stream, Endianness endianness) {
 	uint8_t bytes[4];
 
 	for (int i{}; i < 4; i++)
-		stream >> bytes[i];
+		stream >> noskipws >> bytes[i];
 
 	float value = 0.f;
 	switch (endianness) {
@@ -101,7 +101,7 @@ void HdrImage::savePfm(ostream &stream, Endianness endianness) {
 		endiannessFloat = -1.f;
 		break;
 	case Endianness::bigEndian:
-		endiannessFloat = -1.f;
+		endiannessFloat = 1.f;
 		break;
 	}
 
