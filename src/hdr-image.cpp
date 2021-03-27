@@ -93,10 +93,17 @@ Endianness parseEndianness(const string line) {
 		throw InvalidPfmFileFormat("Invalid endianness specification");
 }
 
-void HdrImage::savePfm(ostream &stream) {
+void HdrImage::savePfm(ostream &stream, Endianness endianness) {
 	//Define the endianness to use
-	const Endianness endianness = Endianness::littleEndian;
-	const float endiannessFloat = -1.f;
+	float endiannessFloat;
+	switch (endianness) {
+	case Endianness::littleEndian:
+		endiannessFloat = -1.f;
+		break;
+	case Endianness::bigEndian:
+		endiannessFloat = -1.f;
+		break;
+	}
 
 	//Write PFM file
 	stream	<< "PF\n" << width << ' ' << height << '\n'

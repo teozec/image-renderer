@@ -65,7 +65,7 @@ struct HdrImage {
 		pixels[pixelOffset(x, y)] = c;
 	}
 
-	void savePfm(std::ostream &stream);
+	void savePfm(std::ostream &stream, Endianness endianness=Endianness::littleEndian);
 	void readPfmFile(std::istream &stream);
 	void readPfmFile(std::string fileName) {
 		std::ifstream stream;

@@ -143,13 +143,13 @@ int main() {
 	for (int i{}; i<leLen; i++)
 		printf("%.2x ", (uint8_t)leBuf[i]);
 	printf("\n");
-	//assert(!memcmp(leBuf, leRef, leLen));
+	assert(!memcmp(leBuf, leRef, leLen));
 
 	stringstream beInStream;
 	beInStream.write(beRef, beLen);
 	HdrImage beImg{beInStream};
 	stringstream beOutStream;
-	beImg.savePfm(beOutStream);
+	beImg.savePfm(beOutStream, Endianness::bigEndian);
 	char beBuf[beLen];
 	beOutStream.read(beBuf, beLen);
 	for (int i{}; i<beLen; i++)
