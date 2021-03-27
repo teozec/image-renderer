@@ -142,7 +142,7 @@ int main() {
 	assert(leImg.width == 3);
 	assert(leImg.height == 2);
 
-	//assert(leImg.getPixel(0,0) == (Color{1.0e1, 2.0e1, 3.0e1})); SEGMENTATION FAULT
+	//assert(leImg.getPixel(0,0) == (Color{1.0e1, 2.0e1, 3.0e1})); //SEGMENTATION FAULT
 
 
 

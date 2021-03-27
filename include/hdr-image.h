@@ -58,7 +58,7 @@ struct HdrImage {
 		stream.close();
 		width = result.width;
 		height = result.height;
-		for (int i{}; i < pixels.size(); i++){
+		for (int i{}; i < result.pixels.size(); i++){
 			pixels.push_back(result.pixels[i]);
 		}
 	}
