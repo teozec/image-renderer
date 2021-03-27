@@ -23,6 +23,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cstring>
 #include <cstdint>
 
+#include <cstdio>
 #include <fstream>
 
 using namespace std;
@@ -34,7 +35,6 @@ int main() {
 	assert(img.width == 7);
 	assert(img.height == 4);
 	// Further tests available on readPfmFile section
-
 
 	// Test validCoordinates
 	assert(img.validCoordinates(0, 0));
@@ -52,32 +52,6 @@ int main() {
 	Color ref{1.0, 2.0, 3.0};
 	img.setPixel(3, 2, ref);
 	assert(img.getPixel(3, 2) == ref);
-
-	// Test savePfm
-	HdrImage img2{3, 2};
-	img2.setPixel(0, 0, Color{1.0e1, 2.0e1, 3.0e1});
-	img2.setPixel(1, 0, Color{4.0e1, 5.0e1, 6.0e1});
-	img2.setPixel(2, 0, Color{7.0e1, 8.0e1, 9.0e1});
-	img2.setPixel(0, 1, Color{1.0e2, 2.0e2, 3.0e2});
-	img2.setPixel(1, 1, Color{4.0e2, 5.0e2, 6.0e2});
-	img2.setPixel(2, 1, Color{7.0e2, 8.0e2, 9.0e2});
-
-	const uint8_t lePfmRef[] = {
-		0x50, 0x46, 0x0a, 0x33, 0x20, 0x32, 0x0a, 0x2d, 0x31, 0x2e, 0x30, 0x0a,
-		0x00, 0x00, 0xc8, 0x42, 0x00, 0x00, 0x48, 0x43, 0x00, 0x00, 0x96, 0x43,
-		0x00, 0x00, 0xc8, 0x43, 0x00, 0x00, 0xfa, 0x43, 0x00, 0x00, 0x16, 0x44,
-		0x00, 0x00, 0x2f, 0x44, 0x00, 0x00, 0x48, 0x44, 0x00, 0x00, 0x61, 0x44,
-		0x00, 0x00, 0x20, 0x41, 0x00, 0x00, 0xa0, 0x41, 0x00, 0x00, 0xf0, 0x41,
-		0x00, 0x00, 0x20, 0x42, 0x00, 0x00, 0x48, 0x42, 0x00, 0x00, 0x70, 0x42,
-		0x00, 0x00, 0x8c, 0x42, 0x00, 0x00, 0xa0, 0x42, 0x00, 0x00, 0xb4, 0x42,
-	};
-	const int lePfmLen = 84;
-	stringstream buf;
-	img2.savePfm(buf);
-
-	char pfmBuf[lePfmLen];
-	buf.read(pfmBuf, lePfmLen);
-	assert(!memcmp(pfmBuf, lePfmRef, lePfmLen));
 
 	// Test parseEndianness
 	assert(parseEndianness("1.0") == Endianness::bigEndian);
@@ -136,16 +110,59 @@ int main() {
 		assert(false);
 	}
 
-	// Test readPfmFile
-	HdrImage leImg{"reference_le.pfm"};
 
-	assert(leImg.width == 3);
-	assert(leImg.height == 2);
+	const char leRef[] = {
+		'\x50', '\x46', '\x0a', '\x33', '\x20', '\x32', '\x0a', '\x2d', '\x31', '\x2e', '\x30', '\x0a',
+		'\x00', '\x00', '\xc8', '\x42', '\x00', '\x00', '\x48', '\x43', '\x00', '\x00', '\x96', '\x43',
+		'\x00', '\x00', '\xc8', '\x43', '\x00', '\x00', '\xfa', '\x43', '\x00', '\x00', '\x16', '\x44',
+		'\x00', '\x00', '\x2f', '\x44', '\x00', '\x00', '\x48', '\x44', '\x00', '\x00', '\x61', '\x44',
+		'\x00', '\x00', '\x20', '\x41', '\x00', '\x00', '\xa0', '\x41', '\x00', '\x00', '\xf0', '\x41',
+		'\x00', '\x00', '\x20', '\x42', '\x00', '\x00', '\x48', '\x42', '\x00', '\x00', '\x70', '\x42',
+		'\x00', '\x00', '\x8c', '\x42', '\x00', '\x00', '\xa0', '\x42', '\x00', '\x00', '\xb4', '\x42',
+	};
+	const int leLen = 84;
+
+	const char beRef[] = {
+		'\x50', '\x46', '\x0a', '\x33', '\x20', '\x32', '\x0a', '\x31', '\x2e', '\x30', '\x0a', '\x42',
+		'\xc8', '\x00', '\x00', '\x43', '\x48', '\x00', '\x00', '\x43', '\x96', '\x00', '\x00', '\x43',
+		'\xc8', '\x00', '\x00', '\x43', '\xfa', '\x00', '\x00', '\x44', '\x16', '\x00', '\x00', '\x44',
+		'\x2f', '\x00', '\x00', '\x44', '\x48', '\x00', '\x00', '\x44', '\x61', '\x00', '\x00', '\x41',
+		'\x20', '\x00', '\x00', '\x41', '\xa0', '\x00', '\x00', '\x41', '\xf0', '\x00', '\x00', '\x42',
+		'\x20', '\x00', '\x00', '\x42', '\x48', '\x00', '\x00', '\x42', '\x70', '\x00', '\x00', '\x42',
+		'\x8c', '\x00', '\x00', '\x42', '\xa0', '\x00', '\x00', '\x42', '\xb4', '\x00', '\x00'
+	};
+	const int beLen = 83;
+
+	stringstream leInStream;
+	leInStream.write(leRef, leLen);
+	HdrImage leImg{leInStream};
+	stringstream leOutStream;
+	leImg.savePfm(leOutStream);
+	char leBuf[leLen];
+	leOutStream.read(leBuf, leLen);
+	for (int i{}; i<leLen; i++)
+		printf("%.2x ", (uint8_t)leBuf[i]);
+	printf("\n");
+	//assert(!memcmp(leBuf, leRef, leLen));
+
+	stringstream beInStream;
+	beInStream.write(beRef, beLen);
+	HdrImage beImg{beInStream};
+	stringstream beOutStream;
+	beImg.savePfm(beOutStream);
+	char beBuf[beLen];
+	beOutStream.read(beBuf, beLen);
+	for (int i{}; i<beLen; i++)
+		printf("%.2x ", (uint8_t)beBuf[i]);
+	printf("\n");
+	assert(!memcmp(beBuf, beRef, beLen));
+
+	//HdrImage leImg{buf};
+
+	//assert(leImg.width == 3);
+	//assert(leImg.height == 2);
 
 	//assert(leImg.getPixel(0,0) == (Color{1.0e1, 2.0e1, 3.0e1})); //SEGMENTATION FAULT
-
-
-
 
 	return 0;
 }

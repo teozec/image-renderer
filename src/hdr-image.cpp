@@ -112,21 +112,18 @@ void HdrImage::savePfm(ostream &stream) {
 	}
 }
 
-HdrImage HdrImage::readPfmFile(istream &stream) {
-
+void HdrImage::readPfmFile(istream &stream) {
 	// Get the magic from PFM
 	string magic;
 	getline(stream, magic);
-	if (magic != "PF"){
+	if (magic != "PF") {
 		throw InvalidPfmFileFormat("Invalid magic in PFM file");
 	}
 	
 	// Get the width and height from PFM
 	string imgSize;
-	int width, height;
 	getline(stream, imgSize);
 	parseImageSize(imgSize, width, height);
-	HdrImage result{width, height};
 
 	// Get the endianness of PFM file
 	string endStr;
@@ -135,13 +132,13 @@ HdrImage HdrImage::readPfmFile(istream &stream) {
 	endianness = parseEndianness(endStr);
 
 	// Get the actual image
-	for (int y{height-1}; y >= 0; y--){
-		for (int x{}; x < width; x++){
+	pixels.reserve(width * height);
+	for (int y{height-1}; y >= 0; y--) {
+		for (int x{}; x < width; x++) {
 			float r = readFloat(stream, endianness);
 			float g = readFloat(stream, endianness);
 			float b = readFloat(stream, endianness);
-			result.setPixel(x, y, Color{r, g, b});
+			setPixel(x, y, Color{r, g, b});
 		}
 	}
-	return result;
 }
