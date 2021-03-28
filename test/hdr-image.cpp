@@ -111,6 +111,7 @@ int main() {
 	}
 
 
+	// Test savePfm and readPfm (little endian)
 	const char leRef[] = {
 		'\x50', '\x46', '\x0a', '\x33', '\x20', '\x32', '\x0a', '\x2d', '\x31', '\x2e', '\x30', '\x0a',
 		'\x00', '\x00', '\xc8', '\x42', '\x00', '\x00', '\x48', '\x43', '\x00', '\x00', '\x96', '\x43',
@@ -122,6 +123,28 @@ int main() {
 	};
 	const int leLen = 84;
 
+	stringstream leInStream;
+	leInStream.write(leRef, leLen);
+	HdrImage leImg{leInStream}; //use of readPfmFile
+
+	stringstream leOutStream;
+	leImg.savePfm(leOutStream); //use of savePfm
+	char leBuf[leLen];
+	leOutStream.read(leBuf, leLen);
+
+	//	testing the saved image
+	assert(!memcmp(leBuf, leRef, leLen));
+	//	testing the read image
+	assert(leImg.width == 3);
+	assert(leImg.height == 2);
+	assert(leImg.getPixel(0,0) == (Color{1.0e1, 2.0e1, 3.0e1}));
+	assert(leImg.getPixel(1,0) == (Color{4.0e1, 5.0e1, 6.0e1}));
+	assert(leImg.getPixel(2,0) == (Color{7.0e1, 8.0e1, 9.0e1}));
+	assert(leImg.getPixel(0,1) == (Color{1.0e2, 2.0e2, 3.0e2}));
+	assert(leImg.getPixel(1,1) == (Color{4.0e2, 5.0e2, 6.0e2}));
+	assert(leImg.getPixel(2,1) == (Color{7.0e2, 8.0e2, 9.0e2}));
+
+	// Test savePfm and readPfm (big endian)
 	const char beRef[] = {
 		'\x50', '\x46', '\x0a', '\x33', '\x20', '\x32', '\x0a', '\x31', '\x2e', '\x30', '\x0a', '\x42',
 		'\xc8', '\x00', '\x00', '\x43', '\x48', '\x00', '\x00', '\x43', '\x96', '\x00', '\x00', '\x43',
@@ -133,29 +156,39 @@ int main() {
 	};
 	const int beLen = 83;
 
-	stringstream leInStream;
-	leInStream.write(leRef, leLen);
-	HdrImage leImg{leInStream};
-	stringstream leOutStream;
-	leImg.savePfm(leOutStream);
-	char leBuf[leLen];
-	leOutStream.read(leBuf, leLen);
-	assert(!memcmp(leBuf, leRef, leLen));
-	assert(leImg.width == 3);
-	assert(leImg.height == 2);
-	assert(leImg.getPixel(0,0) == (Color{1.0e1, 2.0e1, 3.0e1}));
-
 	stringstream beInStream;
 	beInStream.write(beRef, beLen);
-	HdrImage beImg{beInStream};
+	HdrImage beImg{beInStream}; //use of readPfmFile
+
 	stringstream beOutStream;
-	beImg.savePfm(beOutStream, Endianness::bigEndian);
+	beImg.savePfm(beOutStream, Endianness::bigEndian); //use of savePfm
 	char beBuf[beLen];
 	beOutStream.read(beBuf, beLen);
+
+	//	testing the saved image
 	assert(!memcmp(beBuf, beRef, beLen));
+	//	testing the read image
 	assert(beImg.width == 3);
 	assert(beImg.height == 2);
 	assert(beImg.getPixel(0,0) == (Color{1.0e1, 2.0e1, 3.0e1}));
+	assert(beImg.getPixel(0,0) == (Color{1.0e1, 2.0e1, 3.0e1}));
+	assert(beImg.getPixel(1,0) == (Color{4.0e1, 5.0e1, 6.0e1}));
+	assert(beImg.getPixel(2,0) == (Color{7.0e1, 8.0e1, 9.0e1}));
+	assert(beImg.getPixel(0,1) == (Color{1.0e2, 2.0e2, 3.0e2}));
+	assert(beImg.getPixel(1,1) == (Color{4.0e2, 5.0e2, 6.0e2}));
+	assert(beImg.getPixel(2,1) == (Color{7.0e2, 8.0e2, 9.0e2}));
+
+	stringstream badPfm;
+	const char fileContent[] = u8"PF\n3 2\n-1.0\nstop";
+	badPfm.write(fileContent, sizeof(fileContent));
+	try {
+		HdrImage badImg{badPfm};
+		assert(false);
+	} catch (InvalidPfmFileFormat e) {
+	} catch (exception e) {
+		assert(false);
+	}
+
 
 	return 0;
 }

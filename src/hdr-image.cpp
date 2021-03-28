@@ -120,12 +120,19 @@ void HdrImage::savePfm(ostream &stream, Endianness endianness) {
 }
 
 void HdrImage::readPfmFile(istream &stream) {
+
+	// Measure length of file
+	stream.seekg(0, stream.end);
+	int fileLen = stream.tellg();
+	stream.seekg(0, stream.beg);
+	if (fileLen == -1)
+		throw InvalidPfmFileFormat("The file is empty!");
+
 	// Get the magic from PFM
 	string magic;
 	getline(stream, magic);
-	if (magic != "PF") {
+	if (magic != "PF")
 		throw InvalidPfmFileFormat("Invalid magic in PFM file");
-	}
 	
 	// Get the width and height from PFM
 	string imgSize;
@@ -137,6 +144,11 @@ void HdrImage::readPfmFile(istream &stream) {
 	Endianness endianness;
 	getline(stream, endStr);
 	endianness = parseEndianness(endStr);
+
+	// Checks file dimension
+	int headerLen = stream.tellg();
+	if ((fileLen-headerLen) != (width*height*3*4))
+		throw InvalidPfmFileFormat("Invalid file dimension");
 
 	// Get the actual image
 	pixels.reserve(width * height);
