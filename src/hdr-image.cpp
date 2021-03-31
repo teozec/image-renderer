@@ -22,13 +22,15 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <iomanip>
 #include <string>
 #include <cstdio>
+#include <cstdarg>
 #include <gd.h>
+#include <gd_errors.h>
 #include "hdr-image.h"
 
 using namespace std;
 
 static void writeFloat(ostream &stream, const float value, const Endianness endianness) {
-	// Convert "value" in a sequence of 32 bit
+	// Convert "value" to a sequence of 32 bit
 	uint32_t doubleWord{*((uint32_t *)&value)};
 
 	// Extract the four bytes in "doubleWord" using bit-level operators
@@ -128,7 +130,6 @@ void HdrImage::writePfm(ostream &stream, Endianness endianness) {
 }
 
 void HdrImage::readPfm(istream &stream) {
-
 	// Measure length of file
 	stream.seekg(0, stream.end);
 	int fileLen = stream.tellg();
@@ -174,28 +175,79 @@ float clamp(const float x) {
 	return x/(1+x);
 };
 
+// By default, gd writes error messages on stderr.
+// We want to throw exceptions and let the caller handle them instead.
+static void errorHandler(int priority, const char *format, va_list args) {
+	const size_t size = 256;
+	char msg[size] = {0};
+	int n;
+
+	// The first part of the messages is the error priority.
+	switch (priority) {
+	case GD_ERROR:
+		n = snprintf(msg, size, "GD Error: ");
+		break;
+	case GD_WARNING:
+		n = snprintf(msg, size, "GD Warning: ");
+		break;
+	case GD_NOTICE:
+		n = snprintf(msg, size, "GD Notice: ");
+		break;
+	case GD_INFO:
+		n = snprintf(msg, size, "GD Info: ");
+		break;
+	case GD_DEBUG:
+		n = snprintf(msg, size, "GD Debug: ");
+		break;
+	}
+
+	// The second part is the real error message content.
+	if (n >= 0)
+		n += vsnprintf(msg+n, size-n, format, args);
+	if (msg[n-1] == '\n')
+		msg[n-1] = 0;
+
+	throw runtime_error{msg};
+}
+
 void HdrImage::writePng(char filename[], int compression, double palette, float gamma) {
-	gdImagePtr im;
+	// Open output file, or throw exception on failure.
 	FILE *f = fopen(filename, "wb");
 	if (!f)
-		throw runtime_error("Could not open file");
+		throw runtime_error("Error: Could not open file");
 
-	im = gdImageCreateTrueColor(width, height);
+	// Set errorHandler as the function to be called by gd if errors arise
+	gdSetErrorMethod((gdErrorMethod) errorHandler);
+
+	// Create a new true color image, or throw exception on failure
+	// (On failure, the function returns NULL)
+	gdImagePtr im = gdImageCreateTrueColor(width, height);
+	if (!im)
+		throw runtime_error{"Error: Failed to create gdImage"};
+
+	// Set each pixel in the image, normalizing and applying the gamma factor
 	for (int x{}; x < width; x++) {
 		for (int y{}; y < height; y++) {
 			Color p = getPixel(x, y);
+			// Make a gd color index for the required color
 			int index = gdImageColorExact(im,
 				(int) 255 * pow(p.r, 1./gamma),
 				(int) 255 * pow(p.g, 1./gamma),
 				(int) 255 * pow(p.b, 1./gamma));
+
 			gdImageSetPixel(im, x, y, index);
 		}
 	}
 
+	// If the caller asked for a 8-bit palette PNG, try to convert the true color image.
+	// On failure (the function returns 0), throw an exception.
 	if (palette)
-		gdImageTrueColorToPalette(im, 0, 256);
+		if (!gdImageTrueColorToPalette(im, 0, 256))
+			throw runtime_error{"Error: Failed to create palette"};
 
+	// Write the image on the file, with the desired compression level.
 	gdImagePngEx(im, f, compression);
+
 	gdImageDestroy(im);
 	fclose(f);
 }

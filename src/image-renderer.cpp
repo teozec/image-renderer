@@ -37,6 +37,7 @@ enum class ImageFormat { png };
 
 int main(int argc, char *argv[])
 {
+	// Define variables with their default values.
 	ImageFormat format;
 	bool formatDefined = false;
 	char *infile = NULL;
@@ -46,6 +47,7 @@ int main(int argc, char *argv[])
 	float aFactor = 0.18f;
 	float gamma = 1.f;
 
+	// Parse command line arguments (see USAGE)
 	int c;
 	while ((c = getopt(argc, argv, "f:i:o:pc:a:g:")) != -1) {
 		switch (c) {
@@ -98,13 +100,14 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	// -i, -o and -f are mandatory options
 	if (!infile or !outfile or !formatDefined) {
 		USAGE();
 		return 1;
 	}
 
+	// Read the input file
 	HdrImage img;
-
 	try {
 		img.readPfm(infile);
 	} catch (exception e) {
@@ -112,13 +115,20 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	// Convert HDR to LDR
 	img.normalizeImage(aFactor);
 	img.clampImage();
 
-	switch (format) {
-	case ImageFormat::png:
-		img.writePng(outfile, compression, palette, gamma);
-		break;
+	// Write to output file
+	try {
+		switch (format) {
+		case ImageFormat::png:
+			img.writePng(outfile, compression, palette, gamma);
+			break;
+		}
+	} catch (runtime_error e) {
+		cerr << e.what() << endl;
+		return 1;
 	}
 
 	return 0;
