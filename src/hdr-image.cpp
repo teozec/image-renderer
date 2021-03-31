@@ -161,3 +161,7 @@ void HdrImage::readPfm(istream &stream) {
 		}
 	}
 }
+
+float clump(const float x) {
+	return x/(1+x);
+};

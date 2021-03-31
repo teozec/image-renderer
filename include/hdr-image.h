@@ -29,9 +29,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 enum class Endianness { littleEndian, bigEndian };
 
-float clump(const float x){
-	return x/(1+x);
-};
+float clump(const float x);
 
 struct HdrImage {
 	int width, height;
