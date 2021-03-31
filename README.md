@@ -63,17 +63,17 @@ After rendering a PFM file, you can use the executable to convert it to a LDR im
 
 For example, to save it as a 24-bit png file you can run:
 ```bash
-image-renderer -f png -i input.pfm -o output.png
+image-renderer png input.pfm output.png
 ```
 
 If you wish to convert your PFM to a 8-bit colormap PNG (using a palette), with a compression factor of 5, run:
 ```bash
-image-renderer -f png -i input.pfm -o output.png -p -c 5
+image-renderer -p -c 5 png input.pfm output.png 
 ```
 
-Finally, to apply a normalization factor a=2.5 and a gamma of 1.3 , run:
+To generate a webp with a normalization factor a=2.5 and a gamma of 1.3 , run:
 ```bash
-image-renderer -f png -i input.pfm -o output.png -a 2.5 -g 1.3
+image-renderer -a 2.5 -g 1.3 webp input.pfm output.webp
 ```
 
 

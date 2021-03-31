@@ -210,7 +210,7 @@ static void errorHandler(int priority, const char *format, va_list args) {
 	throw runtime_error{msg};
 }
 
-void HdrImage::writePng(char filename[], int compression, bool palette, float gamma) {
+void HdrImage::writePng(const char filename[], int compression, bool palette, float gamma) {
 	// Open output file, or throw exception on failure.
 	FILE *f = fopen(filename, "wb");
 	if (!f)
@@ -252,7 +252,7 @@ void HdrImage::writePng(char filename[], int compression, bool palette, float ga
 	fclose(f);
 }
 
-void HdrImage::writeWebp(char filename[], int quality, float gamma) {
+void HdrImage::writeWebp(const char filename[], int quality, float gamma) {
 	// Open output file, or throw exception on failure.
 	FILE *f = fopen(filename, "wb");
 	if (!f)

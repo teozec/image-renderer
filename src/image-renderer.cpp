@@ -27,9 +27,9 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #define USAGE() \
 	cerr << "Usage: " << argv[0] << \
-		" -f format -i input_file -o output_file " \
-		"[-p] [-a aFactor] [-g gamma]" << \
-		endl;
+		" [-p] [-a a_factor] [-g gamma] [-c compression/quality]" << \
+		" format input_file output_file " << \
+		endl
 
 using namespace std;
 
@@ -38,37 +38,15 @@ enum class ImageFormat { png, webp };
 int main(int argc, char *argv[])
 {
 	// Define variables with their default values.
-	ImageFormat format;
-	bool formatDefined = false;
-	char *infile = NULL;
-	char *outfile = NULL;
 	bool palette = false;
 	int compression = -1;
 	float aFactor = 0.18f;
 	float gamma = 1.f;
 
-	// Parse command line arguments (see USAGE)
+	// Parse command line options (see USAGE)
 	int c;
-	while ((c = getopt(argc, argv, "f:i:o:pc:a:g:")) != -1) {
+	while ((c = getopt(argc, argv, "pc:a:g:")) != -1) {
 		switch (c) {
-		case 'f':
-			if (!strcmp(optarg, "png")) {
-				format = ImageFormat::png;
-			} else if (!strcmp(optarg, "webp")) {
-				format = ImageFormat::webp;
-			} else {
-				cerr << "Format " << optarg <<
-					" not supported" << endl;
-				return 1;
-			}
-			formatDefined = true;
-			break;
-		case 'i':
-			infile = optarg;
-			break;
-		case 'o':
-			outfile = optarg;
-			break;
 		case 'p':
 			palette = true;
 			break;
@@ -102,11 +80,27 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	// -i, -o and -f are mandatory options
-	if (!infile or !outfile or !formatDefined) {
+	// After the options, exactly three arguments must remain:
+	// format, input_file and output_file
+	if (argc - optind != 3) {
 		USAGE();
 		return 1;
 	}
+	
+	// Parse format
+	ImageFormat format;
+	if (!strcmp(argv[optind], "png")) {
+		format = ImageFormat::png;
+	} else if (!strcmp(argv[optind], "webp")) {
+		format = ImageFormat::webp;
+	} else {
+		cerr << "Format " << optarg <<
+			" not supported" << endl;
+		return 1;
+	}
+
+	const char *infile = argv[optind+1];
+	const char *outfile = argv[optind+2];
 
 	// Read the input file
 	HdrImage img;
