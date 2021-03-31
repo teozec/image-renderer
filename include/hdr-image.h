@@ -22,6 +22,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <sstream>
 #include <vector>
 #include <string>
+#include <cmath>
 #undef NDEBUG
 #include <cassert>
 #include "color.h"
@@ -34,7 +35,7 @@ struct HdrImage {
 
 	// Constructor
 	HdrImage(const int width, const int height) : width(width), height(height) {
-		pixels.reserve(width * height);
+		pixels.resize(width * height);
 	}
 
 	// Constructor from stream
@@ -63,6 +64,13 @@ struct HdrImage {
 	void setPixel(const int x, const int y, const Color c) {
 		assert(validCoordinates(x, y));
 		pixels[pixelOffset(x, y)] = c;
+	}
+
+	float averageLuminosity(float delta=1e-10) {
+		float s = 0.0;
+		for (auto it = pixels.begin(); it != pixels.end(); ++it)
+			s += std::log10(delta + it->luminosity());
+		return pow(10, s / pixels.size());
 	}
 
 	void savePfm(std::ostream &stream, Endianness endianness=Endianness::littleEndian);

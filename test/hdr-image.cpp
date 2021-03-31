@@ -22,11 +22,12 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <sstream>
 #include <cstring>
 #include <cstdint>
-
-#include <cstdio>
+#include <iostream>
 #include <fstream>
 
 using namespace std;
+
+void testAverageLuminosity();
 
 int main() {
 	HdrImage img{7, 4};
@@ -189,6 +190,16 @@ int main() {
 		assert(false);
 	}
 
+	 testAverageLuminosity();
 
 	return 0;
+}
+
+void testAverageLuminosity() {
+	HdrImage img{2, 1};
+
+	img.setPixel(0, 0, Color{5.f, 10.f, 15.f});
+	img.setPixel(1, 0, Color{500.f, 1000.f, 1500.f});
+
+	assert(img.averageLuminosity(0.f) == 100.f);
 }

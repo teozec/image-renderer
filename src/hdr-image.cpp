@@ -151,7 +151,7 @@ void HdrImage::readPfmFile(istream &stream) {
 		throw InvalidPfmFileFormat("Invalid file dimension");
 
 	// Get the actual image
-	pixels.reserve(width * height);
+	pixels.resize(width * height);
 	for (int y{height-1}; y >= 0; y--) {
 		for (int x{}; x < width; x++) {
 			float r = readFloat(stream, endianness);
