@@ -12,6 +12,7 @@ The following software is required to build the project:
 * [`libgd`](https://libgd.github.io/), compiled with support for:
 	* [`libpng`](http://www.libpng.org/pub/png/libpng.html)
 	* [`libjpeg`](https://ijg.org/) or [`libjpeg-turbo`](http://www.libpng.org/pub/png/libpng.html)
+	* [`libwep`](https://developers.google.com/speed/webp/)
 
 
 ## Building
