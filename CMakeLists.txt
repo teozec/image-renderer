@@ -31,6 +31,8 @@ add_library(trace
 	src/hdr-image.cpp
 	)
 
+target_link_libraries(trace PUBLIC gd)
+
 # This is needed if we keep .h files in the "include" directory
 target_include_directories(trace PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

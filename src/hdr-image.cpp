@@ -21,6 +21,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cstdint>
 #include <iomanip>
 #include <string>
+#include <cstdio>
+#include <gd.h>
 #include "hdr-image.h"
 
 using namespace std;
@@ -85,9 +87,15 @@ void parseImageSize(const string line, int &width, int &height) {
 }
 
 Endianness parseEndianness(const string line) {
-	if (line == "1.0")
+	float endiannessFloat;
+	try {
+		endiannessFloat = stof(line);
+	} catch (exception e) {
+		throw InvalidPfmFileFormat("Invalid endianness specification");
+	}
+	if (endiannessFloat == 1.0f)
 		return Endianness::bigEndian;
-	else if (line == "-1.0")
+	else if (endiannessFloat == -1.0f)
 		return Endianness::littleEndian;
 	else
 		throw InvalidPfmFileFormat("Invalid endianness specification");
@@ -162,6 +170,61 @@ void HdrImage::readPfm(istream &stream) {
 	}
 }
 
-float clump(const float x) {
+float clamp(const float x) {
 	return x/(1+x);
 };
+
+void HdrImage::writePng(char filename[], float gamma) {
+	writePng(filename, -1, gamma);
+}
+
+void HdrImage::writePng(char filename[], int compression, float gamma) {
+	gdImagePtr im;
+	FILE *f = fopen(filename, "wb");
+	if (!f)
+		throw runtime_error("Could not open file");
+
+	im = gdImageCreateTrueColor(width, height);
+	for (int x{}; x < width; x++) {
+		for (int y{}; y < height; y++) {
+			Color p = getPixel(x, y);
+			int index = gdImageColorExact(im,
+				(int) 255 * pow(p.r, 1./gamma),
+				(int) 255 * pow(p.g, 1./gamma),
+				(int) 255 * pow(p.b, 1./gamma));
+			gdImageSetPixel(im, x, y, index);
+		}
+	}
+
+	gdImagePngEx(im, f, compression);
+	gdImageDestroy(im);
+	fclose(f);
+}
+
+void HdrImage::writePngPalette(char filename[], float gamma) {
+	writePngPalette(filename, -1, gamma);
+}
+
+void HdrImage::writePngPalette(char filename[], int compression, float gamma) {
+	gdImagePtr im;
+	FILE *f = fopen(filename, "wb");
+	if (!f)
+		throw runtime_error("Could not open file");
+
+	im = gdImageCreateTrueColor(width, height);
+	for (int x{}; x < width; x++) {
+		for (int y{}; y < height; y++) {
+			Color p = getPixel(x, y);
+			int index = gdImageColorExact(im,
+				(int) 255 * pow(p.r, 1./gamma),
+				(int) 255 * pow(p.g, 1./gamma),
+				(int) 255 * pow(p.b, 1./gamma));
+			gdImageSetPixel(im, x, y, index);
+		}
+	}
+
+	gdImageTrueColorToPalette(im, 0, 256);
+	gdImagePngEx(im, f, compression);
+	gdImageDestroy(im);
+	fclose(f);
+}

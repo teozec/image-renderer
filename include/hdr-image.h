@@ -29,7 +29,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 enum class Endianness { littleEndian, bigEndian };
 
-float clump(const float x);
+float clamp(const float x);
 
 struct HdrImage {
 	int width, height;
@@ -93,13 +93,18 @@ struct HdrImage {
 		float luminosity = averageLuminosity();
 		normalizeImage(factor, luminosity);
 }
-	void clumpImage(){
+	void clampImage(){
 		for (auto it = pixels.begin(); it != pixels.end(); ++it){
-			it->r = clump(it->r);
-			it->g = clump(it->g);
-			it->b = clump(it->b);
+			it->r = clamp(it->r);
+			it->g = clamp(it->g);
+			it->b = clamp(it->b);
 		}
 	}
+
+	void writePng(char filename[], float gamma=1.);
+	void writePng(char filename[], int compression, float gamma=1.);
+	void writePngPalette(char filename[], float gamma=1.);
+	void writePngPalette(char filename[], int compression, float gamma=1.);
 };
 
 class InvalidPfmFileFormat : public std::runtime_error {

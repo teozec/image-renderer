@@ -198,8 +198,8 @@ int main() {
 	assert(imgN.getPixel(0, 0)==(Color{0.5e2, 1.0e2, 1.5e2}));
 	assert(imgN.getPixel(1, 0)==(Color{0.5e4, 1.0e4, 1.5e4}));
 
-	// Test clumpImage
-	imgN.clumpImage();
+	// Test clampImage
+	imgN.clampImage();
 	for (int i{}; i<imgN.pixels.size(); i++){
 		assert((imgN.pixels[i].r >= 0) && (imgN.pixels[i].r <= 1));
 		assert((imgN.pixels[i].g >= 0) && (imgN.pixels[i].g <= 1));
