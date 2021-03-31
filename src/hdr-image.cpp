@@ -174,11 +174,7 @@ float clamp(const float x) {
 	return x/(1+x);
 };
 
-void HdrImage::writePng(char filename[], float gamma) {
-	writePng(filename, -1, gamma);
-}
-
-void HdrImage::writePng(char filename[], int compression, float gamma) {
+void HdrImage::writePng(char filename[], int compression, double palette, float gamma) {
 	gdImagePtr im;
 	FILE *f = fopen(filename, "wb");
 	if (!f)
@@ -196,34 +192,9 @@ void HdrImage::writePng(char filename[], int compression, float gamma) {
 		}
 	}
 
-	gdImagePngEx(im, f, compression);
-	gdImageDestroy(im);
-	fclose(f);
-}
+	if (palette)
+		gdImageTrueColorToPalette(im, 0, 256);
 
-void HdrImage::writePngPalette(char filename[], float gamma) {
-	writePngPalette(filename, -1, gamma);
-}
-
-void HdrImage::writePngPalette(char filename[], int compression, float gamma) {
-	gdImagePtr im;
-	FILE *f = fopen(filename, "wb");
-	if (!f)
-		throw runtime_error("Could not open file");
-
-	im = gdImageCreateTrueColor(width, height);
-	for (int x{}; x < width; x++) {
-		for (int y{}; y < height; y++) {
-			Color p = getPixel(x, y);
-			int index = gdImageColorExact(im,
-				(int) 255 * pow(p.r, 1./gamma),
-				(int) 255 * pow(p.g, 1./gamma),
-				(int) 255 * pow(p.b, 1./gamma));
-			gdImageSetPixel(im, x, y, index);
-		}
-	}
-
-	gdImageTrueColorToPalette(im, 0, 256);
 	gdImagePngEx(im, f, compression);
 	gdImageDestroy(im);
 	fclose(f);

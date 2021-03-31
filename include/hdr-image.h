@@ -36,6 +36,7 @@ struct HdrImage {
 	std::vector<Color> pixels;
 
 	// Constructor
+	HdrImage() { }
 	HdrImage(const int width, const int height) : width(width), height(height) {
 		pixels.resize(width * height);
 	}
@@ -101,10 +102,7 @@ struct HdrImage {
 		}
 	}
 
-	void writePng(char filename[], float gamma=1.);
-	void writePng(char filename[], int compression, float gamma=1.);
-	void writePngPalette(char filename[], float gamma=1.);
-	void writePngPalette(char filename[], int compression, float gamma=1.);
+	void writePng(char filename[], int compression, double palette, float gamma);
 };
 
 class InvalidPfmFileFormat : public std::runtime_error {
