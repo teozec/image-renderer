@@ -210,7 +210,7 @@ static void errorHandler(int priority, const char *format, va_list args) {
 	throw runtime_error{msg};
 }
 
-void HdrImage::writePng(char filename[], int compression, double palette, float gamma) {
+void HdrImage::writePng(char filename[], int compression, bool palette, float gamma) {
 	// Open output file, or throw exception on failure.
 	FILE *f = fopen(filename, "wb");
 	if (!f)
@@ -247,6 +247,42 @@ void HdrImage::writePng(char filename[], int compression, double palette, float 
 
 	// Write the image on the file, with the desired compression level.
 	gdImagePngEx(im, f, compression);
+
+	gdImageDestroy(im);
+	fclose(f);
+}
+
+void HdrImage::writeWebp(char filename[], int quality, float gamma) {
+	// Open output file, or throw exception on failure.
+	FILE *f = fopen(filename, "wb");
+	if (!f)
+		throw runtime_error("Error: Could not open file");
+
+	// Set errorHandler as the function to be called by gd if errors arise
+	gdSetErrorMethod((gdErrorMethod) errorHandler);
+
+	// Create a new true color image, or throw exception on failure
+	// (On failure, the function returns NULL)
+	gdImagePtr im = gdImageCreateTrueColor(width, height);
+	if (!im)
+		throw runtime_error{"Error: Failed to create gdImage"};
+
+	// Set each pixel in the image, normalizing and applying the gamma factor
+	for (int x{}; x < width; x++) {
+		for (int y{}; y < height; y++) {
+			Color p = getPixel(x, y);
+			// Make a gd color index for the required color
+			int index = gdImageColorExact(im,
+				(int) 255 * pow(p.r, 1./gamma),
+				(int) 255 * pow(p.g, 1./gamma),
+				(int) 255 * pow(p.b, 1./gamma));
+
+			gdImageSetPixel(im, x, y, index);
+		}
+	}
+
+	// Write the image on the file, with the desired compression level.
+	gdImageWebpEx(im, f, quality);
 
 	gdImageDestroy(im);
 	fclose(f);

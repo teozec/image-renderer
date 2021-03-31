@@ -33,7 +33,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 using namespace std;
 
-enum class ImageFormat { png };
+enum class ImageFormat { png, webp };
 
 int main(int argc, char *argv[])
 {
@@ -54,6 +54,8 @@ int main(int argc, char *argv[])
 		case 'f':
 			if (!strcmp(optarg, "png")) {
 				format = ImageFormat::png;
+			} else if (!strcmp(optarg, "webp")) {
+				format = ImageFormat::webp;
 			} else {
 				cerr << "Format " << optarg <<
 					" not supported" << endl;
@@ -124,6 +126,9 @@ int main(int argc, char *argv[])
 		switch (format) {
 		case ImageFormat::png:
 			img.writePng(outfile, compression, palette, gamma);
+			break;
+		case ImageFormat::webp:
+			img.writeWebp(outfile, compression, gamma);
 			break;
 		}
 	} catch (runtime_error e) {
