@@ -71,7 +71,7 @@ If you wish to convert your PFM to a 8-bit colormap PNG (using a palette), with 
 image-renderer -p -c 5 png input.pfm output.png 
 ```
 
-To generate a webp with a normalization factor a=2.5 and a gamma of 1.3 , run:
+To generate a webp with a normalization factor a=2.5 and a gamma of 1.3, run:
 ```bash
 image-renderer -a 2.5 -g 1.3 webp input.pfm output.webp
 ```
