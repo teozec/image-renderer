@@ -18,6 +18,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #ifndef COLOR_H
 #define COLOR_H
 
+#include <algorithm>
+
 struct Color {
 	float r, g, b;
     
@@ -31,6 +33,10 @@ struct Color {
 
 	Color operator*(const Color other) {
 		return Color{other.r*r, other.g*g, other.b*b};
+	}
+
+	float luminosity() {
+		return (std::max({r, g, b}) + std::min({r, g, b})) / 2;
 	}
 
 	bool operator==(Color other);
