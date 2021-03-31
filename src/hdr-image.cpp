@@ -93,7 +93,7 @@ Endianness parseEndianness(const string line) {
 		throw InvalidPfmFileFormat("Invalid endianness specification");
 }
 
-void HdrImage::savePfm(ostream &stream, Endianness endianness) {
+void HdrImage::writePfm(ostream &stream, Endianness endianness) {
 	//Define the endianness to use
 	float endiannessFloat;
 	switch (endianness) {
@@ -119,7 +119,7 @@ void HdrImage::savePfm(ostream &stream, Endianness endianness) {
 	}
 }
 
-void HdrImage::readPfmFile(istream &stream) {
+void HdrImage::readPfm(istream &stream) {
 
 	// Measure length of file
 	stream.seekg(0, stream.end);
@@ -151,7 +151,7 @@ void HdrImage::readPfmFile(istream &stream) {
 		throw InvalidPfmFileFormat("Invalid file dimension");
 
 	// Get the actual image
-	pixels.reserve(width * height);
+	pixels.resize(width * height);
 	for (int y{height-1}; y >= 0; y--) {
 		for (int x{}; x < width; x++) {
 			float r = readFloat(stream, endianness);
@@ -159,24 +159,5 @@ void HdrImage::readPfmFile(istream &stream) {
 			float b = readFloat(stream, endianness);
 			setPixel(x, y, Color{r, g, b});
 		}
-	}
-}
-
-void HdrImage::normalizeImage(const float factor, const float luminosity){
-	for (int i{}; i<pixels.size(); i++){
-		pixels[i] = pixels[i]*(factor/luminosity);
-	}
-}
-
-void HdrImage::normalizeImage(const float factor){
-	float luminosity = averageLuminosity(); //check
-	normalizeImage(factor, luminosity);
-}
-
-void HdrImage::clumpImage(){
-	for (int i{}; i<pixels.size(); i++){
-		pixels[i].r = clump(pixels[i].r);
-		pixels[i].g = clump(pixels[i].g);
-		pixels[i].b = clump(pixels[i].b);
 	}
 }

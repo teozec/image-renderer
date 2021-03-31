@@ -40,12 +40,18 @@ int main()
 
 	assert((c1*c2)==(Color{5.0, 14.0, 27.0}));
 
-	Color c3 = {1e-11, 2e-11, 3e-11};
-	Color c4 = {5e-11, 7e-11, 9e-11};
+	Color c3{1e-11, 2e-11, 3e-11};
+	Color c4{5e-11, 7e-11, 9e-11};
 
 	assert(c3==c4);
 	assert(!(c3!=c4));
 	assert(!areColorsClose(c1, c3, 1e-12));
+
+	Color c5{1.0, 2.0, 3.0};
+	Color c6{9.0, 5.0, 7.0};
+
+	assert(c5.luminosity() == 2.0);
+	assert(c6.luminosity() == 7.0);
     
 	return 0;
 }

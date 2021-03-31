@@ -22,11 +22,16 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <sstream>
 #include <vector>
 #include <string>
+#include <cmath>
 #undef NDEBUG
 #include <cassert>
 #include "color.h"
 
 enum class Endianness { littleEndian, bigEndian };
+
+float clump(const float x){
+	return x/(1+x);
+};
 
 struct HdrImage {
 	int width, height;
@@ -34,17 +39,17 @@ struct HdrImage {
 
 	// Constructor
 	HdrImage(const int width, const int height) : width(width), height(height) {
-		pixels.reserve(width * height);
+		pixels.resize(width * height);
 	}
 
 	// Constructor from stream
 	HdrImage(std::istream &stream){
-		readPfmFile(stream);
+		readPfm(stream);
 	}
 
 	// Constructor from PFM file
 	HdrImage(const std::string &fileName){
-		readPfmFile(fileName);
+		readPfm(fileName);
 	}
 
 	bool validCoordinates(const int x, const int y) {
@@ -65,19 +70,38 @@ struct HdrImage {
 		pixels[pixelOffset(x, y)] = c;
 	}
 
-	void savePfm(std::ostream &stream, Endianness endianness=Endianness::littleEndian);
-	void readPfmFile(std::istream &stream);
-	void readPfmFile(std::string fileName) {
+	float averageLuminosity(float delta=1e-10) {
+		float s = 0.0;
+		for (auto it = pixels.begin(); it != pixels.end(); ++it)
+			s += std::log10(delta + it->luminosity());
+		return pow(10, s / pixels.size());
+	}
+
+	void writePfm(std::ostream &stream, Endianness endianness=Endianness::littleEndian);
+	void readPfm(std::istream &stream);
+	void readPfm(std::string fileName) {
 		std::ifstream stream;
 		stream.exceptions(std::ios::failbit | std::ios::badbit);
 		stream.open(fileName);
-		readPfmFile(stream);
+		readPfm(stream);
 	}
 
-	void normalizeImage(const float factor, const float luminosity);
-	void normalizeImage(const float factor);
-
-	void clumpImage();
+	void normalizeImage(const float factor, const float luminosity){
+		for (auto it = pixels.begin(); it != pixels.end(); ++it){
+			(*it) = (*it)*(factor/luminosity);
+	}
+}
+	void normalizeImage(const float factor){
+		float luminosity = averageLuminosity();
+		normalizeImage(factor, luminosity);
+}
+	void clumpImage(){
+		for (auto it = pixels.begin(); it != pixels.end(); ++it){
+			it->r = clump(it->r);
+			it->g = clump(it->g);
+			it->b = clump(it->b);
+		}
+	}
 };
 
 class InvalidPfmFileFormat : public std::runtime_error {
@@ -86,9 +110,5 @@ class InvalidPfmFileFormat : public std::runtime_error {
 
 void parseImageSize(std::string line, int &width, int &height);
 Endianness parseEndianness(std::string line);
-
-float clump(const float x){
-	return x/(1+x);
-}
 
 #endif // HDR_IMAGE_H

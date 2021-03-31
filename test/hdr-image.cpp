@@ -22,11 +22,12 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <sstream>
 #include <cstring>
 #include <cstdint>
-
-#include <cstdio>
+#include <iostream>
 #include <fstream>
 
 using namespace std;
+
+void testAverageLuminosity();
 
 int main() {
 	HdrImage img{7, 4};
@@ -128,7 +129,7 @@ int main() {
 	HdrImage leImg{leInStream}; //use of readPfmFile
 
 	stringstream leOutStream;
-	leImg.savePfm(leOutStream); //use of savePfm
+	leImg.writePfm(leOutStream); //use of savePfm
 	char leBuf[leLen];
 	leOutStream.read(leBuf, leLen);
 
@@ -161,7 +162,7 @@ int main() {
 	HdrImage beImg{beInStream}; //use of readPfmFile
 
 	stringstream beOutStream;
-	beImg.savePfm(beOutStream, Endianness::bigEndian); //use of savePfm
+	beImg.writePfm(beOutStream, Endianness::bigEndian); //use of savePfm
 	char beBuf[beLen];
 	beOutStream.read(beBuf, beLen);
 
@@ -205,5 +206,16 @@ int main() {
 		assert((imgN.pixels[i].b >= 0) && (imgN.pixels[i].b <= 1));
 	}
 
+	testAverageLuminosity();
+
 	return 0;
+}
+
+void testAverageLuminosity() {
+	HdrImage img{2, 1};
+
+	img.setPixel(0, 0, Color{5.f, 10.f, 15.f});
+	img.setPixel(1, 0, Color{500.f, 1000.f, 1500.f});
+
+	assert(img.averageLuminosity(0.f) == 100.f);
 }
