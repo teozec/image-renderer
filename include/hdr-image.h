@@ -51,24 +51,29 @@ struct HdrImage {
 		readPfm(fileName);
 	}
 
+	// Checks whether or not x and y are valid
 	bool validCoordinates(const int x, const int y) {
 		return x >= 0 and x < width and y >= 0 and y < height;
 	}
 
+	// Evaluate index for pixels[]
 	int pixelOffset(const int x, const int y) {
 		return x*height + y;
 	}
 
+	// Gets color of the pixel in (x, y)
 	Color getPixel(const int x, const int y) {
 		assert(validCoordinates(x, y));
 		return pixels[pixelOffset(x, y)];
 	}
 
+	// Sets the color of a pixel
 	void setPixel(const int x, const int y, const Color c) {
 		assert(validCoordinates(x, y));
 		pixels[pixelOffset(x, y)] = c;
 	}
 
+	// Evalutate average luminosity with log-average
 	float averageLuminosity(float delta=1e-10) {
 		float s = 0.0;
 		for (auto it = pixels.begin(); it != pixels.end(); ++it)
@@ -76,6 +81,7 @@ struct HdrImage {
 		return pow(10, s / pixels.size());
 	}
 
+	// write&read pfm file image
 	void writePfm(std::ostream &stream, Endianness endianness=Endianness::littleEndian);
 	void readPfm(std::istream &stream);
 	void readPfm(std::string fileName) {
@@ -85,15 +91,19 @@ struct HdrImage {
 		readPfm(stream);
 	}
 
+	// Normalization of pixels given a factor and (optional) luminosity
 	void normalizeImage(const float factor, const float luminosity){
 		for (auto it = pixels.begin(); it != pixels.end(); ++it){
 			(*it) = (*it)*(factor/luminosity);
+		}
 	}
-}
+
 	void normalizeImage(const float factor){
 		float luminosity = averageLuminosity();
 		normalizeImage(factor, luminosity);
-}
+	}
+
+	// Apply clump function to color components
 	void clampImage(){
 		for (auto it = pixels.begin(); it != pixels.end(); ++it){
 			it->r = clamp(it->r);
@@ -102,6 +112,7 @@ struct HdrImage {
 		}
 	}
 
+	// Write pgn image file
 	void writePng(char filename[], int compression, double palette, float gamma);
 };
 

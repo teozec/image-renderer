@@ -206,6 +206,7 @@ int main() {
 		assert((imgN.pixels[i].b >= 0) && (imgN.pixels[i].b <= 1));
 	}
 
+	// Test averageLuminosity
 	testAverageLuminosity();
 
 	return 0;
