@@ -73,6 +73,11 @@ struct HdrImage {
 		stream.open(fileName);
 		readPfmFile(stream);
 	}
+
+	void normalizeImage(const float factor, const float luminosity);
+	void normalizeImage(const float factor);
+
+	void clumpImage();
 };
 
 class InvalidPfmFileFormat : public std::runtime_error {
@@ -81,5 +86,9 @@ class InvalidPfmFileFormat : public std::runtime_error {
 
 void parseImageSize(std::string line, int &width, int &height);
 Endianness parseEndianness(std::string line);
+
+float clump(const float x){
+	return x/(1+x);
+}
 
 #endif // HDR_IMAGE_H

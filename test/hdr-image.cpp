@@ -189,6 +189,21 @@ int main() {
 		assert(false);
 	}
 
+	// Test normalizeImage
+	HdrImage imgN{2, 1};
+	imgN.setPixel(0, 0, Color{0.5e1, 1.0e1, 1.5e1});
+	imgN.setPixel(1, 0, Color{5.0e3, 1.0e3, 1.5e3});
+	imgN.normalizeImage(1000.0, 100.0);//factor=1000. and luminosity=100.
+	assert(imgN.getPixel(0, 0)==(Color{0.5e2, 1.0e2, 1.5e2}));
+	assert(imgN.getPixel(1, 0)==(Color{0.5e4, 1.0e4, 1.5e4}));
+
+	// Test clumpImage
+	imgN.clumpImage();
+	for (int i{}; i<imgN.pixels.size(); i++){
+		assert((imgN.pixels[i].r >= 0) && (imgN.pixels[i].r <= 1));
+		assert((imgN.pixels[i].g >= 0) && (imgN.pixels[i].g <= 1));
+		assert((imgN.pixels[i].b >= 0) && (imgN.pixels[i].b <= 1));
+	}
 
 	return 0;
 }

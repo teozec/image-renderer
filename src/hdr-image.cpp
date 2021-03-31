@@ -161,3 +161,22 @@ void HdrImage::readPfmFile(istream &stream) {
 		}
 	}
 }
+
+void HdrImage::normalizeImage(const float factor, const float luminosity){
+	for (int i{}; i<pixels.size(); i++){
+		pixels[i] = pixels[i]*(factor/luminosity);
+	}
+}
+
+void HdrImage::normalizeImage(const float factor){
+	float luminosity = averageLuminosity(); //check
+	normalizeImage(factor, luminosity);
+}
+
+void HdrImage::clumpImage(){
+	for (int i{}; i<pixels.size(); i++){
+		pixels[i].r = clump(pixels[i].r);
+		pixels[i].g = clump(pixels[i].g);
+		pixels[i].b = clump(pixels[i].b);
+	}
+}
