@@ -51,8 +51,8 @@ Now that it is all set you can open up the Xcode project built in the `build` di
 
 ### Windows
 
-The main executables uses the POSIX `getopt` function, not available on Windows. We recommend using a Unix-like environment, such as the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/).
-You can still build the `trace` library, since it does not require POSIX functions; to achieve this, please remove the lines responsible for building the `image-renderer` executable before running the commands described above.
+The main executable uses the POSIX `getopt` function, not available on Windows. We recommend using a Unix-like environment, such as the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/).
+You can still build the `trace` library, since it does not require POSIX functions; to achieve this, please remove from the `CMakeLists.txt` the lines responsible for building the `image-renderer` executable before running the commands described above.
 
 
 ## Usage examples
@@ -71,7 +71,7 @@ If you wish to convert your PFM to a 8-bit colormap PNG (using a palette), with 
 image-renderer -f png -i input.pfm -o output.png -p -c 5
 ```
 
-Finally, to apply a normalizzation factor a=2.5 and a gamma of 1.3 , run:
+Finally, to apply a normalization factor a=2.5 and a gamma of 1.3 , run:
 ```bash
 image-renderer -f png -i input.pfm -o output.png -a 2.5 -g 1.3
 ```
