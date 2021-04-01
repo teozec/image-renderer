@@ -77,6 +77,11 @@ To generate a webp with a normalization factor a=2.5 and a gamma of 1.3, run:
 image-renderer -a 2.5 -g 1.3 webp input.pfm output.webp
 ```
 
+To generate a jpeg with a quality of 60 (max is 95) run:
+```bash
+image-renderer -c 60 jpeg input.pfm output.jpeg
+```
+
 
 ## Contributing
 
