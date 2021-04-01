@@ -122,6 +122,8 @@ struct HdrImage {
 	void writeTiff(const char filename[], float gamma);
 	// Write bmp image file
 	void writeBmp(const char filename[], int compression, float gamma);
+	// Write gif image file
+	void writeGif(const char filename[], float gamma);
 };
 
 class InvalidPfmFileFormat : public std::runtime_error {

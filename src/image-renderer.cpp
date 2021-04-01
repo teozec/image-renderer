@@ -33,7 +33,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 using namespace std;
 
-enum class ImageFormat { png, webp, jpeg , tiff, bmp};
+enum class ImageFormat { png, webp, jpeg , tiff, bmp, gif };
 
 int main(int argc, char *argv[])
 {
@@ -99,6 +99,8 @@ int main(int argc, char *argv[])
 		format = ImageFormat::tiff;
 	} else if (!strcmp(argv[optind], "bmp")) {
 		format = ImageFormat::bmp;
+	} else if (!strcmp(argv[optind], "gif")) {
+		format = ImageFormat::gif;
 	} else {
 		cerr << "Format " << optarg <<
 			" not supported" << endl;
@@ -138,6 +140,9 @@ int main(int argc, char *argv[])
 			break;
 		case ImageFormat::bmp:
 			img.writeBmp(outfile, compression, gamma);
+			break;
+		case ImageFormat::gif:
+			img.writeGif(outfile, gamma);
 			break;
 		}
 	} catch (runtime_error e) {
