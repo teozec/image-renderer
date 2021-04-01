@@ -82,6 +82,13 @@ To generate a jpeg with a quality of 60 (max is 95) run:
 image-renderer -c 60 jpeg input.pfm output.jpeg
 ```
 
+Similarly all other formats. Here a list of all supported formats:
+*	bmp
+*	gif
+*	jpeg
+*	png
+*	tiff
+*	webp
 
 ## Contributing
 

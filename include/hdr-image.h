@@ -118,6 +118,10 @@ struct HdrImage {
 	void writeWebp(const char filename[], int quality, float gamma);
 	// Write jpeg image file
 	void writeJpeg(const char filename[], int quality, float gamma);
+	// Write tiff image file
+	void writeTiff(const char filename[], float gamma);
+	// Write bmp image file
+	void writeBmp(const char filename[], int compression, float gamma);
 };
 
 class InvalidPfmFileFormat : public std::runtime_error {
