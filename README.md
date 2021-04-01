@@ -1,5 +1,6 @@
 # image-renderer
-[![Issues](https://img.shields.io/github/issues/teozec/image-renderer)](https://img.shields.io/github/issues/teozec/image-renderer)
+[![Operating Systems](https://img.shields.io/badge/OS-Linux%20%7C%20MacOS-lightgrey)](https://img.shields.io/badge/OS-Linux%20%7C%20MacOS-lightgrey)
+[![Top Language](https://img.shields.io/github/languages/top/teozec/image-renderer)](https://img.shields.io/github/languages/top/teozec/image-renderer)
 [![License](https://img.shields.io/github/license/teozec/image-renderer)](https://img.shields.io/github/license/teozec/image-renderer)
 
 image-renderer is a C++ tool to generate photo-realistic images.
