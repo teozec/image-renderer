@@ -23,6 +23,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <vector>
 #include <string>
 #include <cmath>
+#include <gd.h>
 #undef NDEBUG
 #include <cassert>
 #include "color.h"
@@ -124,6 +125,9 @@ struct HdrImage {
 	void writeBmp(const char filename[], int compression, float gamma);
 	// Write gif image file
 	void writeGif(const char filename[], float gamma);
+private:
+	// Write the image to a gdImagePtr
+	gdImagePtr writeGdImage(float gamma);
 };
 
 class InvalidPfmFileFormat : public std::runtime_error {
