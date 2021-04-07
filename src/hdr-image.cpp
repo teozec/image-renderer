@@ -74,12 +74,6 @@ static float readFloat(istream &stream, Endianness endianness) {
 	return value;
 }
 
-static bool isLittleEndian() {
-	uint16_t word{0x1234};
-	uint8_t *ptr{(uint8_t *)&word};
-	return ptr[0] == 0x34;
-}
-
 void parseImageSize(const string line, int &width, int &height) {
 	char c;
 	istringstream s(line);
