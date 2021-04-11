@@ -1,5 +1,5 @@
 # image-renderer
-[![Operating Systems](https://img.shields.io/badge/OS-Linux%20%7C%20MacOS-lightgrey)](https://img.shields.io/badge/OS-Linux%20%7C%20MacOS-lightgrey)
+[![Operating Systems](https://img.shields.io/badge/OS-Linux%20%7C%20MacOS%20%7C%20Windows-lightgrey)](https://img.shields.io/badge/OS-Linux%20%7C%20MacOS%20%7C%20Windows-lightgrey)
 [![Top Language](https://img.shields.io/github/languages/top/teozec/image-renderer)](https://img.shields.io/github/languages/top/teozec/image-renderer)
 [![License](https://img.shields.io/github/license/teozec/image-renderer)](https://img.shields.io/github/license/teozec/image-renderer)
 
@@ -9,9 +9,8 @@ It is based on the lectures of the _Numerical tecniques for photorealistic image
 ## Table of contents
 - [Requirements](#requirements)
 - [Building](#building)
-    - [Standard Unix](#standard-unix)
+    - [Standard Unix and Windows](#standard-unix)
     - [MacOS (Xcode)](#macos-(xcode))
-	- [Windows](#windows)
 - [Usage examples](#usage-examples)
     - [Converting a PFM file to a LDR image](#converting-a-pfm-file-to-a-ldr-image)
 - [Contributing](#contributing)
