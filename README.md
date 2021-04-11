@@ -26,13 +26,15 @@ The following software is required to build the project:
 	* [`libjpeg`](https://ijg.org/) or [`libjpeg-turbo`](http://www.libpng.org/pub/png/libpng.html)
 	* [`libwebp`](https://developers.google.com/speed/webp/)
 	* [`libtiff`](http://www.libtiff.org/)
+This project also uses the header-only [`Argh!`](https://github.com/adishavit/argh) library, which is already included in this repository in `include/argh.h`.
+Therefore, you do not need to install it on your system to compile `image-renderer`.
 
 
 ## Building
 
 After obtaining the source code (e.g. by cloning from [our GitHub repository](https://github.com/teozec/image-renderer)) you can build the project with `cmake`.
 
-### Standard Unix
+### Standard Unix and Windows
 
 Run the following shell commands from the project directory:
 
@@ -62,11 +64,6 @@ cd build
 cmake -G "Xcode" ..
 ```
 Now that it is all set you can open up the Xcode project built in the `build` directory and compile it from within the IDE.
-
-### Windows
-
-The main executable uses the POSIX `getopt` function, not available on Windows. We recommend using a Unix-like environment, such as the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/).
-You can still build the `trace` library, since it does not require POSIX functions; to achieve this, please remove from the `CMakeLists.txt` the lines responsible for building the `image-renderer` executable before running the commands described above.
 
 
 ## Usage examples

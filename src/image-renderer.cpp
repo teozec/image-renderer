@@ -17,6 +17,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "hdr-image.h"
 #include "color.h"
+#include "argh.h"
 #undef NDEBUG
 #include <cassert>
 #include <sstream>
@@ -26,23 +27,22 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <unistd.h>
 
 #define USAGE \
-	"Usage: " << programName << " format" \
-	" [-a a_factor] [-g gamma] [-p] [-c compression] [-q quality]" << \
+	"Usage: " << programName << " [options] format" \
 	" input_file output_file " << endl << \
-	"       " << programName << " -h" << endl
+	"       " << programName << " -h|--help" << endl
 
 #define HELP \
 	"Common options:" << endl << \
-	"	-a	normalization factor" << endl << \
-	"	-g	gamma factor" << endl << endl << \
-	"Supported formats:" << endl << \
-	"	bmp 	-c	compression level (0-1)" << endl << \
+	"	-a, --afactor	<normalization factor>" << endl << \
+	"	-g, --gamma	<gamma factor>" << endl << endl << \
+	"Supported formats and per-format options:" << endl << \
+	"	bmp 	-c, --compression	<compression level (0-1)>" << endl << \
 	"	gif" << endl << \
-	"	jpeg 	-q	quality (0-95)" << endl << \
-	"	png	-p	(enable palette)" << endl << \
-	"		-c	compression level (0-9)" << endl << \
+	"	jpeg 	-q, --quality		<quality (0-95)>" << endl << \
+	"	png	-p, --palette" << endl << \
+	"		-c, --compression	<compression level (0-9)>" << endl << \
 	"	tiff" << endl << \
-	"	webp	-q	quality (0-100)" << endl
+	"	webp	-q, --quality		<quality (0-100)>" << endl
 
 using namespace std;
 
@@ -50,111 +50,64 @@ enum class ImageFormat { png, webp, jpeg , tiff, bmp, gif };
 
 int main(int argc, char *argv[])
 {
-	char *programName = argv[0];
+	argh::parser cmdl;
 
-	if (argc < 2) {
+	cmdl.add_params({"-a", "--afactor",
+			 "-g", "--gamma",
+			 "-c", "--compression",
+			 "-q", "--quality"});
+	cmdl.parse(argc, argv);
+
+	const string programName = cmdl[0];
+
+	if (cmdl[{"-h", "--help"}]) {
+		cout << USAGE << endl << HELP;
+		return 0;
+	}
+
+	if (cmdl.size() != 4) {
 		cerr << USAGE;
 		return 1;
 	}
 
 	// Parse format
+	const string formatStr = cmdl[1]; 
 	ImageFormat format;
-	if (!strcmp(argv[1], "-h")) {
-		cout << USAGE << endl << HELP;
-		return 0;
-	} else if (!strcmp(argv[1], "png")) {
+	if (formatStr == "png") {
 		format = ImageFormat::png;
-	} else if (!strcmp(argv[1], "webp")) {
+	} else if (formatStr == "webp") {
 		format = ImageFormat::webp;
-	} else if (!strcmp(argv[1], "jpeg")) {
+	} else if (formatStr == "jpeg") {
 		format = ImageFormat::jpeg;
-	} else if (!strcmp(argv[1], "tiff")) {
+	} else if (formatStr == "tiff") {
 		format = ImageFormat::tiff;
-	} else if (!strcmp(argv[1], "bmp")) {
+	} else if (formatStr == "bmp") {
 		format = ImageFormat::bmp;
-	} else if (!strcmp(argv[1], "gif")) {
+	} else if (formatStr == "gif") {
 		format = ImageFormat::gif;
 	} else {
-		cerr << "Format " << argv[1] <<
+		cerr << "Format " << formatStr <<
 			" not supported" << endl;
 		return 1;
 	}
-	argv++;
-	argc--;
 
-	// Define variables with their default values.
-	bool palette = false;
-	int compression = -1;
-	int quality = -1;
-	float aFactor = 0.18f;
+	const char *infile = cmdl[2].c_str();
+	const char *outfile = cmdl[3].c_str();
+
+	// Parse parameters (also specifying default values).
+	float aFactor;
+	cmdl({"-a", "--afactor"}, 0.18f) >> aFactor;
+
 	float gamma = 1.f;
+	cmdl({"-g", "--gamma"}, 1.f) >> gamma;
 
-	// Parse command line options (see USAGE)
-	int c;
-	while ((c = getopt(argc, argv, "pc:q:a:g:")) != -1) {
-		switch (c) {
-		case 'p':
-			if (format != ImageFormat::png) {
-				cerr << USAGE;
-				return 1;
-			}
-			palette = true;
-			break;
-		case 'c':
-			if (format != ImageFormat::png and format != ImageFormat::bmp) {
-				cerr << USAGE;
-				return 1;
-			}
-			try {
-				compression = stoi(optarg);
-			} catch (exception e) {
-				cerr << USAGE;
-				return 1;
-			}
-			break;
-		case 'q':
-			if (format != ImageFormat::jpeg and format != ImageFormat::webp) {
-				cerr << USAGE;
-				return 1;
-			}
-			try {
-				quality = stoi(optarg);
-			} catch (exception e) {
-				cerr << USAGE;
-				return 1;
-			}
-			break;
-		case 'a':
-			try {
-				aFactor = stof(optarg);
-			} catch (exception e) {
-				cerr << USAGE;
-				return 1;
-			}
-			break;
-		case 'g':
-			try {
-				gamma = stof(optarg);
-			} catch (exception e) {
-				cerr << USAGE;
-				return 1;
-			}
-			break;
-		case '?':
-			cerr << USAGE;
-			return 1;
-		}
-	}
+	bool palette = cmdl[{"-p", "--palette"}];
 
-	// After the options, exactly two arguments must remain:
-	// input_file and output_file
-	if (argc - optind != 2) {
-		cerr << USAGE;
-		return 1;
-	}
+	int compression;
+	cmdl({"-c", "--compression"}, -1) >> compression;
 
-	const char *infile = argv[optind];
-	const char *outfile = argv[optind+1];
+	int quality;
+	cmdl({"-q", "--quality"}, -1) >> quality;
 
 	// Read the input file
 	HdrImage img;
