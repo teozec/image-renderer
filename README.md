@@ -9,7 +9,7 @@ It is based on the lectures of the _Numerical tecniques for photorealistic image
 ## Table of contents
 - [Requirements](#requirements)
 - [Building](#building)
-    - [Standard Unix and Windows](#standard-unix)
+    - [Standard Unix and Windows](#standard-unix-and-windows)
     - [MacOS (Xcode)](#macos-(xcode))
 - [Usage examples](#usage-examples)
     - [Converting a PFM file to a LDR image](#converting-a-pfm-file-to-a-ldr-image)
