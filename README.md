@@ -84,7 +84,7 @@ image-renderer png -p -c 5 input.pfm output.png
 
 To generate a webp with a normalization factor a=2.5 and a gamma of 1.3, run:
 ```bash
-image-renderer webp -a 2.5 -g 1.3 input.pfm output.webp
+image-renderer webp --afactor 2.5 -gamma 1.3 input.pfm output.webp
 ```
 
 To generate a jpeg with a quality of 60 (max is 95) run:
@@ -99,6 +99,11 @@ Similarly all other formats. Here a list of all supported formats:
 *	png
 *	tiff
 *	webp
+
+To get a list of supported options for each format, please run
+```bash
+image-renderer --help
+```
 
 ## Contributing
 
