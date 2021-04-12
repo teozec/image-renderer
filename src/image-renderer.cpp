@@ -27,22 +27,23 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <unistd.h>
 
 #define USAGE \
-	"Usage: " << programName << " [options] format" \
-	" input_file output_file " << endl << \
-	"       " << programName << " -h|--help" << endl
+	"Usage: " << programName << " [options] <format>" \
+	" <input-pfm-file> <output-file> " << endl << \
+	"\nRun '" << programName << " -h' for all supported options." <<endl
 
 #define HELP \
 	"Common options:" << endl << \
-	"	-a, --afactor	<normalization factor>" << endl << \
-	"	-g, --gamma	<gamma factor>" << endl << endl << \
-	"Supported formats and per-format options:" << endl << \
-	"	bmp 	-c, --compression	<compression level (0-1)>" << endl << \
+	"	-h, --help					Print this message." <<endl << \
+	"	-a <value>, --afactor=<value>			Normalization factor." << endl << \
+	"	-g <value>, --gamma=<value>			Gamma factor." << endl << endl << \
+	"Supported formats and related options:" << endl << \
+	"	bmp 	-c, --compression			Whether to apply RLE or not (1 or 0)." << endl << \
 	"	gif" << endl << \
-	"	jpeg 	-q, --quality		<quality (0-95)>" << endl << \
-	"	png	-p, --palette" << endl << \
-	"		-c, --compression	<compression level (0-9)>" << endl << \
+	"	jpeg 	-q <value>, --quality=<value>		Compression quality (0-95, 0 means default)." << endl << \
+	"	png	-p, --palette				Whether to use palette or not."<< endl << \
+	"		-c <value>, --compression=<value>	Compression level (0-9)." << endl << \
 	"	tiff" << endl << \
-	"	webp	-q, --quality		<quality (0-100)>" << endl
+	"	webp	-q <value>, --quality=<value>		Compression quality (0-100)." << endl
 
 using namespace std;
 
