@@ -122,7 +122,7 @@ struct HdrImage {
 	// Write tiff image file
 	void writeTiff(const char filename[], float gamma);
 	// Write bmp image file
-	void writeBmp(const char filename[], int compression, float gamma);
+	void writeBmp(const char filename[], bool encode, float gamma);
 	// Write gif image file
 	void writeGif(const char filename[], float gamma);
 private:

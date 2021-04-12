@@ -298,7 +298,7 @@ void HdrImage::writeTiff(const char filename[], float gamma){
 	fclose(f);
 }
 
-void HdrImage::writeBmp(const char filename[], int compression, float gamma){
+void HdrImage::writeBmp(const char filename[], bool encode, float gamma){
 	// Open output file, or throw exception on failure.
 	FILE *f = fopen(filename, "wb");
 	if (!f)
@@ -307,8 +307,11 @@ void HdrImage::writeBmp(const char filename[], int compression, float gamma){
 	gdImagePtr im = writeGdImage(gamma);
 
 	// Write the image on the file, with the desired compression level.
-	gdImageBmp(im, f, compression);
-
+	if (encode)
+		gdImageBmp(im, f, 1);
+	else 
+		gdImageBmp(im, f, 0);
+		
 	gdImageDestroy(im);
 	fclose(f);
 }

@@ -37,7 +37,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"	-a <value>, --afactor=<value>			Normalization factor." << endl << \
 	"	-g <value>, --gamma=<value>			Gamma factor." << endl << endl << \
 	"Supported formats and related options:" << endl << \
-	"	bmp 	-c, --compression			Whether to apply RLE or not (1 or 0)." << endl << \
+	"	bmp 	-e, --encode			Whether to apply RLE or not." << endl << \
 	"	gif" << endl << \
 	"	jpeg 	-q <value>, --quality=<value>		Compression quality (0-95, 0 means default)." << endl << \
 	"	png	-p, --palette				Whether to use palette or not."<< endl << \
@@ -104,6 +104,8 @@ int main(int argc, char *argv[])
 
 	bool palette = cmdl[{"-p", "--palette"}];
 
+	bool encode = cmdl[{"-e", "--encode"}];
+
 	int compression;
 	cmdl({"-c", "--compression"}, -1) >> compression;
 
@@ -139,7 +141,7 @@ int main(int argc, char *argv[])
 			img.writeTiff(outfile, gamma);
 			break;
 		case ImageFormat::bmp:
-			img.writeBmp(outfile, compression, gamma);
+			img.writeBmp(outfile, encode, gamma);
 			break;
 		case ImageFormat::gif:
 			img.writeGif(outfile, gamma);
