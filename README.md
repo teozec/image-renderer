@@ -10,11 +10,12 @@ It is based on the lectures of the _Numerical tecniques for photorealistic image
 - [Requirements](#requirements)
 - [Building](#building)
     - [Standard Unix and Windows](#standard-unix-and-windows)
-    - [MacOS (Xcode)](#macos-(xcode))
+    - [MacOS (Xcode)](#macOS-(xcode))
 - [Usage examples](#usage-examples)
     - [Converting a PFM file to a LDR image](#converting-a-pfm-file-to-a-ldr-image)
 - [Contributing](#contributing)
 - [License](#license)
+- [Acknowledgements](#acknowledgements)
 ## Requirements
 
 The following software is required to build the project:
@@ -72,6 +73,11 @@ Now that it is all set you can open up the Xcode project built in the `build` di
 
 After rendering a PFM file, you can use the executable to convert it to a LDR image format.
 
+Usage:
+```bash
+image-renderer [options] <format> <input> <output>
+```
+
 For example, to save it as a 24-bit png file you can run:
 ```bash
 image-renderer png input.pfm output.png
@@ -79,17 +85,17 @@ image-renderer png input.pfm output.png
 
 If you wish to convert your PFM to a 8-bit colormap PNG (using a palette), with a compression factor of 5, run:
 ```bash
-image-renderer png -p -c 5 input.pfm output.png 
+image-renderer -p -c 5 png input.pfm output.png 
 ```
 
 To generate a webp with a normalization factor a=2.5 and a gamma of 1.3, run:
 ```bash
-image-renderer webp --afactor 2.5 --gamma 1.3 input.pfm output.webp
+image-renderer --afactor=2.5 --gamma=1.3 webp input.pfm output.webp
 ```
 
 To generate a jpeg with a quality of 60 (max is 95) run:
 ```bash
-image-renderer jpeg -c 60 input.pfm output.jpeg
+image-renderer -c 60 jpeg input.pfm output.jpeg
 ```
 
 Similarly all other formats. Here a list of all supported formats:
@@ -113,3 +119,12 @@ If you find any problem or wish to contribute, please open an issue or a pull re
 ## License
 
 image-renderer is free software, and it is released under version 3 of the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html).
+
+## Acknowledgements
+
+
+<img src="https://avatars.githubusercontent.com/u/44500371?v=4" width=100> 
+
+<img src="https://avatars.githubusercontent.com/u/79975678?s=400&u=6770b5f0354ed29bf9a54e7f27a8250bb812c279&v=4" width=100> 
+
+...and many more to come!
