@@ -76,7 +76,7 @@ struct Vec {
 		return Vec{x*c, y*c, z*c};
 	}
 
-	float dot(const Vec &other) {
+	float dot(const Vec &other) const {
 		return x*other.x + y*other.y + z*other.z;
 	}
 
@@ -86,7 +86,7 @@ struct Vec {
 
 	// Basic vector methods
 	float squaredNorm() const {
-		return x*x+y*y+z*z;
+		return dot(*this);
 	}
 
 	float norm() const {

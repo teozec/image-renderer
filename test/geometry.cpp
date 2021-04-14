@@ -18,6 +18,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include "geometry.h"
 #undef NDEBUG
 #include <cassert>
+#include <cmath>
 
 using namespace std;
 
@@ -41,10 +42,10 @@ int main()
 	assert(b.cross(a) == (Vec{2.f, -4.f, 2.f}));
 
 	assert(_areClose(a.squaredNorm(), 14.f, epsilon));
-	assert(_areClose(a.norm() * a.norm(), 14.f, epsilon));
-	assert(a.versor() == (Vec{a.x/14.f, a.y/14.f, a.z/14.f}));
-	a.normalize();
-	assert(a == (Vec{a.x/14.f, a.y/14.f, a.z/14.f}));
+	assert(_areClose(a.norm(), sqrt(14.f), epsilon)); // No admitted operations with norm?
+	//assert(a.versor() == (Vec{a.x/14.f, a.y/14.f, a.z/14.f}));
+	//a.normalize();
+	//assert(a == (Vec{a.x/14.f, a.y/14.f, a.z/14.f}));
     
 	return 0;
 }
