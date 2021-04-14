@@ -20,5 +20,12 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include <vector>
 
+struct Point {
+	float x, y, z;
+
+	Point(float x = 0, float y = 0, float z = 0) : x{x}, y{y}, z{z} {}
+	Point(const Point &) = default;
+	Point(Point &&) = default;
+};
 
 #endif //GEOMETRY_H

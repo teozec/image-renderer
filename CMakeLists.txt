@@ -29,6 +29,7 @@ enable_testing()
 add_library(trace
 	src/color.cpp
 	src/hdr-image.cpp
+	src/geometry.cpp
 	)
 
 target_link_libraries(trace PUBLIC gd)
