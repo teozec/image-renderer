@@ -20,12 +20,25 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include <vector>
 
+template <typename In1, typename In2, typename Out>
+Out _sum(const In1 &a, const In2 &b) { return Out{a.x + b.x, a.y + b.y, a.z + b.z}; } 
 struct Vec{
     float x, y, z;
 
     Vec(float x=0, float y=0, float z=0): x{x}, y{y}, z{z} {}
     Vec(const Vec &) = default;
     Vec(Vec &&) = default;
+
+    Vec operator+(const Vec &other) {
+        return _sum<Vec, Vec, Vec>(*this, other);
+    }
+
+    Vec operator-(){ return Vec{-x, -y, -z}; }
+
+    Vec operator-(const Vec &other) {
+        Vec temp = -other;
+        return _sum<Vec, Vec, Vec>(*this, -other);
+    }
 };
 
 struct Point {
