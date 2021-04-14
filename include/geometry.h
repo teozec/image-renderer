@@ -63,12 +63,12 @@ struct Vec {
 		return Vec{y*other.z - z*other.y, z*other.x - x*other.z, x*other.y - y*other.x};
 	}
 
-	float squared_norm() const {
+	float squaredNorm() const {
 		return x*x+y*y+z*z;
 	}
 
 	float norm() const {
-		return sqrt(squared_norm());
+		return sqrt(squaredNorm());
 	}
 
 	// Normalize Vec in place
@@ -106,6 +106,10 @@ struct Point {
 	bool operator==(const Point &other) {
 		const float epsilon = 1e-10f;
 		return areClose<Point>(*this, other, epsilon);
+	}
+
+	bool operator!=(const Point &other) {
+		return !(*this == other);
 	}
 
 	// Convert Point to a human readable string with the values of its elements
