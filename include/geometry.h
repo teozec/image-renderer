@@ -20,5 +20,13 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include <vector>
 
+struct Vec{
+    float x, y, z;
+
+    Vec(float x=0, float y=0, float z=0): x{x}, y{y}, z{z} {}
+    Vec(const Vec &) = default;
+    Vec(Vec &&) = default;
+};
+
 
 #endif //GEOMETRY_H
