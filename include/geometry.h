@@ -70,4 +70,8 @@ Point operator+(const Point &a, const Vec &b) {
 	return _sum<Point, Vec, Point>(a, b);
 }
 
+Point operator-(const Point &a, const Vec &b) {
+	return _sum<Point, Vec, Point>(a, -b);
+}
+
 #endif //GEOMETRY_H
