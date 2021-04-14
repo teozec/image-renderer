@@ -28,11 +28,31 @@ template <typename In1, typename In2, typename Out> Out _sum(const In1 &a, const
 template <typename T> bool areClose(const T &a, const T &b, float epsilon);
 
 struct Vec{
-    float x, y, z;
+    	float x, y, z;
 
-    Vec(float x=0, float y=0, float z=0): x{x}, y{y}, z{z} {}
-    Vec(const Vec &) = default;
-    Vec(Vec &&) = default;
+    	Vec(float x=0, float y=0, float z=0): x{x}, y{y}, z{z} {}
+    	Vec(const Vec &) = default;
+    	Vec(Vec &&) = default;
+
+	operator std::string() const {
+		std::ostringstream ss;
+		ss << "Vec(x=" << x << ", y=" << y << ", z=" << z;
+		return ss.str();
+	}
+
+	// Normalize Vec in place
+	void normalize() {
+		float n = norm();
+		x /= n;
+		y /= n;
+		z /= n;
+	}
+
+	// Return normalized copy of Vec
+	Vec versor() const {
+		float n = norm();
+		return Vec{ x/n, y/n, z/n };
+	}
 };
 
 struct Point {
