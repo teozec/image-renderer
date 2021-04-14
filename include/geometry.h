@@ -36,13 +36,23 @@ struct Vec {
     	Vec(const Vec &) = default;
     	Vec(Vec &&) = default;
 
+    // Convert Vec to a human readable string with the values of its elements
 	operator std::string() const {
 		std::ostringstream ss;
 		ss << "Vec(x=" << x << ", y=" << y << ", z=" << z;
 		return ss.str();
 	}
 
-	//Basic vector operations
+	// Basic vector operations
+	bool operator==(const Vec &other) {
+		const float epsilon = 1e-10f;
+		return areClose<Vec>(*this, other, epsilon);
+	}
+
+	bool operator!=(const Vec &other) {
+		return !(*this == other);
+	}
+
 	Vec operator+(const Vec &other) {
 		return _sum<Vec, Vec, Vec>(*this, other);
 	}
@@ -53,7 +63,9 @@ struct Vec {
 		return _sum<Vec, Vec, Vec>(*this, -other);
 	}
 
-    	Vec operator*(const float c) { return Vec{x*c, y*c, z*c}; }
+    Vec operator*(const float c) {
+        return Vec{x*c, y*c, z*c}; 
+    }
 
 	Vec dot(const Vec &other) {
 		return Vec{x*other.x, y*other.y, y*other.y};
@@ -63,6 +75,7 @@ struct Vec {
 		return Vec{y*other.z - z*other.y, z*other.x - x*other.z, x*other.y - y*other.x};
 	}
 
+    // Basic vector methods
 	float squaredNorm() const {
 		return x*x+y*y+z*z;
 	}
