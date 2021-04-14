@@ -76,8 +76,8 @@ struct Vec {
 		return Vec{x*c, y*c, z*c};
 	}
 
-	Vec dot(const Vec &other) {
-		return Vec{x*other.x, y*other.y, y*other.y};
+	float dot(const Vec &other) {
+		return x*other.x + y*other.y + y*other.y;
 	}
 
 	Vec cross(const Vec &other) {
