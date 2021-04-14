@@ -64,4 +64,14 @@ add_test(NAME hdr-image-test
 	COMMAND hdr-image-test
 	)
 
+# geometry-test
+add_executable(geometry-test
+	test/geometry.cpp
+	)
+target_link_libraries(geometry-test PUBLIC trace)
+add_test(NAME geometry-test
+	COMMAND geometry-test
+	)
+
+
 target_compile_features(image-renderer PUBLIC cxx_std_17)
