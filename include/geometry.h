@@ -37,6 +37,9 @@ template <typename In1, typename In2, typename Out> Out _sum(const In1 &a, const
 	return Out{a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
+template <typename T> T scalarMultiplication(const T &a, const float c) {
+    return T{a.x*c, a.y*c, a.z*c};
+}
 struct Vec {
 	//Coordinates
 	float x, y, z;
@@ -66,14 +69,16 @@ struct Vec {
 		return _sum<Vec, Vec, Vec>(*this, other);
 	}
 
-	Vec operator-() const { return Vec{-x, -y, -z}; }
+	Vec operator-() const { 
+        return Vec{-x, -y, -z}; 
+    }
 
 	Vec operator-(const Vec &other) {
 		return _sum<Vec, Vec, Vec>(*this, -other);
 	}
 
 	Vec operator*(const float c) {
-		return Vec{x*c, y*c, z*c};
+		return scalarMultiplication<Vec>(*this, c);
 	}
 
 	float dot(const Vec &other) const {
@@ -114,6 +119,14 @@ struct Point {
 	Point(float x = 0, float y = 0, float z = 0) : x{x}, y{y}, z{z} {}
 	Point(const Point &) = default;
 	Point(Point &&) = default;
+
+    Point operator*(const float c) {
+        return scalarMultiplication<Point>(*this, c);
+    }
+
+    Point operator+(const Point &other) {
+        return _sum<Point, Point, Point>(*this, other);
+    }
 
 	Point operator-() const {
 		return Point{-x, -y, -z};
