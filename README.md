@@ -2,6 +2,7 @@
 [![Operating Systems](https://img.shields.io/badge/OS-Linux%20%7C%20MacOS%20%7C%20Windows-lightgrey)](https://img.shields.io/badge/OS-Linux%20%7C%20MacOS%20%7C%20Windows-lightgrey)
 [![Top Language](https://img.shields.io/github/languages/top/teozec/image-renderer)](https://img.shields.io/github/languages/top/teozec/image-renderer)
 [![License](https://img.shields.io/github/license/teozec/image-renderer)](https://img.shields.io/github/license/teozec/image-renderer)
+![Version](https://img.shields.io/github/v/release/teozec/image-renderer)
 
 image-renderer is a C++ tool to generate photo-realistic images.
 It is based on the lectures of the _Numerical tecniques for photorealistic image generation_ course ([EN](https://www.unimi.it/en/education/degree-programme-courses/2021/numerical-tecniques-photorealistic-image-generation), [IT](https://www.unimi.it/it/corsi/insegnamenti-dei-corsi-di-laurea/2021/calcolo-numerico-la-generazione-di-immagini-fotorealistiche)), held by [Prof. Maurizio Tomasi](http://cosmo.fisica.unimi.it/persone/maurizio-tomasi/) in 2021.
@@ -10,7 +11,7 @@ It is based on the lectures of the _Numerical tecniques for photorealistic image
 - [Requirements](#requirements)
 - [Building](#building)
     - [Standard Unix and Windows](#standard-unix-and-windows)
-    - [MacOS (Xcode)](#macOS-(xcode))
+    - [MacOS (Xcode)](#macOS-(Xcode))
 - [Usage examples](#usage-examples)
     - [Converting a PFM file to a LDR image](#converting-a-pfm-file-to-a-ldr-image)
 - [Contributing](#contributing)
