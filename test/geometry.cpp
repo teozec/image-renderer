@@ -25,6 +25,8 @@ using namespace std;
 int main()
 {
 	float epsilon = 1e-10;
+
+    // Test Vec
 	Vec a{1.f, 2.f, 3.f};
 	Vec b{4.f, 6.f, 8.f};
 
@@ -46,6 +48,17 @@ int main()
 	//assert(a.versor() == (Vec{a.x/14.f, a.y/14.f, a.z/14.f}));
 	//a.normalize();
 	//assert(a == (Vec{a.x/14.f, a.y/14.f, a.z/14.f}));
+
+    // Test Point
+    Point Pa{1.f, 2.f, 3.f};
+    Point Pb{3.f, 6.f, 9.f};
+
+    assert(Pa==Pa);
+    assert(!(Pa==Pb));
+
+    assert((Pa * 3) == Pb);
+    assert((Pa + Pb) == (Point{4.f, 8.f, 12.f}));
+    assert((Pb - Pa) == (Vec{2.f, 4.f, 6.f}));
     
 	return 0;
 }
