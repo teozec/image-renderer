@@ -59,6 +59,7 @@ int main()
     assert((Pa * 3) == Pb);
     assert((Pa + Pb) == (Point{4.f, 8.f, 12.f}));
     assert((Pb - Pa) == (Vec{2.f, 4.f, 6.f}));
-    
+    assert((Pa + Vec{2.f, 4.f, 6.f}) == Pb);
+
 	return 0;
 }
