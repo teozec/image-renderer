@@ -24,7 +24,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cmath>
 
 static bool _areClose(const float a, const float b, const float epsilon) {
-	return fabs(a-b) < epsilon;
+	return std::fabs(a-b) < epsilon;
 }
 
 template <typename T> bool areClose(const T &a, const T &b, float epsilon) {
@@ -93,7 +93,7 @@ struct Vec {
 	}
 
 	float norm() const {
-		return sqrt(squaredNorm());
+		return std::sqrt(squaredNorm());
 	}
 
 	// Normalize Vec in place

@@ -19,12 +19,13 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #undef NDEBUG
 #include <cassert>
 #include <cmath>
+#include <iostream>
 
 using namespace std;
 
 int main()
 {
-	float epsilon = 1e-10;
+	float epsilon = 1e-10f;
 
 	// Test Vec
 	Vec a{1.f, 2.f, 3.f};
@@ -43,8 +44,11 @@ int main()
 	assert(a.cross(b) == (Vec{-2.f, 4.f, -2.f}));
 	assert(b.cross(a) == (Vec{2.f, -4.f, 2.f}));
 
+	cout << a.norm() * a.norm() << endl;
+	cout << a.squaredNorm() << endl;
+
 	assert(_areClose(a.squaredNorm(), 14.f, epsilon));
-	assert(_areClose(a.norm(), sqrt(14.f), epsilon)); // No admitted operations with norm?
+	assert(_areClose(a.norm()*a.norm(), 14.f, epsilon));
 	assert(a.versor() == (Vec{a.x/sqrt(14.f), a.y/sqrt(14.f), a.z/sqrt(14.f)}));
 
 	b = a;
