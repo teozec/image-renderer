@@ -26,7 +26,7 @@ int main()
 {
 	float epsilon = 1e-10;
 
-    // Test Vec
+	// Test Vec
 	Vec a{1.f, 2.f, 3.f};
 	Vec b{4.f, 6.f, 8.f};
 
@@ -45,21 +45,23 @@ int main()
 
 	assert(_areClose(a.squaredNorm(), 14.f, epsilon));
 	assert(_areClose(a.norm(), sqrt(14.f), epsilon)); // No admitted operations with norm?
-	//assert(a.versor() == (Vec{a.x/14.f, a.y/14.f, a.z/14.f}));
-	//a.normalize();
-	//assert(a == (Vec{a.x/14.f, a.y/14.f, a.z/14.f}));
+	assert(a.versor() == (Vec{a.x/sqrt(14.f), a.y/sqrt(14.f), a.z/sqrt(14.f)}));
 
-    // Test Point
-    Point Pa{1.f, 2.f, 3.f};
-    Point Pb{3.f, 6.f, 9.f};
+	b = a;
+	b.normalize();
+	assert(b == (Vec{a.x/sqrt(14.f), a.y/sqrt(14.f), a.z/sqrt(14.f)}));
 
-    assert(Pa==Pa);
-    assert(!(Pa==Pb));
+	// Test Point
+	Point Pa{1.f, 2.f, 3.f};
+	Point Pb{3.f, 6.f, 9.f};
 
-    assert((Pa * 3) == Pb);
-    assert((Pa + Pb) == (Point{4.f, 8.f, 12.f}));
-    assert((Pb - Pa) == (Vec{2.f, 4.f, 6.f}));
-    assert((Pa + Vec{2.f, 4.f, 6.f}) == Pb);
+	assert(Pa==Pa);
+	assert(!(Pa==Pb));
+
+	assert((Pa * 3) == Pb);
+	assert((Pa + Pb) == (Point{4.f, 8.f, 12.f}));
+	assert((Pb - Pa) == (Vec{2.f, 4.f, 6.f}));
+	assert((Pa + Vec{2.f, 4.f, 6.f}) == Pb);
 
 	return 0;
 }

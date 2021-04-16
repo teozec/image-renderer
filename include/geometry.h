@@ -45,8 +45,6 @@ struct Vec {
 	float x, y, z;
 
 	Vec(float x=0, float y=0, float z=0): x{x}, y{y}, z{z} {}
-	Vec(const Vec &) = default;
-	Vec(Vec &&) = default;
 
 	// Convert Vec to a human readable string with the values of its elements
 	operator std::string() const {
