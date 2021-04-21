@@ -221,6 +221,24 @@ struct Transformation {
 		return Transformation{m, mInv};
 	}
 
+	// Check whether mInv is the inverse of m
+	bool isConsistent() {
+		float id[4][4] = {{1.f, 0.f, 0.f, 0.f},
+				{0.f, 1.f, 0.f, 0.f},
+				{0.f, 0.f, 1.f, 0.f},
+				{0.f, 0.f, 0.f, 1.f}};
+		for (int i{}; i < 4; i++) {
+			for (int j{}; j < 4; j++) {
+				float prodij = 0.f;
+				for (int k{}; k < 4; k++)
+					prodij += m[i][k] * m[k][j];
+				if (prodij != id[i][j])
+					return false;
+			}
+		}
+		return true;
+	}
+
 	// Transformation of points
 	Point operator*(Point p) {
 		float x = m[0][0] * p.x + m[0][1] * p.y + m[0][2] * p.z + m[0][3];
