@@ -68,5 +68,29 @@ int main()
 	assert((Pb - Pa) == (Vec{2.f, 4.f, 6.f}));
 	assert((Pa + Vec{2.f, 4.f, 6.f}) == Pb);
 
+
+	// Test transformation functions
+	Transformation tr1 = translation(Vec{1.f, 2.f, 3.f});
+	assert(tr1.isConsistent());
+	Transformation tr2 = translation(Vec{4.f, 6.f, 8.f});
+	assert(tr2.isConsistent());
+	Transformation prod = tr1 * tr2;
+	assert(prod.isConsistent());
+	assert(prod == translation(Vec{5.f, 8.f, 11.f}));
+
+	assert(rotationX(0.1).isConsistent());
+	assert(rotationY(0.1).isConsistent());
+	assert(rotationZ(0.1).isConsistent());
+	Vec vx{1.f, 0.f, 0.f}, vy{0.f, 1.f, 0.f}, vz{0.f, 0.f, 1.f};
+	assert(rotationX(M_PI/2) * vy == vz);
+	assert(rotationY(M_PI/2) * vz == vx);
+	assert(rotationZ(M_PI/2) * vx == vy);
+
+	Transformation s1 = scaling(2.f, 5.f, 10.f);
+	assert(s1.isConsistent());
+	Transformation s2 = scaling(3.f, 2.f, 4.f);
+	assert(s2.isConsistent());
+	assert(s1 * s2 == scaling(6.f, 10.f, 40.f));
+
 	return 0;
 }
