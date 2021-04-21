@@ -118,13 +118,13 @@ struct Point {
 	Point(const Point &) = default;
 	Point(Point &&) = default;
 
-    Point operator*(const float c) {
-        return scalarMultiplication<Point>(*this, c);
-    }
+	Point operator*(const float c) {
+        	return scalarMultiplication<Point>(*this, c);
+	}
 
-    Point operator+(const Point &other) {
-        return _sum<Point, Point, Point>(*this, other);
-    }
+	Point operator+(const Point &other) {
+        	return _sum<Point, Point, Point>(*this, other);
+	}
 
 	Point operator-() const {
 		return Point{-x, -y, -z};
@@ -159,6 +159,10 @@ Point operator+(const Point &a, const Vec &b) {
 
 Point operator-(const Point &a, const Vec &b) {
 	return _sum<Point, Vec, Point>(a, -b);
+}
+
+struct Normal {
+	float x, y, z;
 }
 
 #endif //GEOMETRY_H

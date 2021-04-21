@@ -26,7 +26,7 @@ using namespace std;
 int main()
 {
 	float epsilon = 1e-10f;
-    float bigeps = 1e-5f;
+	float bigeps = 1e-5f;
 
 	// Test Vec
 	Vec a{1.f, 2.f, 3.f};
@@ -45,8 +45,8 @@ int main()
 	assert(a.cross(b) == (Vec{-2.f, 4.f, -2.f}));
 	assert(b.cross(a) == (Vec{2.f, -4.f, 2.f}));
 
-    //cout << a.norm() <<endl; 
-    //cout << sqrt(a.squaredNorm()) <<endl;
+	//cout << a.norm() <<endl; 
+	//cout << sqrt(a.squaredNorm()) <<endl;
 
 	assert(_areClose(a.squaredNorm(), 14.f, epsilon));
 	assert(_areClose(a.norm()*a.norm(), 14.f, bigeps)); // bigeps = 1e-5
