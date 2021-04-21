@@ -165,4 +165,60 @@ struct Normal {
 	float x, y, z;
 }
 
+// Function that construct a translation Transformation given a Vec
+Transformation translation(const Vec v) {
+    return Transformation{
+		m={	{1.f, 0.f, 0.f, v.x}, 
+			{0.f, 1.f, 0.f, v.y}, 
+			{0.f, 0.f, 1.f, v.z}, 
+			{0.f, 0.f, 0.f, 1.f} }, 
+		mInv={	{1.f, 0.f, 0.f, -v.x},
+				{0.f, 1.f, 0.f, -v.y},
+				{0.f, 0.f, 1.f, -v.z},
+				{0.f, 0.f, 0.f, 1.f} }
+		};
+}
+
+// Function that construct a scaling Transformation given a vector of scaling factors
+Transformation scaling(const float cx, const float cy, const float cz) {
+    return Transformation{{cx, cy, cz, 1.f}, {1/cx, 1/cy, 1/cz, 1.f}};
+}
+
+// Function that construct a rotation Transformation given an angle
+Transformation rotationX(const float theta) {
+    return Transformation{
+		m={	{1.f, 0.f, 0.f, 0.f},
+			{0.f, cos(theta), -sin(theta), 0.f}, 
+			{0.f, sin(theta), cos(theta), 0.f},
+			{0.f, 0.f, 0.f, 1.f}}, 
+		mInv={	{1.f, 0.f, 0.f, 0.f},
+				{0.f, cos(theta), sin(theta), 0.f}, 
+				{0.f, -sin(theta), cos(theta), 0.f},
+				{0.f, 0.f, 0.f, 1.f}}
+}
+
+Transformation rotationY(const float theta) {
+    return Transformation{
+		m={	{cos(theta), 0.f, -sin(theta), 0.f},
+			{0.f, 1.f, 0.f, 0.f}, 
+			{sin(theta), 0.f, cos(theta), 0.f},
+			{0.f, 0.f, 0.f, 1.f}}, 
+		mInv={	{cos(theta), 0.f, sin(theta), 0.f},
+				{0.f, 1.f, 0.f, 0.f}, 
+				{-sin(theta), 0.f, cos(theta), 0.f},
+				{0.f, 0.f, 0.f, 1.f}}
+}
+
+Transformation rotationZ(const float theta) {
+    return Transformation{
+		m={	{cos(theta), -sin(theta), 0.f, 0.f}, 
+			{sin(theta), cos(theta), 0.f, 0.f},
+			{0.f, 0.f, 1.f, 0.f},
+			{0.f, 0.f, 0.f, 1.f}},
+		mInv={	{cos(theta), sin(theta), 0.f, 0.f}, 
+				{-sin(theta), cos(theta), 0.f, 0.f},
+				{0.f, 0.f, 1.f, 0.f},
+				{0.f, 0.f, 0.f, 1.f}}
+}
+
 #endif //GEOMETRY_H
