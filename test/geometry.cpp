@@ -82,9 +82,9 @@ int main()
 	assert(rotationY(0.1).isConsistent());
 	assert(rotationZ(0.1).isConsistent());
 	Vec vx{1.f, 0.f, 0.f}, vy{0.f, 1.f, 0.f}, vz{0.f, 0.f, 1.f};
-	assert(rotationX(M_PI/2) * vy == vz);
-	assert(rotationY(M_PI/2) * vz == vx);
-	assert(rotationZ(M_PI/2) * vx == vy);
+	assert(areClose<Vec>(rotationX(M_PI/2) * vy, vz, bigeps));
+	assert(areClose<Vec>(rotationY(M_PI/2) * vz, vx, bigeps));
+	assert(areClose<Vec>(rotationZ(M_PI/2) * vx, vy, bigeps));
 
 	Transformation s1 = scaling(2.f, 5.f, 10.f);
 	assert(s1.isConsistent());
