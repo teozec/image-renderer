@@ -231,7 +231,7 @@ struct Transformation {
 			for (int j{}; j < 4; j++) {
 				float prodij = 0.f;
 				for (int k{}; k < 4; k++)
-					prodij += m[i][k] * m[k][j];
+					prodij += m[i][k] * mInv[k][j];
 				if (prodij != id[i][j])
 					return false;
 			}
