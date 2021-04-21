@@ -284,58 +284,64 @@ struct Transformation {
 
 // Function that construct a translation Transformation given a Vec
 Transformation translation(const Vec v) {
-    return Transformation{
-		m={	{1.f, 0.f, 0.f, v.x}, 
+	float m[4][4]={{1.f, 0.f, 0.f, v.x}, 
 			{0.f, 1.f, 0.f, v.y}, 
 			{0.f, 0.f, 1.f, v.z}, 
-			{0.f, 0.f, 0.f, 1.f} }, 
-		mInv={	{1.f, 0.f, 0.f, -v.x},
+			{0.f, 0.f, 0.f, 1.f}};
+	float mInv[4][4]={{1.f, 0.f, 0.f, -v.x},
 				{0.f, 1.f, 0.f, -v.y},
 				{0.f, 0.f, 1.f, -v.z},
-				{0.f, 0.f, 0.f, 1.f} }
-		};
+				{0.f, 0.f, 0.f, 1.f}};
+    return Transformation{m, mInv};
 }
 
 // Function that construct a scaling Transformation given a vector of scaling factors
 Transformation scaling(const float cx, const float cy, const float cz) {
-    return Transformation{{cx, cy, cz, 1.f}, {1/cx, 1/cy, 1/cz, 1.f}};
+	float diag[4] = {cx, cy, cz, 1.f};
+	float diagInv[4] =	{1/cx, 1/cy, 1/cz, 1.f};
+    return Transformation(diag, diagInv);
 }
 
 // Function that construct a rotation Transformation given an angle
 Transformation rotationX(const float theta) {
-    return Transformation{
-		m={	{1.f, 0.f, 0.f, 0.f},
-			{0.f, cos(theta), -sin(theta), 0.f}, 
-			{0.f, sin(theta), cos(theta), 0.f},
-			{0.f, 0.f, 0.f, 1.f}}, 
-		mInv={	{1.f, 0.f, 0.f, 0.f},
-				{0.f, cos(theta), sin(theta), 0.f}, 
-				{0.f, -sin(theta), cos(theta), 0.f},
-				{0.f, 0.f, 0.f, 1.f}}
+	float m[4][4]={	{1.f, 0.f, 0.f, 0.f},
+					{0.f, cos(theta), -sin(theta), 0.f}, 
+					{0.f, sin(theta), cos(theta), 0.f},
+					{0.f, 0.f, 0.f, 1.f}};
+
+	float mInv[4][4]={	{1.f, 0.f, 0.f, 0.f},
+						{0.f, cos(theta), sin(theta), 0.f}, 
+						{0.f, -sin(theta), cos(theta), 0.f},
+						{0.f, 0.f, 0.f, 1.f}};
+    return Transformation{m, mInv};
 }
 
 Transformation rotationY(const float theta) {
-    return Transformation{
-		m={	{cos(theta), 0.f, -sin(theta), 0.f},
-			{0.f, 1.f, 0.f, 0.f}, 
-			{sin(theta), 0.f, cos(theta), 0.f},
-			{0.f, 0.f, 0.f, 1.f}}, 
-		mInv={	{cos(theta), 0.f, sin(theta), 0.f},
-				{0.f, 1.f, 0.f, 0.f}, 
-				{-sin(theta), 0.f, cos(theta), 0.f},
-				{0.f, 0.f, 0.f, 1.f}}
+	float m[4][4]={{cos(theta), 0.f, -sin(theta), 0.f},
+					{0.f, 1.f, 0.f, 0.f},
+					{sin(theta), 0.f, cos(theta), 0.f},
+					{0.f, 0.f, 0.f, 1.f}};
+
+	float mInv[4][4]={{cos(theta), 0.f, sin(theta), 0.f},
+					{0.f, 1.f, 0.f, 0.f}, 
+					{-sin(theta), 0.f, cos(theta), 0.f},
+					{0.f, 0.f, 0.f, 1.f}};
+
+    return Transformation{m, mInv};
 }
 
 Transformation rotationZ(const float theta) {
-    return Transformation{
-		m={	{cos(theta), -sin(theta), 0.f, 0.f}, 
-			{sin(theta), cos(theta), 0.f, 0.f},
-			{0.f, 0.f, 1.f, 0.f},
-			{0.f, 0.f, 0.f, 1.f}},
-		mInv={	{cos(theta), sin(theta), 0.f, 0.f}, 
-				{-sin(theta), cos(theta), 0.f, 0.f},
-				{0.f, 0.f, 1.f, 0.f},
-				{0.f, 0.f, 0.f, 1.f}}
+	float m[4][4] = {{cos(theta), -sin(theta), 0.f, 0.f}, 
+					{sin(theta), cos(theta), 0.f, 0.f},
+					{0.f, 0.f, 1.f, 0.f},
+					{0.f, 0.f, 0.f, 1.f}};
+
+	float mInv[4][4] = {{cos(theta), sin(theta), 0.f, 0.f}, 
+						{-sin(theta), cos(theta), 0.f, 0.f},
+						{0.f, 0.f, 1.f, 0.f},
+						{0.f, 0.f, 0.f, 1.f}};
+
+    return Transformation{m, mInv};
 }
 
 #endif //GEOMETRY_H
