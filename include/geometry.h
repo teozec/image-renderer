@@ -33,6 +33,14 @@ template <typename T> bool areClose(const T &a, const T &b, float epsilon) {
 		_areClose(a.z, b.z, epsilon);
 }
 
+bool areMatricesClose(const float a[4][4], const float b[4][4], float epsilon) {
+	for (int i{}; i < 4; i++)
+		for (int j{}; j < 4; j++)
+			if (!_areClose(a[i][j], b[i][j], epsilon))
+				return false;
+	return true;
+}
+
 template <typename In1, typename In2, typename Out> Out _sum(const In1 &a, const In2 &b) {
 	return Out{a.x + b.x, a.y + b.y, a.z + b.z};
 }
@@ -44,7 +52,7 @@ struct Vec {
 	//Coordinates
 	float x, y, z;
 
-	Vec(float x=0, float y=0, float z=0): x{x}, y{y}, z{z} {}
+	Vec(float x = 0.f, float y = 0.f, float z = 0.f): x{x}, y{y}, z{z} {}
 
 	// Convert Vec to a human readable string with the values of its elements
 	operator std::string() const {
@@ -68,8 +76,8 @@ struct Vec {
 	}
 
 	Vec operator-() const { 
-        return Vec{-x, -y, -z}; 
-    }
+        	return Vec{-x, -y, -z}; 
+	}
 
 	Vec operator-(const Vec &other) {
 		return _sum<Vec, Vec, Vec>(*this, -other);
@@ -114,7 +122,7 @@ struct Vec {
 struct Point {
 	float x, y, z;
 
-	Point(float x = 0, float y = 0, float z = 0) : x{x}, y{y}, z{z} {}
+	Point(float x = 0.f, float y = 0.f, float z = 0.f) : x{x}, y{y}, z{z} {}
 	Point(const Point &) = default;
 	Point(Point &&) = default;
 
@@ -163,6 +171,115 @@ Point operator-(const Point &a, const Vec &b) {
 
 struct Normal {
 	float x, y, z;
-}
+	Normal(float x = 0.f, float y = 0.f, float z = 0.f) : x{x}, y{y}, z{z} {}
+};
+
+struct Transformation {
+	// The transformation matrix, defaulting to the identity
+	float m[4][4] = {{1.f, 0.f, 0.f, 0.f},
+			{0.f, 1.f, 0.f, 0.f},
+			{0.f, 0.f, 1.f, 0.f},
+			{0.f, 0.f, 0.f, 1.f}};
+	// The inverse transformation matrix, defaulting to the identity
+	float mInv[4][4] = {{1.f, 0.f, 0.f, 0.f},
+			{0.f, 1.f, 0.f, 0.f},
+			{0.f, 0.f, 1.f, 0.f},
+			{0.f, 0.f, 0.f, 1.f}};
+
+	// Create a generic transformation overwriting m and mInv
+	Transformation(float m[4][4], float mInv[4][4]) {
+		for (int i{}; i < 4; i++) {
+			for (int j{}; j < 4; j++) {
+				this->m[i][j] = m[i][j];
+				this->mInv[i][j] = mInv[i][j];
+			}
+		}
+	}
+
+	// Create a diagonal transformation overwriting only the diagonal
+	Transformation(float diag[4], float diagInv[4]) {
+		for (int i{}; i < 4; i++) {
+			m[i][i] = diag[i];
+			mInv[i][i] = diagInv[i];
+		}
+	}
+
+	// Create the identity transformation
+	Transformation() {}
+
+	// Transformation composition
+	Transformation operator*(Transformation t) {
+		float m[4][4] = {0.f}, mInv[4][4] = {0.f};
+		for (int i{}; i < 4; i++) {
+			for (int j{}; j < 4; j++) {
+				for (int k{}; k < 4; k++) {
+					m[i][j] += this->m[i][k] * t.m[k][j];
+					mInv[i][j] += t.mInv[i][k] * this->mInv[k][j];
+				}
+			}
+		}
+		return Transformation{m, mInv};
+	}
+
+	// Transformation of points
+	Point operator*(Point p) {
+		float x = m[0][0] * p.x + m[0][1] * p.y + m[0][2] * p.z + m[0][3];
+		float y = m[1][0] * p.x + m[1][1] * p.y + m[1][2] * p.z + m[1][3];
+		float z = m[2][0] * p.x + m[2][1] * p.y + m[2][2] * p.z + m[2][3];
+		float w = m[3][0] * p.x + m[3][1] * p.y + m[3][2] * p.z + m[3][3];
+
+		if (w != 1) {
+			x /= w;
+			y /= w;
+			z /= w;
+		}
+
+		return Point{x, y, z};
+	}
+
+	// Transformation of vectors
+	Vec operator*(Vec p) {
+		float x = m[0][0] * p.x + m[0][1] * p.y + m[0][2] * p.z;
+		float y = m[1][0] * p.x + m[1][1] * p.y + m[1][2] * p.z;
+		float z = m[2][0] * p.x + m[2][1] * p.y + m[2][2] * p.z;
+
+		return Vec{x, y, z};
+	}
+
+	// Transformation of normals (using mInv transposed)
+	Normal operator*(Normal n) {
+		float x = mInv[0][0] * n.x + mInv[1][0] * n.y + mInv[2][0] * n.z;
+		float y = mInv[0][1] * n.x + mInv[1][1] * n.y + mInv[2][1] * n.z;
+		float z = mInv[0][2] * n.x + mInv[1][2] * n.y + mInv[2][2] * n.z;
+
+		return Normal{x, y, z};
+	}
+
+	// Inverse transformation
+	Transformation inverse() {
+		float m[4][4];
+		float mInv[4][4];
+
+		for (int i{}; i < 4; i++) {
+			for (int j{}; j < 4; j++) {
+				m[i][j] = this->m[i][j];
+				mInv[i][j] = this->mInv[i][j];
+			}
+		}
+		return Transformation{m, mInv};
+	}
+
+	// Compare Transformations with a default precision.
+	// For a different precision, call areMatricesClose directly.
+	bool operator==(const Transformation &other) {
+		const float epsilon = 1e-10f;
+		return areMatricesClose(this->m, other.m, epsilon) and
+			areMatricesClose(this->mInv, other.mInv, epsilon);
+	}
+
+	bool operator!=(const Transformation &other) {
+		return !(*this == other);
+	}
+};
 
 #endif //GEOMETRY_H
