@@ -222,7 +222,7 @@ struct Transformation {
 	}
 
 	// Check whether mInv is the inverse of m
-	bool isConsistent() {
+	/*bool isConsistent() {
 		float id[4][4] = {{1.f, 0.f, 0.f, 0.f},
 				{0.f, 1.f, 0.f, 0.f},
 				{0.f, 0.f, 1.f, 0.f},
@@ -237,6 +237,11 @@ struct Transformation {
 			}
 		}
 		return true;
+	}*/
+	bool isConsistent() {	//lets try this way
+		Transformation I;
+		Transformation p = (*this)*this->inverse();
+		return p==I;
 	}
 
 	// Transformation of points
@@ -290,7 +295,7 @@ struct Transformation {
 	// Compare Transformations with a default precision.
 	// For a different precision, call areMatricesClose directly.
 	bool operator==(const Transformation &other) {
-		const float epsilon = 1e-10;
+		const float epsilon = 1e-5;
 		return areMatricesClose(this->m, other.m, epsilon) and
 			areMatricesClose(this->mInv, other.mInv, epsilon);
 	}
