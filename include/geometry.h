@@ -280,8 +280,8 @@ struct Transformation {
 
 		for (int i{}; i < 4; i++) {
 			for (int j{}; j < 4; j++) {
-				m[i][j] = this->m[i][j];
-				mInv[i][j] = this->mInv[i][j];
+				m[i][j] = this->mInv[i][j];
+				mInv[i][j] = this->m[i][j];
 			}
 		}
 		return Transformation{m, mInv};
@@ -302,14 +302,14 @@ struct Transformation {
 
 // Function that construct a translation Transformation given a Vec
 Transformation translation(const Vec v) {
-	float m[4][4]={{1.f, 0.f, 0.f, v.x}, 
-			{0.f, 1.f, 0.f, v.y}, 
-			{0.f, 0.f, 1.f, v.z}, 
-			{0.f, 0.f, 0.f, 1.f}};
-	float mInv[4][4]={{1.f, 0.f, 0.f, -v.x},
-				{0.f, 1.f, 0.f, -v.y},
-				{0.f, 0.f, 1.f, -v.z},
-				{0.f, 0.f, 0.f, 1.f}};
+	float m[4][4]={	{1.f, 0.f, 0.f, v.x}, 
+					{0.f, 1.f, 0.f, v.y}, 
+					{0.f, 0.f, 1.f, v.z}, 
+					{0.f, 0.f, 0.f, 1.f}};
+	float mInv[4][4]={	{1.f, 0.f, 0.f, -v.x},
+						{0.f, 1.f, 0.f, -v.y},
+						{0.f, 0.f, 1.f, -v.z},
+						{0.f, 0.f, 0.f, 1.f}};
     return Transformation{m, mInv};
 }
 
@@ -323,14 +323,14 @@ Transformation scaling(const float cx, const float cy, const float cz) {
 // Function that construct a rotation Transformation given an angle
 Transformation rotationX(const float theta) {
 	float m[4][4] = {{1.f, 0.f, 0.f, 0.f},
-			{0.f, std::cos(theta), -std::sin(theta), 0.f}, 
-			{0.f, std::sin(theta), std::cos(theta), 0.f},
-			{0.f, 0.f, 0.f, 1.f}};
+					{0.f, std::cos(theta), -std::sin(theta), 0.f}, 
+					{0.f, std::sin(theta), std::cos(theta), 0.f},
+					{0.f, 0.f, 0.f, 1.f}};
 
-	float mInv[4][4] = {{1.f, 0.f, 0.f, 0.f},
-				{0.f, std::cos(theta), std::sin(theta), 0.f}, 
-				{0.f, -std::sin(theta), std::cos(theta), 0.f},
-				{0.f, 0.f, 0.f, 1.f}};
+	float mInv[4][4] =	{{1.f, 0.f, 0.f, 0.f},
+						{0.f, std::cos(theta), std::sin(theta), 0.f}, 
+						{0.f, -std::sin(theta), std::cos(theta), 0.f},
+						{0.f, 0.f, 0.f, 1.f}};
 
 	return Transformation{m, mInv};
 }
