@@ -294,10 +294,13 @@ struct Transformation {
 
 	// Compare Transformations with a default precision.
 	// For a different precision, call areMatricesClose directly.
-	bool operator==(const Transformation &other) {
-		const float epsilon = 1e-5;
+	bool areTransformationsClose(const Transformation &other, const float epsilon){
 		return areMatricesClose(this->m, other.m, epsilon) and
 			areMatricesClose(this->mInv, other.mInv, epsilon);
+	}
+	bool operator==(const Transformation &other) {
+		const float epsilon = 1e-5;
+		return areTransformationsClose(other, epsilon);
 	}
 
 	bool operator!=(const Transformation &other) {
