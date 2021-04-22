@@ -238,11 +238,12 @@ struct Transformation {
 		}
 		return true;
 	}*/
-	bool isConsistent() {	//lets try this way
+	bool isConsistent(const float epsilon=1e-5) {	//lets try this way
 		Transformation I;
 		Transformation p = (*this)*this->inverse();
-		return p==I;
+		return p.areTransformationsClose(I, epsilon);
 	}
+
 
 	// Transformation of points
 	Point operator*(Point p) {

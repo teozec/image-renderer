@@ -45,11 +45,8 @@ int main()
 	assert(a.cross(b) == (Vec{-2.f, 4.f, -2.f}));
 	assert(b.cross(a) == (Vec{2.f, -4.f, 2.f}));
 
-	//cout << a.norm() <<endl; 
-	//cout << sqrt(a.squaredNorm()) <<endl;
-
 	assert(_areClose(a.squaredNorm(), 14.f, epsilon));
-	assert(_areClose(a.norm()*a.norm(), 14.f, bigeps)); // bigeps = 1e-5
+	assert(_areClose(a.norm()*a.norm(), 14.f, bigeps));
 	assert(a.versor() == (Vec{a.x/sqrt(14.f), a.y/sqrt(14.f), a.z/sqrt(14.f)}));
 
 	b = a;
@@ -68,6 +65,49 @@ int main()
 	assert((Pb - Pa) == (Vec{2.f, 4.f, 6.f}));
 	assert((Pa + Vec{2.f, 4.f, 6.f}) == Pb);
 
+	// Test Transformation constructor and Transform::isConsistent() method
+	float mat1[4][4]={	{1.f, 2.f, 3.f, 4.f}, 
+						{5.f, 6.f, 7.f, 8.f}, 
+						{9.f, 9.f, 8.f, 7.f}, 
+						{6.f, 5.f, 4.f, 1.f}};
+	float matInv1[4][4]={{-3.75, 2.75, -1.f, 0.f},
+						{4.375, -3.875, 2.f, -0.5},
+						{0.5, 0.5, -1.f, 1.f},
+						{-1.375, 0.875, 0.f, -0.5}};
+	Transformation m1{mat1,matInv1};
+	assert(m1.isConsistent());
+	Transformation copy1{m1.m, m1.mInv};
+	assert(m1==copy1);
+	Transformation copy2{m1.m, m1.mInv};
+	copy2.m[2][2] += 1.f;
+	assert(copy2!=m1);
+	assert(!(copy2.isConsistent()));
+	Transformation copy3{m1.m, m1.mInv};
+	copy3.mInv[2][2] += 1.f;
+	assert(copy3!=m1);
+	assert(!(copy3.isConsistent()));
+
+	float mat2[4][4]={	{3.0, 5.0, 2.0, 4.0}, 
+						{4.0, 1.0, 0.0, 5.0}, 
+						{6.0, 3.0, 2.0, 0.0}, 
+						{1.0, 4.0, 2.0, 1.0}};
+	float matInv2[4][4]={{0.4, -0.2, 0.2, -0.6},
+						{2.9, -1.7, 0.2, -3.1},
+						{-5.55, 3.15, -0.4, 6.45},
+						{-0.9, 0.7, -0.2, 1.1}};
+	Transformation m2{mat2, matInv2};
+	assert(m2.isConsistent());
+	float matProd[4][4]={{33.f, 32.f, 16.f, 18.f}, 
+						{89.f, 84.f, 40.f, 58.f}, 
+						{118.f, 106.f, 48.f, 88.f}, 
+						{63.f, 51.f, 22.f, 50.f}};
+	float matProdInv[4][4]={{-1.45, 1.45, -1.f, 0.6},
+						{-13.95, 11.95, -6.5, 2.6},
+						{25.525, -22.025, 12.25, -5.2},
+						{4.825, -4.325, 2.5, -1.1}};
+	Transformation p{matProd, matProdInv};
+	assert(p.isConsistent(1e-4));
+	assert(p.areTransformationsClose(m1*m2, 1e-4));
 
 	// Test transformation functions
 	Transformation tr1 = translation(Vec{1.f, 2.f, 3.f});
