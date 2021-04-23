@@ -87,6 +87,7 @@ int main()
 	assert(copy3!=m1);
 	assert(!(copy3.isConsistent()));
 
+	// Test multiplication methods
 	float mat2[4][4]={	{3.0, 5.0, 2.0, 4.0}, 
 						{4.0, 1.0, 0.0, 5.0}, 
 						{6.0, 3.0, 2.0, 0.0}, 
@@ -108,6 +109,28 @@ int main()
 	Transformation p{matProd, matProdInv};
 	assert(p.isConsistent(1e-4));
 	assert(p.areTransformationsClose(m1*m2, 1e-4));
+
+	float mat3[4][4]={	{1.f, 2.f, 3.f, 4.f}, 
+						{5.f, 6.f, 7.f, 8.f}, 
+						{9.f, 9.f, 8.f, 7.f}, 
+						{0.f, 0.f, 0.f, 1.f}};
+	float matInv3[4][4]={{-3.75, 2.75, -1.f, 0.f},
+						{5.75, -4.75, 2.f, 1.f},
+						{-2.25, 2.25, -1.f, -2.f},
+						{0.f, 0.f, 0.f, 1.f}};
+	Transformation m3{mat3, matInv3};
+	assert(m3.isConsistent());
+	Vec resVec{14.f, 38.f, 51.f};
+	assert((m3*Vec{1.f, 2.f, 3.f}) == resVec);
+	Point resPoint{18.f, 46.f, 58.f};
+	assert((m3*Point{1.f, 2.f, 3.f}) == resPoint);
+	Normal resNormal{-8.75, 7.75, -3.f};
+	assert((m3*Normal{3.f, 2.f, 4.f}) == resNormal);
+
+	// Test inverse method
+	Transformation I, m1Inv = m1.inverse();
+	assert(m1Inv.isConsistent());
+	assert((m1Inv*m1) == I);
 
 	// Test transformation functions
 	Transformation tr1 = translation(Vec{1.f, 2.f, 3.f});

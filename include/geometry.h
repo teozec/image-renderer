@@ -172,6 +172,17 @@ Point operator-(const Point &a, const Vec &b) {
 struct Normal {
 	float x, y, z;
 	Normal(float x = 0.f, float y = 0.f, float z = 0.f) : x{x}, y{y}, z{z} {}
+
+	// Compare Normals with a default precision.
+	// For a different precision, call areClose<Normal> directly.
+	bool operator==(const Normal &other) {
+		const float epsilon = 1e-10f;
+		return areClose<Normal>(*this, other, epsilon);
+	}
+
+	bool operator!=(const Normal &other) {
+		return !(*this == other);
+	}
 };
 
 struct Transformation {
@@ -222,23 +233,7 @@ struct Transformation {
 	}
 
 	// Check whether mInv is the inverse of m
-	/*bool isConsistent() {
-		float id[4][4] = {{1.f, 0.f, 0.f, 0.f},
-				{0.f, 1.f, 0.f, 0.f},
-				{0.f, 0.f, 1.f, 0.f},
-				{0.f, 0.f, 0.f, 1.f}};
-		for (int i{}; i < 4; i++) {
-			for (int j{}; j < 4; j++) {
-				float prodij = 0.f;
-				for (int k{}; k < 4; k++)
-					prodij += m[i][k] * mInv[k][j];
-				if (prodij != id[i][j])
-					return false;
-			}
-		}
-		return true;
-	}*/
-	bool isConsistent(const float epsilon=1e-5) {	//lets try this way
+	bool isConsistent(const float epsilon=1e-5) {
 		Transformation I;
 		Transformation p = (*this)*this->inverse();
 		return p.areTransformationsClose(I, epsilon);
