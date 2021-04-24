@@ -16,6 +16,7 @@
 # along with image-renderer.  If not, see <https://www.gnu.org/licenses/>.
 
 cmake_minimum_required(VERSION 3.12)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 # Define a "project", providing a description and a programming language
 project(image-renderer
@@ -31,12 +32,14 @@ add_library(trace
 	src/hdr-image.cpp
 	)
 
-target_link_libraries(trace PUBLIC gd)
+find_package(GD REQUIRED)
+target_link_libraries(trace PUBLIC ${GD_LIBRARIES})
 
 # This is needed if we keep .h files in the "include" directory
 target_include_directories(trace PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>
+	${GD_INCLUDE_DIR}
 	)
 
 # image-renderer
