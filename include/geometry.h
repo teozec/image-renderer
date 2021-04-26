@@ -326,44 +326,41 @@ Transformation scaling(const float cx, const float cy, const float cz) {
 
 // Function that construct a rotation Transformation given an angle
 Transformation rotationX(const float theta) {
+	const float cos = std::cos(theta), sin = std::sin(theta);
 	float m[4][4] = {{1.f, 0.f, 0.f, 0.f},
-					{0.f, std::cos(theta), -std::sin(theta), 0.f}, 
-					{0.f, std::sin(theta), std::cos(theta), 0.f},
+					{0.f, cos, -sin, 0.f}, 
+					{0.f, sin, cos, 0.f},
 					{0.f, 0.f, 0.f, 1.f}};
-
 	float mInv[4][4] =	{{1.f, 0.f, 0.f, 0.f},
-						{0.f, std::cos(theta), std::sin(theta), 0.f}, 
-						{0.f, -std::sin(theta), std::cos(theta), 0.f},
+						{0.f, cos, sin, 0.f}, 
+						{0.f, -sin, cos, 0.f},
 						{0.f, 0.f, 0.f, 1.f}};
-
 	return Transformation{m, mInv};
 }
 
 Transformation rotationY(const float theta) {
-	float m[4][4] = {{std::cos(theta), 0.f, std::sin(theta), 0.f},
-			{0.f, 1.f, 0.f, 0.f},
-			{-std::sin(theta), 0.f, std::cos(theta), 0.f},
-			{0.f, 0.f, 0.f, 1.f}};
-
-	float mInv[4][4]={{std::cos(theta), 0.f, -std::sin(theta), 0.f},
-				{0.f, 1.f, 0.f, 0.f}, 
-				{std::sin(theta), 0.f, std::cos(theta), 0.f},
-				{0.f, 0.f, 0.f, 1.f}};
-
+	const float cos = std::cos(theta), sin = std::sin(theta);
+	float m[4][4] = {{cos, 0.f, sin, 0.f},
+					{0.f, 1.f, 0.f, 0.f},
+					{-sin, 0.f, cos, 0.f},
+					{0.f, 0.f, 0.f, 1.f}};
+	float mInv[4][4] = 	{{cos, 0.f, -sin, 0.f},
+						{0.f, 1.f, 0.f, 0.f}, 
+						{sin, 0.f, cos, 0.f},
+						{0.f, 0.f, 0.f, 1.f}};
 	return Transformation{m, mInv};
 }
 
 Transformation rotationZ(const float theta) {
-	float m[4][4] = {{std::cos(theta), -std::sin(theta), 0.f, 0.f}, 
-			{std::sin(theta), std::cos(theta), 0.f, 0.f},
-			{0.f, 0.f, 1.f, 0.f},
-			{0.f, 0.f, 0.f, 1.f}};
-
-	float mInv[4][4] = {{std::cos(theta), std::sin(theta), 0.f, 0.f}, 
-				{-std::sin(theta), std::cos(theta), 0.f, 0.f},
-				{0.f, 0.f, 1.f, 0.f},
-				{0.f, 0.f, 0.f, 1.f}};
-
+	const float cos = std::cos(theta), sin = std::sin(theta);
+	float m[4][4] = {{cos, -sin, 0.f, 0.f}, 
+					{sin, cos, 0.f, 0.f},
+					{0.f, 0.f, 1.f, 0.f},
+					{0.f, 0.f, 0.f, 1.f}};
+	float mInv[4][4] = {{cos, sin, 0.f, 0.f}, 
+						{-sin, cos, 0.f, 0.f},
+						{0.f, 0.f, 1.f, 0.f},
+						{0.f, 0.f, 0.f, 1.f}};
 	return Transformation{m, mInv};
 }
 
