@@ -1,8 +1,12 @@
 # image-renderer
-[![Operating Systems](https://img.shields.io/badge/OS-Linux%20%7C%20MacOS%20%7C%20Windows-lightgrey)](https://img.shields.io/badge/OS-Linux%20%7C%20MacOS%20%7C%20Windows-lightgrey)
-[![Top Language](https://img.shields.io/github/languages/top/teozec/image-renderer)](https://img.shields.io/github/languages/top/teozec/image-renderer)
-[![License](https://img.shields.io/github/license/teozec/image-renderer)](https://img.shields.io/github/license/teozec/image-renderer)
+![Operating Systems](https://img.shields.io/badge/OS-Linux%20%7C%20MacOS%20%7C%20Windows-lightgrey)
+![License](https://img.shields.io/github/license/teozec/image-renderer)
+![Pulls](https://img.shields.io/github/issues-pr/teozec/image-renderer)
+![CI](https://img.shields.io/github/workflow/status/teozec/image-renderer/CMake)
+![Top Language](https://img.shields.io/github/languages/top/teozec/image-renderer)
 ![Version](https://img.shields.io/github/v/release/teozec/image-renderer)
+![Commits](https://img.shields.io/github/commit-activity/m/teozec/image-renderer)
+![Size](https://img.shields.io/github/repo-size/teozec/image-renderer)
 
 image-renderer is a C++ tool to generate photo-realistic images.
 It is based on the lectures of the _Numerical tecniques for photorealistic image generation_ course ([EN](https://www.unimi.it/en/education/degree-programme-courses/2021/numerical-tecniques-photorealistic-image-generation), [IT](https://www.unimi.it/it/corsi/insegnamenti-dei-corsi-di-laurea/2021/calcolo-numerico-la-generazione-di-immagini-fotorealistiche)), held by [Prof. Maurizio Tomasi](http://cosmo.fisica.unimi.it/persone/maurizio-tomasi/) in 2021.
@@ -125,7 +129,6 @@ image-renderer is free software, and it is released under version 3 of the [GNU 
 
 
 <img src="https://avatars.githubusercontent.com/u/44500371?v=4" width=100> 
-
 <img src="https://avatars.githubusercontent.com/u/79975678?s=400&u=6770b5f0354ed29bf9a54e7f27a8250bb812c279&v=4" width=100> 
 
 ...and many more to come!

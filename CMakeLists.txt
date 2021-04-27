@@ -16,6 +16,7 @@
 # along with image-renderer.  If not, see <https://www.gnu.org/licenses/>.
 
 cmake_minimum_required(VERSION 3.12)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -36,12 +37,14 @@ add_library(trace
 	src/geometry.cpp
 	)
 
-target_link_libraries(trace PUBLIC gd)
+find_package(GD REQUIRED)
+target_link_libraries(trace PUBLIC ${GD_LIBRARIES})
 
 # This is needed if we keep .h files in the "include" directory
 target_include_directories(trace PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>
+	${GD_INCLUDE_DIR}
 	)
 
 # image-renderer
