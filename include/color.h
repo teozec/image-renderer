@@ -22,7 +22,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 struct Color {
 	float r, g, b;
-    
+
 	Color operator+(const Color other) {
 		return Color{r+other.r, g+other.g, b+other.b};
 	}

@@ -46,7 +46,7 @@ template <typename In1, typename In2, typename Out> Out _sum(const In1 &a, const
 }
 
 template <typename T> T scalarMultiplication(const T &a, const float c) {
-    return T{a.x*c, a.y*c, a.z*c};
+	return T{a.x*c, a.y*c, a.z*c};
 }
 struct Vec {
 	//Coordinates
@@ -76,7 +76,7 @@ struct Vec {
 	}
 
 	Vec operator-() const { 
-        	return Vec{-x, -y, -z}; 
+		return Vec{-x, -y, -z};
 	}
 
 	Vec operator-(const Vec &other) {
@@ -127,11 +127,11 @@ struct Point {
 	Point(Point &&) = default;
 
 	Point operator*(const float c) {
-        	return scalarMultiplication<Point>(*this, c);
+		return scalarMultiplication<Point>(*this, c);
 	}
 
 	Point operator+(const Point &other) {
-        	return _sum<Point, Point, Point>(*this, other);
+		return _sum<Point, Point, Point>(*this, other);
 	}
 
 	Point operator-() const {
@@ -314,14 +314,14 @@ Transformation translation(const Vec v) {
 						{0.f, 1.f, 0.f, -v.y},
 						{0.f, 0.f, 1.f, -v.z},
 						{0.f, 0.f, 0.f, 1.f}};
-    return Transformation{m, mInv};
+	return Transformation{m, mInv};
 }
 
 // Function that construct a scaling Transformation given a vector of scaling factors
 Transformation scaling(const float cx, const float cy, const float cz) {
 	float diag[4] = {cx, cy, cz, 1.f};
 	float diagInv[4] = {1/cx, 1/cy, 1/cz, 1.f};
-    return Transformation(diag, diagInv);
+	return Transformation(diag, diagInv);
 }
 
 // Function that construct a rotation Transformation given an angle
