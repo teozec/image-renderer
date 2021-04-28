@@ -46,10 +46,10 @@ struct Ray {
 	}
 
 	/**
-	 * Return the Point corresponding to the Ray at the affine parameter t
+	 * @brief Return the Point corresponding to the Ray at the affine parameter t
 	 *
 	 * @param t The value of the affine parameter to evaluate the Ray at
-	 * @return The Point at t
+	 * @return Point
 	 */
 	Point operator()(float t) {
 		return origin + dir * t;
@@ -62,10 +62,11 @@ Ray operator*(Transformation tr, Ray ray) {
 
 /** Camera class
  * 
- * This is the class regarding the observer looking at the scene.
- * The parameters needed are only two:
- * @param	d	The distance between observer and screen.
- * @param	a   The aspect ratio as width over height (default 1.0).
+ * @brief This is the class regarding the observer looking at the scene.
+ * 
+ * @param	a	The aspect ratio as width over height (default 1.0).
+ * @param	d   The distance between observer and screen (default -1.0).
+ * 
  * @see OrthogonalCamera
  * @see	PerspectiveCamera
  */
@@ -74,6 +75,17 @@ struct Camera {
 
 	Camera(float a = 1.f, float d = -1.f) : a{a}, d{d} {}
 	
+	/**
+	 * @brief Fires a ray at a given position on the screen.
+	 * 
+	 * @param u Float value between 0 and 1 corresponding to x coordinate.
+	 * @param v Float value between 0 and 1 corresponding to y coordinate.
+	 * 
+	 * @return Ray
+	 * 
+	 * @see Camera
+	 * @see Ray
+	 */
 	virtual Ray fireRay(float u, float v) = 0;
 		/* To be continued...
 		float a[3] = {-d, 0.f, 0.f};
@@ -83,21 +95,20 @@ struct Camera {
 
 /** OrthogonalCamera class
  * 
- * This is the class regarding the observer looking at the scene 
+ * @brief This is the class regarding the observer looking at the scene 
  * as if he would be very far from the screen (orthogonal projection).
  * 
- * The parameters needed are only two:
  * @param	a   The aspect ratio as width over height (default 1.0).
  * @param	transformation	The transformation to be applied to the camera (default identity).
  * 
- * This class have a parent:
  * @see	Camera
  */
 struct OrthogonalCamera : Camera {
-	//float a = 1.f;
 	Transformation transformation{};
 
-	OrthogonalCamera(float a = 1.f) : Camera(a) {}
+	OrthogonalCamera(float a, Transformation t) : Camera(a), transformation{t} {}
+	OrthogonalCamera(float a) : Camera(a) {}
+	OrthogonalCamera(Transformation t) : transformation{t} {}
 
 	virtual Ray fireRay(float u, float v) {
 		Point origin{-1.f, (1.f-2*u)*a, 2*v-1.f}; //bottom-left is (0, 1, -1)
@@ -108,22 +119,21 @@ struct OrthogonalCamera : Camera {
 
 /** PerspectiveCamera class
  * 
- * This is the class regarding the observer looking at the scene 
+ * @brief This is the class regarding the observer looking at the scene 
  * at a given distance `d`.
  * 
- * The parameters needed are only two:
- * @param	d	The distance between observer and screen (default 1.0).
- * @param	a   The aspect ratio as width over height (default 1.0).
+ * @param	a	The aspect ratio as width over height (default 1.0).
+ * @param	d   The distance between observer and screen (default -1.0).
  * @param	transformation	The transformation to be applied to the camera (default identity).
  * 
- * This class have a parent:
  * @see	Camera
  */
 struct PerspectiveCamera : Camera {
-	float d = 1.f, a = 1.f;
 	Transformation transformation{};
 
-	PerspectiveCamera(float a = 1.f, float d = -1.f) : Camera(a, d) {}
+	PerspectiveCamera(float a, float d, Transformation t) : Camera(a, d), transformation{t} {}
+	PerspectiveCamera(float a, float d = -1.f) : Camera(a, d) {}
+	PerspectiveCamera(Transformation t) : transformation{t} {}
 
 	virtual Ray fireRay(float u, float v) {
 		Point origin{-d, 0.f, 0.f}; // origin_x is -d, dir cancel that
@@ -139,13 +149,13 @@ struct ImageTracer {
 	ImageTracer(HdrImage image, Camera &camera): image{image}, camera{camera} {}
 
 	/**
-	 * Return a Ray starting from the observer and passing through the screen at (col, row)
+	 * @brief Return a Ray starting from the observer and passing through the screen at (col, row)
 	 *
 	 * @param col The column of the intersected pixel on the screen
 	 * @param row The row of the intersected pixel on the screen
 	 * @param uPixel The u coordinate of the intersected point on the pixel surface
 	 * @param vPixel The v coordinate of the intersected point on the pixel surface
-	 * @return The Ray passing through (col, row) starting from the observer
+	 * @return Ray
 	 */
 	Ray fireRay(int col, int row, float uPixel = .5f, float vPixel = .5f) {
 		float u = (col + uPixel) / (image.width - 1);
@@ -154,7 +164,7 @@ struct ImageTracer {
 	}
 
 	/**
-	 * Write the scene to the image, calculating the color for each pixel using the color function
+	 * @brief Write the scene to the image, calculating the color for each pixel using the color function
 	 *
 	 * @tparam T The signature of the color function
 	 * @param color The function to compute a Color given a Ray

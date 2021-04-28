@@ -20,6 +20,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #undef NDEBUG
 #include <cassert>
 #include <cmath>
+#include <iostream>
 
 using namespace std;
 
@@ -37,6 +38,22 @@ void testImageTracer()
 	for (int row{}; row < image.height; row++)
 		for (int col{}; col < image.width; col++)
 			assert((tracer.image.getPixel(col, row) == Color{1.f, 2.f, 3.f}));
+}
+
+void testOrthogonalCameraTransform()
+{
+	Transformation transformation = translation(Vec{0.f, -1.f, 0.f}*2)*rotationZ(M_PI);
+	OrthogonalCamera cam{1.f, transformation};
+	Ray ray = cam.fireRay(0.5, 0.5);
+	assert(ray(1.f) == (Point{0.f, -2.f, 0.f}));
+}
+
+void testPerspectiveCameraTransform()
+{
+	Transformation transformation = translation(Vec{0.f, -1.f, 0.f}*2)*rotationZ(M_PI);
+	PerspectiveCamera cam{1.f, -1.f, transformation};
+	Ray ray = cam.fireRay(0.5, 0.5);
+	assert(areClose(ray(1.f), Point{0.f, -2.f, 0.f}, 1e-5));
 }
 
 int main()
@@ -60,6 +77,43 @@ int main()
 	assert((transformed.dir == Vec{6.f, -4.f, 5.f}));
 
 	testImageTracer();
+
+	// Test OrthogonalCamera
+	OrthogonalCamera oCam{2.0};
+	Ray oRayFired1 = oCam.fireRay(0.f, 0.f);
+	Ray oRayFired2 = oCam.fireRay(1.f, 0.f);
+	Ray oRayFired3 = oCam.fireRay(0.f, 1.f);
+	Ray oRayFired4 = oCam.fireRay(1.f, 1.f);
+
+	assert(!(oRayFired1.dir.cross(oRayFired2.dir).squaredNorm()));
+	assert(!(oRayFired1.dir.cross(oRayFired3.dir).squaredNorm()));
+	assert(!(oRayFired1.dir.cross(oRayFired4.dir).squaredNorm()));
+	assert((oRayFired1.dir.cross(oRayFired2.dir+Vec{0.f, 1.f, 0.f}).squaredNorm()));
+
+	assert(oRayFired1(1.f) == (Point{0.f, 2.f, -1.f}));
+	assert(oRayFired2(1.f) == (Point{0.f, -2.f, -1.f}));
+	assert(oRayFired3(1.f) == (Point{0.f, 2.f, 1.f}));
+	assert(oRayFired4(1.f) == (Point{0.f, -2.f, 1.f}));
+
+	testOrthogonalCameraTransform();
+
+	// Test PerspectiveCamera
+	PerspectiveCamera pCam{2.f, 1.f};
+	Ray pRayFired1 = pCam.fireRay(0.f, 0.f);
+	Ray pRayFired2 = pCam.fireRay(1.f, 0.f);
+	Ray pRayFired3 = pCam.fireRay(0.f, 1.f);
+	Ray pRayFired4 = pCam.fireRay(1.f, 1.f);
+	
+	assert(pRayFired1.origin == pRayFired2.origin);
+	assert(pRayFired1.origin == pRayFired3.origin);
+	assert(pRayFired1.origin == pRayFired4.origin);
+
+	assert(pRayFired1(1.f) == (Point{0.f, 2.f, -1.f}));
+	assert(pRayFired2(1.f) == (Point{0.f, -2.f, -1.f}));
+	assert(pRayFired3(1.f) == (Point{0.f, 2.f, 1.f}));
+	assert(pRayFired4(1.f) == (Point{0.f, -2.f, 1.f}));
+
+	testPerspectiveCameraTransform();
 
 	return 0;
 }
