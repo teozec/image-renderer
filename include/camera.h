@@ -20,6 +20,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include <limits>
 #include "geometry.h"
+#include "hdr-image.h"
 
 struct Ray {
 	Point origin;
@@ -27,7 +28,7 @@ struct Ray {
 	float tmin, tmax;
 	int depth;
 
-	Ray(Point origin = Point(), Vec dir = Vec(), int depth = 0, float tmin = 1e-5, float tmax = std::numeric_limits<float>::infinity()) :
+	Ray(Point origin = Point(), Vec dir = Vec(), int depth = 0, float tmin = 1e-5, float tmax = std::numeric_limits<float>::infinity()):
 		origin{origin}, dir{dir}, depth{depth}, tmin{tmin}, tmax{tmax} {}
 
 	bool isClose(Ray other, float epsilon) {
@@ -57,5 +58,43 @@ struct Ray {
 Ray operator*(Transformation tr, Ray ray) {
 	return Ray(tr * ray.origin, tr * ray.dir, ray.depth, ray.tmin, ray.tmax);
 }
+
+struct ImageTracer {
+	HdrImage image;
+	Camera camera;
+
+	ImageTracer(HdrImage image, Camera camera): image{image}, camera{camera} {}
+
+	/**
+	 * Return a Ray starting from the observer and passing through the screen at (col, row)
+	 *
+	 * @param col The column of the intersected pixel on the screen
+	 * @param row The row of the intersected pixel on the screen
+	 * @param uPixel The u coordinate of the intersected point on the pixel surface
+	 * @param vPixel The v coordinate of the intersected point on the pixel surface
+	 * @return The Ray passing through (col, row) starting from the observer
+	 */
+	Ray fireRay(int col, int row, float uPixel = .5f, float vPixel = .5f) {
+		float u = (col + uPixel) / (image.width - 1);
+		float v = (row + vPixel) / (image.height - 1);
+		return camera.fireRay(u, v);
+	}
+
+	/**
+	 * Write the scene to the image, calculating the color for each pixel using the color function
+	 *
+	 * @tparam T The signature of the color function
+	 * @param color The function to compute a Color given a Ray
+	 */
+	void fireAllRays<auto T>(T color) {
+		for (row{}; row < image.height; row++) {
+			for (col{}; col < image.width; col++) {
+				Ray ray = fireRay(col, row);
+				image.setPixel(col, row, color(ray));
+			}
+		}
+	}
+
+};
 
 #endif // CAMERA_H
