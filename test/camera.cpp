@@ -26,17 +26,17 @@ using namespace std;
 void testImageTracer()
 {
 	HdrImage image{4, 2};
-	Camera camera{2.f};
+	PerspectiveCamera camera{2.f};
 	ImageTracer tracer{image, camera};
 
 	Ray ray1 = tracer.fireRay(0, 0, 2.5f, 1.5f);
 	Ray ray2 = tracer.fireRay(2, 1);
 	assert(ray1 == ray2);
 
-	trace.fireAllRays([](Ray r) {return Color{1.f, 2.f, 3.f}});
+	tracer.fireAllRays([](Ray r) {return Color{1.f, 2.f, 3.f};});
 	for (int row{}; row < image.height; row++)
 		for (int col{}; col < image.width; col++)
-			assert((image.getPixel(col, row) == Color{1.f, 2.f, 3.f}));
+			assert((tracer.image.getPixel(col, row) == Color{1.f, 2.f, 3.f}));
 }
 
 int main()
@@ -59,7 +59,7 @@ int main()
 	assert((transformed.origin == Point{11.f, 8.f, 14.f}));
 	assert((transformed.dir == Vec{6.f, -4.f, 5.f}));
 
-	testImageTracer()
+	testImageTracer();
 
 	return 0;
 }
