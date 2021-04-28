@@ -34,7 +34,6 @@ enable_testing()
 add_library(trace
 	src/color.cpp
 	src/hdr-image.cpp
-	src/geometry.cpp
 	)
 
 find_package(GD REQUIRED)
