@@ -52,6 +52,6 @@ int main()
 
 	assert(c5.luminosity() == 2.0);
 	assert(c6.luminosity() == 7.0);
-    
+
 	return 0;
 }

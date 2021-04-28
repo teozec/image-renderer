@@ -55,14 +55,7 @@ The executable files are generated in the `build` directory.
 
 ### macOS (Xcode)
 
-First of all you need to add few lines in the `CMakeLists.txt` file:
-
-```cmake
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENTIONS OFF)
-``` 
-After saving it, you can build the project using:
+If you wish to use Xcode on your macOS, you can build the project using:
 
 ```bash
 mkdir build

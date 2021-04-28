@@ -18,6 +18,10 @@
 cmake_minimum_required(VERSION 3.12)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENTIONS OFF)
+
 # Define a "project", providing a description and a programming language
 project(image-renderer
 	VERSION 1.0
@@ -30,6 +34,7 @@ enable_testing()
 add_library(trace
 	src/color.cpp
 	src/hdr-image.cpp
+	src/geometry.cpp
 	)
 
 find_package(GD REQUIRED)
@@ -65,5 +70,15 @@ target_link_libraries(hdr-image-test PUBLIC trace)
 add_test(NAME hdr-image-test
 	COMMAND hdr-image-test
 	)
+
+# geometry-test
+add_executable(geometry-test
+	test/geometry.cpp
+	)
+target_link_libraries(geometry-test PUBLIC trace)
+add_test(NAME geometry-test
+	COMMAND geometry-test
+	)
+
 
 target_compile_features(image-renderer PUBLIC cxx_std_17)
