@@ -27,6 +27,13 @@ static bool _areClose(const float a, const float b, const float epsilon) {
 	return std::fabs(a-b) < epsilon;
 }
 
+/**
+ * Check whether two 3D objects are close within a distance epsilon
+ * @tmaram T The type of the objects to compare. Must have x, y and z fields.
+ * @params a,b The objects to compare
+ * @params epsilon The precision to perform the comparison at
+ * @return True if a and b are close, false otherwise
+ */
 template <typename T> bool areClose(const T &a, const T &b, float epsilon) {
 	return _areClose(a.x, b.x, epsilon) and
 		_areClose(a.y, b.y, epsilon) and
@@ -324,7 +331,11 @@ Transformation scaling(const float cx, const float cy, const float cz) {
 	return Transformation(diag, diagInv);
 }
 
-// Function that construct a rotation Transformation given an angle
+/**
+ * Construct a rotation around the x axis
+ * @param theta The rotation angle, in radians
+ * @return The rotation Transformation
+ */
 Transformation rotationX(const float theta) {
 	const float cos = std::cos(theta), sin = std::sin(theta);
 	float m[4][4] = {{1.f, 0.f, 0.f, 0.f},
@@ -338,6 +349,11 @@ Transformation rotationX(const float theta) {
 	return Transformation{m, mInv};
 }
 
+/**
+ * Construct a rotation around the y axis
+ * @param theta The rotation angle, in radians
+ * @return The rotation Transformation
+ */
 Transformation rotationY(const float theta) {
 	const float cos = std::cos(theta), sin = std::sin(theta);
 	float m[4][4] = {{cos, 0.f, sin, 0.f},
@@ -351,6 +367,11 @@ Transformation rotationY(const float theta) {
 	return Transformation{m, mInv};
 }
 
+/**
+ * Construct a rotation around the z axis
+ * @param theta The rotation angle, in radians
+ * @return The rotation Transformation
+ */
 Transformation rotationZ(const float theta) {
 	const float cos = std::cos(theta), sin = std::sin(theta);
 	float m[4][4] = {{cos, -sin, 0.f, 0.f}, 
