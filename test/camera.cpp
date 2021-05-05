@@ -34,6 +34,11 @@ void testImageTracer()
 	Ray ray2 = tracer.fireRay(2, 1);
 	assert(ray1 == ray2);
 
+	Ray topLeftRay = tracer.fireRay(0, 0, 0.f, 0.f);
+	assert((Point{0.f, 2.f, 1.f}) == topLeftRay(1.f));
+	Ray bottomRightRay = tracer.fireRay(3, 1, 1.f, 1.f);
+	assert((Point{0.f, -2.f, -1.f}) == bottomRightRay(1.f));
+
 	tracer.fireAllRays([](Ray r) {return Color{1.f, 2.f, 3.f};});
 	for (int row{}; row < image.height; row++)
 		for (int col{}; col < image.width; col++)
