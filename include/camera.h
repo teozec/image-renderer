@@ -158,8 +158,8 @@ struct ImageTracer {
 	 * @return Ray
 	 */
 	Ray fireRay(int col, int row, float uPixel = .5f, float vPixel = .5f) {
-		float u = (col + uPixel) / (image.width - 1);
-		float v = (row + vPixel) / (image.height - 1);
+		float u = (col + uPixel) / image.width;
+		float v = 1.f - (row + vPixel) / image.height;
 		return camera.fireRay(u, v);
 	}
 
