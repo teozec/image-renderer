@@ -21,34 +21,105 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <iostream>
 #include <memory>
 #include <vector>
+#include "geometry.h"
+#include "camera.h"
+#include <cmath>
 
-struct Shape {};
-struct Sphere : public Shape {};
-struct Plane : public Shape {};
+struct Vec2D {
+	float u, v;
+	Vec2D() {}
+	Vec2D(float u, float v): u{u}, v{v} {}
+};
+
+struct HitRecord {
+	bool hit = false;
+	Point worldPoint;
+	Normal normal;
+	Vec2D surfacePoint;
+	float t;
+	Ray ray;
+
+	HitRecord() {}
+	HitRecord(const HitRecord &other) :	//
+		hit{other.hit}, worldPoint{other.worldPoint}, normal{other.normal}, //
+		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray} {}
+	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray):
+		worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint},
+		t{t}, ray{ray}, hit{true} {}
+
+	
+};
+
+struct Shape {
+	Transformation transformation;
+	Shape(Transformation transformation = Transformation()): transformation{transformation} {}
+	virtual HitRecord rayIntersection(Ray ray) = 0;
+};
+
+struct Sphere : Shape {
+	Sphere(): Shape() {}
+	Sphere(Transformation transformation): Shape(transformation) {}
+
+	HitRecord rayIntersection(Ray ray) {
+		Ray invRay{transformation.inverse() * ray};
+		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
+		float delta4 = (origin.dot(dir)) * (origin.dot(dir)) -
+			dir.squaredNorm() * (origin.squaredNorm() - 1.f);
+
+		if (delta4 <= 0.f)
+			return HitRecord{};
+
+		float firstHit;
+		float t1 = (-origin.dot(dir) - delta4) / dir.squaredNorm();
+		float t2 = (-origin.dot(dir) + delta4) / dir.squaredNorm();
+		if (invRay.tmin < t1 and t1 < invRay.tmax)
+			firstHit = t1;
+		else if (invRay.tmin < t2 and t2 < invRay.tmax)
+			firstHit = t2;
+		else
+			return HitRecord{};
+
+		Point hitPoint{invRay(firstHit)};
+		return HitRecord{
+			transformation * hitPoint,
+			transformation * sphereNormal(hitPoint, ray.dir),
+			spherePointToUV(hitPoint),
+			firstHit,
+			ray};
+	}
+	
+private:
+	Normal sphereNormal(Point p, Vec dir) {
+		Normal result{p.x, p.y, p.z};
+		return p.toVec().dot(dir) < 0. ? result : -result;
+	}
+
+	Vec2D spherePointToUV(Point p) {
+		return Vec2D{std::atan2(p.x, p.y) / (float) (2. * M_PI), std::acos(p.z) / (float) M_PI};
+	}
+};
 
 /** World class
  * @brief This is the class containing all the shapes of the scene.
  * 
- * @param shapes[]	List of shapes.
+ * @param shapes	List of shapes.
  */
 struct World {
 	std::vector<std::shared_ptr<Shape>> shapes;
 
-	void add(Shape newShape){
+	void add(std::shared_ptr<Shape> newShape){
 		shapes.push_back(std::make_shared<Shape> (newShape));
 	}
 
-	virtual rayIntersection(Ray ray) -> auto HitRecord {
-		closest = NULL;
+	virtual HitRecord rayIntersection(Ray ray){
+		HitRecord closest{};
 
-		for(int i{}; i<len(shapes); i++){
-			intersection = shapes[i].rayIntersection(ray);
-			if(!intersection){
+		for(int i{}; i<size(shapes); i++){
+			HitRecord intersection = shapes[i]->rayIntersection(ray);
+			if(!intersection.hit)
 				continue;
-			}
-			if((!closest)||(intersection.t < closest.t){
-				closest = intersection;
-			}
+			if((!closest.hit)||(intersection.t < closest.t))
+				HitRecord closest{intersection}; //a bit salty
 		}
 
 		return closest;

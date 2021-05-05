@@ -166,6 +166,10 @@ struct Point {
 		ss << "Point(x=" << x << ", y=" << y << ", z=" << z;
 		return ss.str();
 	}
+
+	Vec toVec() {
+		return Vec{x, y, z};
+	}
 };
 
 Point operator+(const Point &a, const Vec &b) {
@@ -189,6 +193,10 @@ struct Normal {
 
 	bool operator!=(const Normal &other) {
 		return !(*this == other);
+	}
+
+	Normal operator-() {
+		return Normal{-x, -y, -z};
 	}
 };
 
