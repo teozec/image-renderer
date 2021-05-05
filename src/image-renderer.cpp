@@ -17,6 +17,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "hdr-image.h"
 #include "color.h"
+#include "shape.h"
 #include "argh.h"
 #undef NDEBUG
 #include <cassert>
