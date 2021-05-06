@@ -28,10 +28,12 @@ static bool _areClose(const float a, const float b, const float epsilon) {
 }
 
 /**
- * Check whether two 3D objects are close within a distance epsilon
- * @tmaram T The type of the objects to compare. Must have x, y and z fields.
- * @params a,b The objects to compare
- * @params epsilon The precision to perform the comparison at
+ * @brief Check whether two 3D objects are close within a distance epsilon
+ * 
+ * @tparam T The type of the objects to compare. Must have x, y and z fields.
+ * @param a	The first object to compare.
+ * @param b The second object to be compared.
+ * @param epsilon The precision to perform the comparison at
  * @return True if a and b are close, false otherwise
  */
 template <typename T> bool areClose(const T &a, const T &b, float epsilon) {
@@ -94,6 +96,13 @@ struct Vec {
 		return scalarMultiplication<Vec>(*this, c);
 	}
 
+	Vec operator=(const Vec &other) {
+		x = other.x;
+		y = other.y;
+		z = other.z;
+		return *this;
+	}
+
 	float dot(const Vec &other) const {
 		return x*other.x + y*other.y + z*other.z;
 	}
@@ -149,6 +158,13 @@ struct Point {
 		return _sum<Point, Point, Vec>(*this, -other);
 	}
 
+	Point operator=(const Point &other) {
+		x = other.x;
+		y = other.y;
+		z = other.z;
+		return *this;
+	}
+
 	// Compare Points with a default precision.
 	// For a different precision, call areClose<Point> directly.
 	bool operator==(const Point &other) {
@@ -197,6 +213,13 @@ struct Normal {
 
 	Normal operator-() {
 		return Normal{-x, -y, -z};
+	}
+
+	Normal operator=(const Normal &other) {
+		x = other.x;
+		y = other.y;
+		z = other.z;
+		return *this;
 	}
 };
 

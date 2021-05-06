@@ -29,6 +29,12 @@ struct Vec2D {
 	float u, v;
 	Vec2D() {}
 	Vec2D(float u, float v): u{u}, v{v} {}
+
+	Vec2D operator=(const Vec2D &other) {
+		u = other.u;
+		v = other.v;
+		return *this;
+	}
 };
 
 struct HitRecord {
@@ -47,7 +53,15 @@ struct HitRecord {
 		worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint},
 		t{t}, ray{ray}, hit{true} {}
 
-	
+	HitRecord operator=(const HitRecord &other) {
+		hit = other.hit;
+		worldPoint = other.worldPoint;
+		normal = other.normal;
+		surfacePoint = other.surfacePoint;
+		t = other.t;
+		ray = other.ray;
+		return *this;
+	}	
 };
 
 struct Shape {
@@ -56,6 +70,12 @@ struct Shape {
 	virtual HitRecord rayIntersection(Ray ray) = 0;
 };
 
+/**
+ * @brief A Sphere object derived from Shape.
+ * 
+ * @param transformation	The transformation to be applied to the unit sphere centered at the origin.
+ * @see Shape.
+ */
 struct Sphere : Shape {
 	Sphere(): Shape() {}
 	Sphere(Transformation transformation): Shape(transformation) {}
@@ -107,21 +127,19 @@ private:
 struct World {
 	std::vector<std::shared_ptr<Shape>> shapes;
 
-	void add(std::shared_ptr<Shape> newShape){
-		shapes.push_back(std::make_shared<Shape> (newShape));
+	virtual void add(const Sphere &newShape){
+		shapes.push_back(std::make_shared<Sphere>(newShape));
 	}
 
-	virtual HitRecord rayIntersection(Ray ray){
+	HitRecord rayIntersection(Ray ray){
 		HitRecord closest{};
-
 		for(int i{}; i<size(shapes); i++){
 			HitRecord intersection = shapes[i]->rayIntersection(ray);
 			if(!intersection.hit)
 				continue;
 			if((!closest.hit)||(intersection.t < closest.t))
-				HitRecord closest{intersection}; //a bit salty
+				closest = intersection;
 		}
-
 		return closest;
 	}
 };
