@@ -76,7 +76,7 @@ struct Shape {
  * @param transformation	The transformation to be applied to the unit sphere centered at the origin.
  * @see Shape.
  */
-struct Sphere : Shape {
+struct Sphere : public Shape {
 	Sphere(): Shape() {}
 	Sphere(Transformation transformation): Shape(transformation) {}
 
@@ -126,9 +126,9 @@ private:
  */
 struct World {
 	std::vector<std::shared_ptr<Shape>> shapes;
-
-	virtual void add(const Sphere &newShape){
-		shapes.push_back(std::make_shared<Sphere>(newShape));
+	// make it a template for any shape
+	template <class T> void add(const T &newShape){
+		shapes.push_back(std::make_shared<T>(newShape));
 	}
 
 	HitRecord rayIntersection(Ray ray){
