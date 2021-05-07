@@ -18,7 +18,6 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <geometry.h>
 #include <limits>
 #include "geometry.h"
 #include "hdr-image.h"
