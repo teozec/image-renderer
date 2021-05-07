@@ -107,7 +107,7 @@ struct Sphere : public Shape {
 			firstHit,
 			ray};
 	}
-	
+
 private:
 	Normal sphereNormal(Point p, Vec dir) {
 		Normal result{p.x, p.y, p.z};
@@ -118,6 +118,46 @@ private:
 		return Vec2D{std::acos(p.z) / (float) M_PI, std::atan2(p.y, p.x) / (float) (2. * M_PI)};
 	}
 };
+
+/**
+ * @brief A Plane object derived from Shape.
+ * 
+ * @param transformation	The transformation to be xy plane.
+ * @see Shape.
+ */
+struct Plane : public Shape {
+	Plane(): Shape() {}
+	Plane(Transformation transformation): Shape(transformation) {}
+
+	HitRecord rayIntersection(Ray ray) {
+		Ray invRay{transformation.inverse() * ray};
+		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
+		const float epsilon = 1e-5;
+
+		if (std::abs(dir.z - 0.f) < epsilon)
+			return HitRecord{};
+
+		float t = -origin.z / dir.z;
+		Point hitPoint{invRay(t)};
+		return HitRecord{
+			transformation * hitPoint,
+			transformation * planeNormal(hitPoint, ray.dir),
+			planePointToUV(hitPoint),
+			t,
+			ray};
+	}
+
+private:
+	Normal planeNormal(Point p, Vec dir) {
+		Normal result{0.f, 0.f, 1.f};
+		return dir.z < 0. ? result : -result;
+	}
+
+	Vec2D planePointToUV(Point p) {
+		return Vec2D{p.x - std::floor(p.x), p.y - std::floor(p.y)};
+	}
+};
+
 
 /** World class
  * @brief This is the class containing all the shapes of the scene.
