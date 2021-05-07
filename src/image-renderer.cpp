@@ -50,6 +50,11 @@ using namespace std;
 
 enum class ImageFormat { png, webp, jpeg , tiff, bmp, gif };
 
+enum class CameraProjection { orthogonal, perspective };
+
+void makeCam (shared_ptr<Camera> cam, CameraProjection proj, float a, Transformation camT);
+void demo(int width, int height, CameraProjection camProj);
+
 int main(int argc, char *argv[])
 {
 	argh::parser cmdl;
@@ -151,5 +156,39 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	demo(200, 100, CameraProjection::perspective);
+	
 	return 0;
+}
+
+void demo(int width, int height, CameraProjection camProj) {
+	HdrImage image{width, height};
+
+	World world;
+	for(int i{}; i<2; i++){
+		for(int j{}; j<2; j++){
+			for(int k{}; k<2; k++)
+				world.add(Sphere{translation(Vec{(float) (0.5-i), (float)(0.5-j), (float)(0.5-k)})*scaling(0.1, 0.1, 0.1)});
+		}
+	}
+
+	Transformation camTransformation{translation(Vec{-1.f, 0.f, 0.f})};//try rotations
+	float aspectRatio = width/height;
+	shared_ptr<Camera> cam;
+	makeCam(cam, camProj, aspectRatio, camTransformation);
+	ImageTracer tracer{image, *cam};
+	tracer.fireAllRays([&](Ray ray){
+		if (world.rayIntersection(ray).hit)
+			return Color{0.f, 0.f, 0.f};
+		else
+			return Color{1.f, 1.f, 1.f};
+		});
+
+}
+
+void makeCam (shared_ptr<Camera> cam, CameraProjection proj, float a, Transformation camT){
+	if(proj == CameraProjection::orthogonal)
+		OrthogonalCamera cam{a, camT};
+	else if (proj == CameraProjection::perspective)
+		PerspectiveCamera cam{a, camT};
 }

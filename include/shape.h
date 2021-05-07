@@ -18,6 +18,9 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #ifndef SHAPE_H
 #define SHAPE_H
 
+#include <iostream>
+#include <memory>
+#include <vector>
 #include "geometry.h"
 #include "camera.h"
 #include <cmath>
@@ -26,6 +29,12 @@ struct Vec2D {
 	float u, v;
 	Vec2D() {}
 	Vec2D(float u, float v): u{u}, v{v} {}
+
+	Vec2D operator=(const Vec2D &other) {
+		u = other.u;
+		v = other.v;
+		return *this;
+	}
 };
 
 struct HitRecord {
@@ -37,9 +46,22 @@ struct HitRecord {
 	Ray ray;
 
 	HitRecord() {}
+	HitRecord(const HitRecord &other) :	//
+		hit{other.hit}, worldPoint{other.worldPoint}, normal{other.normal}, //
+		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray} {}
 	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray):
 		worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint},
 		t{t}, ray{ray}, hit{true} {}
+
+	HitRecord operator=(const HitRecord &other) {
+		hit = other.hit;
+		worldPoint = other.worldPoint;
+		normal = other.normal;
+		surfacePoint = other.surfacePoint;
+		t = other.t;
+		ray = other.ray;
+		return *this;
+	}	
 };
 
 struct Shape {
@@ -48,7 +70,13 @@ struct Shape {
 	virtual HitRecord rayIntersection(Ray ray) = 0;
 };
 
-struct Sphere : Shape {
+/**
+ * @brief A Sphere object derived from Shape.
+ * 
+ * @param transformation	The transformation to be applied to the unit sphere centered at the origin.
+ * @see Shape.
+ */
+struct Sphere : public Shape {
 	Sphere(): Shape() {}
 	Sphere(Transformation transformation): Shape(transformation) {}
 
@@ -91,4 +119,29 @@ private:
 	}
 };
 
-#endif // SHAPE_H
+/** World class
+ * @brief This is the class containing all the shapes of the scene.
+ * 
+ * @param shapes	List of shapes.
+ */
+struct World {
+	std::vector<std::shared_ptr<Shape>> shapes;
+	// make it a template for any shape
+	template <class T> void add(const T &newShape){
+		shapes.push_back(std::make_shared<T>(newShape));
+	}
+
+	HitRecord rayIntersection(Ray ray){
+		HitRecord closest{};
+		for(int i{}; i<size(shapes); i++){
+			HitRecord intersection = shapes[i]->rayIntersection(ray);
+			if(!intersection.hit)
+				continue;
+			if((!closest.hit)||(intersection.t < closest.t))
+				closest = intersection;
+		}
+		return closest;
+	}
+};
+
+#endif // #SHAPE_H
