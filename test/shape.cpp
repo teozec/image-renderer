@@ -112,14 +112,17 @@ void testSphereTransformation()
 
 void testWorld()
 {
-	World myWorld;
-	Ray ray1{Point{0.f, 0.f, 2.f}, Vec{0.f, 0.f, -1.f}};
-	Sphere sphere1;
-	myWorld.add(sphere1);
-	HitRecord hit1 = myWorld.rayIntersection(ray1);
-	assert(hit1.hit);
-	assert((hit1.worldPoint == Point{0.f, 0.f, 1.f}));
-	assert((hit1.normal == Normal{0.f, 0.f, 1.f}));
+	World world;
+	Sphere sphere1{translation(Vec{2.f, 0.f, 0.f})};
+	Sphere sphere2{translation(Vec{8.f, 0.f, 0.f})};
+	world.add(sphere1);
+	world.add(sphere2);
+	HitRecord intersection1 = world.rayIntersection(Ray{Point{0.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}});
+	assert(intersection1.hit);
+	assert(intersection1.worldPoint == (Point{1.f, 0.f, 0.f}));
+	HitRecord intersection2 = world.rayIntersection(Ray{Point{10.f, 0.f, 0.f}, Vec{-1.f, 0.f, 0.f}});
+	assert(intersection2.hit);
+	assert(intersection2.worldPoint == (Point{9.f, 0.f, 0.f}));
 }
 
 int main()
