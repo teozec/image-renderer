@@ -66,6 +66,17 @@ int main(int argc, char *argv[])
 	cmdl.parse(argc, argv);
 
 	const string programName = cmdl[0];
+	const string actionName = cmdl[1];
+
+	// Parse action
+	if (actionName == "demo") { 
+		// demo(200, 100, CameraProjection::perspective);
+		return 0;
+		} else if (actionName == "pfm2ldr") {}
+		else {
+			cout << USAGE <<endl << HELP;
+			return 0;
+		}
 
 	if (cmdl[{"-h", "--help"}]) {
 		cout << USAGE << endl << HELP;
@@ -78,7 +89,7 @@ int main(int argc, char *argv[])
 	}
 
 	// Parse format
-	const string formatStr = cmdl[1]; 
+	const string formatStr = cmdl[2]; 
 	ImageFormat format;
 	if (formatStr == "png") {
 		format = ImageFormat::png;
@@ -98,8 +109,8 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	const char *infile = cmdl[2].c_str();
-	const char *outfile = cmdl[3].c_str();
+	const char *infile = cmdl[3].c_str();
+	const char *outfile = cmdl[4].c_str();
 
 	// Parse parameters (also specifying default values).
 	float aFactor;
@@ -155,8 +166,6 @@ int main(int argc, char *argv[])
 		cerr << e.what() << endl;
 		return 1;
 	}
-
-	demo(200, 100, CameraProjection::perspective);
 	
 	return 0;
 }
@@ -183,7 +192,10 @@ void demo(int width, int height, CameraProjection camProj) {
 		else
 			return Color{1.f, 1.f, 1.f};
 		});
-
+	ofstream outPfm;
+	outPfm.open("demo.pfm");
+	image.writePfm(outPfm);
+	outPfm.close();
 }
 
 void makeCam (shared_ptr<Camera> cam, CameraProjection proj, float a, Transformation camT){
