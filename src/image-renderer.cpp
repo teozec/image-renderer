@@ -53,7 +53,7 @@ enum class ImageFormat { png, webp, jpeg , tiff, bmp, gif };
 enum class CameraProjection { orthogonal, perspective };
 
 void makeCam (shared_ptr<Camera> cam, CameraProjection proj, float a, Transformation camT);
-void demo(int width, int height, CameraProjection camProj);
+void demo(int width, int height); //additional argument CameraProjection camProj
 
 int main(int argc, char *argv[])
 {
@@ -68,12 +68,12 @@ int main(int argc, char *argv[])
 	const string programName = cmdl[0];
 	const string actionName = cmdl[1];
 
+	
 	// Parse action
 	if (actionName == "demo") { 
-		// demo(200, 100, CameraProjection::perspective);
+		demo(200, 100);
 		return 0;
-		} else if (actionName == "pfm2ldr") {}
-		else {
+		} else if (actionName != "pfm2ldr") {
 			cout << USAGE <<endl << HELP;
 			return 0;
 		}
@@ -82,8 +82,8 @@ int main(int argc, char *argv[])
 		cout << USAGE << endl << HELP;
 		return 0;
 	}
-
-	if (cmdl.size() != 4) {
+	
+	if (cmdl.size() != 5) {
 		cerr << USAGE;
 		return 1;
 	}
@@ -170,28 +170,33 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void demo(int width, int height, CameraProjection camProj) {
+void demo(int width, int height) {
 	HdrImage image{width, height};
 
 	World world;
 	for(int i{}; i<2; i++){
 		for(int j{}; j<2; j++){
 			for(int k{}; k<2; k++)
-				world.add(Sphere{translation(Vec{(float) (0.5-i), (float)(0.5-j), (float)(0.5-k)})*scaling(0.1, 0.1, 0.1)});
+				world.add(Sphere{translation(Vec{(float)(0.5-i), (float)(0.5-j), (float)(0.5-k)})*scaling(0.1, 0.1, 0.1)});
 		}
 	}
 
+	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
+	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
+
 	Transformation camTransformation{translation(Vec{-1.f, 0.f, 0.f})};//try rotations
 	float aspectRatio = width/height;
-	shared_ptr<Camera> cam;
-	makeCam(cam, camProj, aspectRatio, camTransformation);
-	ImageTracer tracer{image, *cam};
-	tracer.fireAllRays([&](Ray ray){
+	//shared_ptr<Camera> cam;
+	//makeCam(cam, camProj, aspectRatio, camTransformation);
+	PerspectiveCamera cam{aspectRatio, camTransformation};
+	ImageTracer tracer{image, cam};
+	tracer.fireAllRays([&world](Ray ray) {
 		if (world.rayIntersection(ray).hit)
-			return Color{0.f, 0.f, 0.f};
-		else
 			return Color{1.f, 1.f, 1.f};
-		});
+		else
+			return Color{0.f, 0.f, 0.f};
+	});
+
 	ofstream outPfm;
 	outPfm.open("demo.pfm");
 	image.writePfm(outPfm);

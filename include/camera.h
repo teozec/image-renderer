@@ -174,11 +174,12 @@ struct ImageTracer {
 	 * @tparam T	The signature of the color function
 	 * @param color The function to compute a Color given a Ray
 	 */
-	template <typename T> void fireAllRays(T color) {
+	template <typename T> void fireAllRays(T colorFunc) {
 		for (int row{}; row < image.height; row++) {
 			for (int col{}; col < image.width; col++) {
 				Ray ray = fireRay(col, row);
-				image.setPixel(col, row, color(ray));
+				Color color = colorFunc(ray);
+				image.setPixel(col, row, color);
 			}
 		}
 	}
