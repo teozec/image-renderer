@@ -73,10 +73,10 @@ int main(int argc, char *argv[])
 	if (actionName == "demo") { 
 		demo(200, 100);
 		return 0;
-		} else if (actionName != "pfm2ldr") {
-			cout << USAGE <<endl << HELP;
-			return 0;
-		}
+	} else if (actionName != "pfm2ldr") {
+		cout << USAGE <<endl << HELP;
+		return 0;
+	}
 
 	if (cmdl[{"-h", "--help"}]) {
 		cout << USAGE << endl << HELP;
@@ -170,6 +170,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+
 void demo(int width, int height) {
 	HdrImage image{width, height};
 
@@ -184,7 +185,7 @@ void demo(int width, int height) {
 	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
 	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
 
-	Transformation camTransformation{translation(Vec{-1.f, 0.f, 0.f})};//try rotations
+	Transformation camTransformation{translation(Vec{-0.5f, 0.f, 0.f})};//try rotations
 	float aspectRatio = width/height;
 	//shared_ptr<Camera> cam;
 	//makeCam(cam, camProj, aspectRatio, camTransformation);
@@ -199,7 +200,7 @@ void demo(int width, int height) {
 
 	ofstream outPfm;
 	outPfm.open("demo.pfm");
-	image.writePfm(outPfm);
+	tracer.image.writePfm(outPfm);
 	outPfm.close();
 }
 

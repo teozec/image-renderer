@@ -55,11 +55,13 @@ struct HitRecord {
 
 	HitRecord operator=(const HitRecord &other) {
 		hit = other.hit;
-		worldPoint = other.worldPoint;
-		normal = other.normal;
-		surfacePoint = other.surfacePoint;
-		t = other.t;
-		ray = other.ray;
+		if (hit) {
+			worldPoint = other.worldPoint;
+			normal = other.normal;
+			surfacePoint = other.surfacePoint;
+			t = other.t;
+			ray = other.ray;
+		}
 		return *this;
 	}	
 };
@@ -173,11 +175,11 @@ struct World {
 
 	HitRecord rayIntersection(Ray ray){
 		HitRecord closest{};
-		for(int i{}; i<size(shapes); i++){
+		for(int i{}; i < std::size(shapes); i++){
 			HitRecord intersection = shapes[i]->rayIntersection(ray);
 			if(!intersection.hit)
 				continue;
-			if((!closest.hit)||(intersection.t < closest.t))
+			if(!closest.hit or intersection.t < closest.t)
 				closest = intersection;
 		}
 		return closest;
