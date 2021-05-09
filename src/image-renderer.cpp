@@ -28,23 +28,31 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <unistd.h>
 
 #define USAGE \
-	"Usage: " << programName << " [options] <format>" \
-	" <input-pfm-file> <output-file> " << endl << \
-	"\nRun '" << programName << " -h' for all supported options." <<endl
+	"Usage: " << endl << \
+	programName << " -h|--help" << endl << \
+	programName << " demo" << endl << \
+	programName << " pfm2ldr [options] <format>" \
+	" <input-pfm-file> <output-file> " << endl
+
+#define RUN_HELP \
+	"Run '" << programName << " -h' for all supported options." << endl
 
 #define HELP \
-	"Common options:" << endl << \
-	"	-h, --help					Print this message." <<endl << \
-	"	-a <value>, --afactor=<value>			Normalization factor." << endl << \
-	"	-g <value>, --gamma=<value>			Gamma factor." << endl << endl << \
-	"Supported formats and related options:" << endl << \
-	"	bmp" << endl << \
-	"	gif" << endl << \
-	"	jpeg 	-q <value>, --quality=<value>		Compression quality (0-95, 0 means default)." << endl << \
-	"	png	-p, --palette				Whether to use palette or not."<< endl << \
-	"		-c <value>, --compression=<value>	Compression level (0-9)." << endl << \
-	"	tiff" << endl << \
-	"	webp	-q <value>, --quality=<value>		Compression quality (0-100)." << endl
+	"Available actions:" << endl << \
+	"-h, --help: print this message." << endl << endl << \
+	"demo: render a demo pfm image and write it to demo.pfm." << endl << endl << \
+	"pfm2ldr: convert a pfm image to a ldr image in the desired format." << endl << \
+	"	Common options:" << endl << \
+	"		-a <value>, --afactor=<value>			Normalization factor." << endl << \
+	"		-g <value>, --gamma=<value>			Gamma factor." << endl << endl << \
+	"	Supported formats and related options:" << endl << \
+	"		bmp" << endl << \
+	"		gif" << endl << \
+	"		jpeg 	-q <value>, --quality=<value>		Compression quality (0-95, 0 means default)." << endl << \
+	"		png	-p, --palette				Whether to use palette or not."<< endl << \
+	"			-c <value>, --compression=<value>	Compression level (0-9)." << endl << \
+	"		tiff" << endl << \
+	"		webp	-q <value>, --quality=<value>		Compression quality (0-100)." << endl
 
 using namespace std;
 
@@ -70,21 +78,21 @@ int main(int argc, char *argv[])
 
 	
 	// Parse action
-	if (actionName == "demo") { 
-		demo(200, 100);
-		return 0;
-	} else if (actionName != "pfm2ldr") {
-		cout << USAGE <<endl << HELP;
-		return 0;
-	}
-
 	if (cmdl[{"-h", "--help"}]) {
 		cout << USAGE << endl << HELP;
 		return 0;
 	}
 	
+	if (actionName == "demo") { 
+		demo(200, 100);
+		return 0;
+	} else if (actionName != "pfm2ldr") {
+		cout << USAGE << endl << RUN_HELP;
+		return 0;
+	}
+
 	if (cmdl.size() != 5) {
-		cerr << USAGE;
+		cerr << USAGE << endl << RUN_HELP;
 		return 1;
 	}
 
