@@ -64,6 +64,14 @@ cmake -G "Xcode" ..
 ```
 Now that it is all set you can open up the Xcode project built in the `build` directory and compile it from within the IDE.
 
+## Basic Tutorial
+We prepared a fun animation for you to start off: from the `image-renderer/` repo run the following
+```bash
+chmod +rx tutorial.sh
+./tutorial.sh
+```
+and enjoy the animation saved in the `build/animation_demo/` folder.
+![animation](https://media.giphy.com/media/JUbfrBiFQnYfyQ0oM6/giphy.gif)
 
 ## Usage examples
 
