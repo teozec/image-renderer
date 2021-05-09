@@ -61,7 +61,8 @@ enum class ImageFormat { png, webp, jpeg , tiff, bmp, gif };
 enum class CameraProjection { orthogonal, perspective };
 
 void makeCam (shared_ptr<Camera> cam, CameraProjection proj, float a, Transformation camT);
-void demo(int width, int height); //additional argument CameraProjection camProj
+void demo(int width, int height);  //additional argument CameraProjection camProj
+void animation(int width, int height); //additional argument CameraProjection camProj
 
 int main(int argc, char *argv[])
 {
@@ -84,7 +85,10 @@ int main(int argc, char *argv[])
 	}
 	
 	if (actionName == "demo") { 
-		demo(200, 100);
+		demo(300, 200);
+		return 0;
+	} else if (actionName == "animation") {
+		animation(300, 200);
 		return 0;
 	} else if (actionName != "pfm2ldr") {
 		cout << USAGE << endl << RUN_HELP;
@@ -179,6 +183,49 @@ int main(int argc, char *argv[])
 }
 
 
+void animation(int width, int height) {
+	HdrImage image{width, height};
+
+	World world;
+	for(int i{}; i<2; i++){
+		for(int j{}; j<2; j++){
+			for(int k{}; k<2; k++)
+				world.add(Sphere{translation(Vec{(float)(0.5-i), (float)(0.5-j), (float)(0.5-k)})*scaling(0.1, 0.1, 0.1)});
+		}
+	}
+
+	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
+	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
+
+	float aspectRatio = width/height;
+	ostringstream angle;
+	//shared_ptr<Camera> cam;
+	//makeCam(cam, camProj, aspectRatio, camTransformation);
+	for (int i{}; i<360; i++){
+		angle << setfill('0') << setw(3) <<i;
+		Transformation camTransformation{rotationZ(i*M_PI/180)*translation(Vec{1.f, 0.f, 0.f})};
+		PerspectiveCamera cam{aspectRatio, camTransformation};
+		ImageTracer tracer{image, cam};
+		tracer.fireAllRays([&world](Ray ray) {
+			if (world.rayIntersection(ray).hit)
+				return Color{1.f, 1.f, 1.f};
+			else
+				return Color{0.f, 0.f, 0.f};
+		});
+
+		ofstream outPfm;
+		outPfm.open("animation_demo/demo-"+ angle.str() +".pfm");
+		image.writePfm(outPfm);
+		outPfm.close();
+		angle.str("");
+		angle.clear();
+		char spinner[4] = {'/', '-', '\\', '|'};
+		cout << "Loading... "<<spinner[i%4] <<'	'<< to_string((int)(i/3.6)) <<"%\r";
+		cout.flush();
+	}
+	cout <<endl;
+}
+
 void demo(int width, int height) {
 	HdrImage image{width, height};
 
@@ -193,7 +240,7 @@ void demo(int width, int height) {
 	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
 	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
 
-	Transformation camTransformation{translation(Vec{-0.5f, 0.f, 0.f})};//try rotations
+	Transformation camTransformation{translation(Vec{1.f, 0.f, 0.f})};
 	float aspectRatio = width/height;
 	//shared_ptr<Camera> cam;
 	//makeCam(cam, camProj, aspectRatio, camTransformation);
@@ -211,6 +258,7 @@ void demo(int width, int height) {
 	image.writePfm(outPfm);
 	outPfm.close();
 }
+
 
 void makeCam (shared_ptr<Camera> cam, CameraProjection proj, float a, Transformation camT){
 	if(proj == CameraProjection::orthogonal)
