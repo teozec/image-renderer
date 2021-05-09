@@ -200,7 +200,7 @@ void demo(int width, int height) {
 
 	ofstream outPfm;
 	outPfm.open("demo.pfm");
-	tracer.image.writePfm(outPfm);
+	image.writePfm(outPfm);
 	outPfm.close();
 }
 

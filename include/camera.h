@@ -148,10 +148,10 @@ struct PerspectiveCamera : Camera {
 };
 
 struct ImageTracer {
-	HdrImage image;
+	HdrImage &image;
 	Camera &camera;
 
-	ImageTracer(HdrImage image, Camera &camera): image{image}, camera{camera} {}
+	ImageTracer(HdrImage &image, Camera &camera): image{image}, camera{camera} {}
 
 	/**
 	 * @brief Return a Ray starting from the observer and passing through the screen at (col, row)
