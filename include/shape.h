@@ -124,7 +124,7 @@ private:
 /**
  * @brief A Plane object derived from Shape.
  * 
- * @param transformation	The transformation to be xy plane.
+ * @param transformation	The transformation to the xy plane.
  * @see Shape.
  */
 struct Plane : public Shape {
@@ -157,6 +157,44 @@ private:
 
 	Vec2D planePointToUV(Point p) {
 		return Vec2D{p.x - std::floor(p.x), p.y - std::floor(p.y)};
+	}
+};
+
+/**
+ * @brief A CSGUnion object derived from Shape.
+ *
+ * @param transformation	The transformation to the shape.
+ * @see Shape.
+ */
+struct CSGUnion : public Shape {
+	std::shared_ptr<Shape> a, b;
+	CSGUnion(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b): Shape(), a{a}, b{b} {}
+	CSGUnion(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation):
+		Shape(transformation), a{a}, b{b} {}
+
+	HitRecord rayIntersection(Ray ray) {
+		Ray invRay{transformation.inverse() * ray};
+
+		HitRecord hitA{a->rayIntersection(invRay)};
+		HitRecord hitB{b->rayIntersection(invRay)};
+		HitRecord hit;
+
+		if (!hitA.hit and !hitB.hit)
+			return HitRecord{};
+		else if (!hitA.hit)
+			return hitB;
+		else if (!hitB.hit)
+			return hitA;
+		else if (hitA.t < hitB.t)
+			hit = hitA;
+		else
+			hit = hitB;
+		return HitRecord{
+			transformation * hit.worldPoint,
+			transformation * hit.normal,
+			hit.surfacePoint,
+			hit.t,
+			ray};
 	}
 };
 
