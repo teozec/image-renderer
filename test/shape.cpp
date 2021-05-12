@@ -125,12 +125,71 @@ void testWorld()
 	assert(intersection2.worldPoint == (Point{9.f, 0.f, 0.f}));
 }
 
+void testCSGUnion()
+{
+	Sphere sphere1{translation(Vec{-.5f, 0.f, 0.f})};
+	Sphere sphere2{translation(Vec{.5f, 0.f, 0.f})};
+
+	CSGUnion union1{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2)};
+	Ray ray1{Point{-2.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
+	Ray ray2{Point{2.f, 0.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
+
+	HitRecord hit1 = union1.rayIntersection(ray1);
+	assert(hit1.hit);
+	assert(hit1.worldPoint == (Point{-1.5f, 0.f, 0.f}));
+	assert((hit1.normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit1.surfacePoint, Vec2D{0.5f, 0.5f})));
+	assert(areClose(hit1.t, .5f));
+	assert(hit1.ray == ray1);
+
+	HitRecord hit2 = union1.rayIntersection(ray2);
+	assert(hit2.hit);
+	assert(hit2.worldPoint == (Point{1.5f, 0.f, 0.f}));
+	assert((hit2.normal == Normal{1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit2.surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hit2.t, .5f));
+	assert(hit2.ray == ray2);
+
+	CSGUnion union2{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2), translation(Vec{0.f, 10.f, 0.f})};
+	Ray ray3{Point{-2.25f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
+	Ray ray4{Point{1.75, 10.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
+
+	HitRecord hit3 = union2.rayIntersection(ray1);
+	assert(!hit3.hit);
+
+	HitRecord hit4 = union2.rayIntersection(ray3);
+	assert(hit4.hit);
+	assert(hit4.worldPoint == (Point{-1.5f, 10.f, 0.f}));
+	assert((hit4.normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit4.surfacePoint, Vec2D{0.5f, 0.5f})));
+	assert(areClose(hit4.t, .75f));
+	assert(hit4.ray == ray3);
+
+	HitRecord hit5 = union2.rayIntersection(ray4);
+	assert(hit5.hit);
+	assert(hit5.worldPoint == (Point{1.5f, 10.f, 0.f}));
+	assert((hit5.normal == Normal{1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit5.surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hit5.t, .25f));
+	assert(hit5.ray == ray4);
+
+	Ray ray5{Point{0.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
+	HitRecord hit6 = union1.rayIntersection(ray5);
+	assert(hit6.hit);
+	assert(hit6.worldPoint == (Point{.5f, 0.f, 0.f}));
+	assert((hit6.normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit6.surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hit6.t, .5f));
+	assert(hit6.ray == ray5);
+}
+
 int main()
 {
 	testSphere();
 	testSphereInner();
 	testSphereTransformation();
 	testWorld();
+	testCSGUnion();
 
 	return 0;
 }
