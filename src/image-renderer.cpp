@@ -58,7 +58,8 @@ using namespace std;
 enum class ImageFormat { png, webp, jpeg , tiff, bmp, gif };
 enum class CameraProjection { orthogonal, perspective };
 
-void demo(int width, int height);  //additional argument CameraProjection camProj
+int demo(argh::parser cmdl);
+int pfm2ldr(argh::parser cmdl);
 void animation(int width, int height); //additional argument CameraProjection camProj
 
 int main(int argc, char *argv[])
@@ -73,11 +74,8 @@ int main(int argc, char *argv[])
 
 	const string programName = cmdl[0];
 	const string actionName = cmdl[1];
-
 	
 	// Parse action
-	}
-	
 	if (actionName == "demo") { 
 		return demo(cmdl);
 	} else if (actionName == "pfm2ldr") {
@@ -92,6 +90,8 @@ int main(int argc, char *argv[])
 
 int pfm2ldr(argh::parser cmdl)
 {
+	const string programName = cmdl[0];
+
 	if (cmdl.size() != 5) {
 		cerr << USAGE << endl << RUN_HELP;
 		return 1;
@@ -221,7 +221,7 @@ void animation(int width, int height) {
 	cout <<endl;
 }
 
-void demo(int width, int height) {
+int demo(argh::parser cmdl) {
 	HdrImage image{width, height};
 
 	World world;
