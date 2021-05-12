@@ -25,7 +25,6 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cstring>
 #include <iostream>
 #include <iomanip>
-#include <unistd.h>
 
 #define USAGE \
 	"Usage: " << endl << \
@@ -77,22 +76,22 @@ int main(int argc, char *argv[])
 
 	
 	// Parse action
-	if (cmdl[{"-h", "--help"}]) {
-		cout << USAGE << endl << HELP;
-		return 0;
 	}
 	
 	if (actionName == "demo") { 
-		demo(300, 200);
+		return demo(cmdl);
+	} else if (actionName == "pfm2ldr") {
+		return pfm2ldr(cmdl);
+	} else if (cmdl[{"-h", "--help"}]) {
+		cout << USAGE << endl << HELP;
 		return 0;
-	} else if (actionName == "animation") {
-		animation(300, 200);
-		return 0;
-	} else if (actionName != "pfm2ldr") {
+	} else {
 		cout << USAGE << endl << RUN_HELP;
-		return 0;
 	}
+}
 
+int pfm2ldr(argh::parser cmdl)
+{
 	if (cmdl.size() != 5) {
 		cerr << USAGE << endl << RUN_HELP;
 		return 1;
