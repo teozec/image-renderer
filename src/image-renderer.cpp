@@ -29,17 +29,16 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #define USAGE \
 	"Usage: " << endl << \
 	programName << " -h|--help" << endl << \
-	programName << " demo" << endl << \
+	programName << " demo [options]" << endl << \
 	programName << " pfm2ldr [options] <format>" \
 	" <input-pfm-file> <output-file> " << endl
 
 #define RUN_HELP \
-	"Run '" << programName << " -h' for all supported options." << endl
+	"Run '" << programName << " " << actionName << " -h' for all supported options." << endl
 
-#define HELP \
+#define HELP_PFM2LDR \
 	"Available actions:" << endl << \
 	"-h, --help: print this message." << endl << endl << \
-	"demo: render a demo pfm image and write it to demo.pfm." << endl << endl << \
 	"pfm2ldr: convert a pfm image to a ldr image in the desired format." << endl << \
 	"	Common options:" << endl << \
 	"		-a <value>, --afactor=<value>			Normalization factor." << endl << \
@@ -53,10 +52,20 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"		tiff" << endl << \
 	"		webp	-q <value>, --quality=<value>		Compression quality (0-100)." << endl
 
+#define HELP_DEMO \
+	"Available actions:" << endl << \
+	"-h, --help: print this message." << endl << endl << \
+	"demo: render a demo pfm image and write it to a PFM file (default: 'demo.pfm')." << endl << endl << \
+	"	Common options:" << endl << \
+	"		-w <value>, --width=<value>			Width of the final image." << endl << \
+	"		-h <value>, --height=<value>			Height of the final image." << endl << \
+	"		-p <string>, --projection=<string>		Projection used (default 'perspective')." <<endl << \
+	"		--angleDeg=<value>				Angle of rotation (on z axis) of the camera." <<endl << \
+	"		-o <string>, --outfile=<string>			Filename of the output image." << endl
+
 using namespace std;
 
 enum class ImageFormat { png, webp, jpeg , tiff, bmp, gif };
-enum class CameraProjection { orthogonal, perspective };
 
 int demo(argh::parser cmdl);
 int pfm2ldr(argh::parser cmdl);
@@ -69,7 +78,12 @@ int main(int argc, char *argv[])
 	cmdl.add_params({"-a", "--afactor",
 			 "-g", "--gamma",
 			 "-c", "--compression",
-			 "-q", "--quality"});
+			 "-q", "--quality",
+			 "-w", "--width",
+			 "-h", "--height",
+			 "-p", "--projection",
+			 "--angleDeg",
+			 "-o", "--outfile"});
 	cmdl.parse(argc, argv);
 
 	const string programName = cmdl[0];
@@ -81,7 +95,7 @@ int main(int argc, char *argv[])
 	} else if (actionName == "pfm2ldr") {
 		return pfm2ldr(cmdl);
 	} else if (cmdl[{"-h", "--help"}]) {
-		cout << USAGE << endl << HELP;
+		cout << USAGE;
 		return 0;
 	} else {
 		cout << USAGE << endl << RUN_HELP;
@@ -91,6 +105,12 @@ int main(int argc, char *argv[])
 int pfm2ldr(argh::parser cmdl)
 {
 	const string programName = cmdl[0];
+	const string actionName = cmdl[1];
+
+	if (cmdl[{"-h", "--help"}]) {
+		cerr << HELP_PFM2LDR <<endl;
+		return 0;
+	}
 
 	if (cmdl.size() != 5) {
 		cerr << USAGE << endl << RUN_HELP;
@@ -179,51 +199,35 @@ int pfm2ldr(argh::parser cmdl)
 	return 0;
 }
 
-
-void animation(int width, int height) {
-	HdrImage image{width, height};
-
-	World world;
-	for(int i{}; i<2; i++){
-		for(int j{}; j<2; j++){
-			for(int k{}; k<2; k++)
-				world.add(Sphere{translation(Vec{(float)(0.5-i), (float)(0.5-j), (float)(0.5-k)})*scaling(0.1, 0.1, 0.1)});
-		}
-	}
-
-	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
-	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
-
-	float aspectRatio = width/height;
-	ostringstream angle;
-	for (int i{}; i<360; i++){
-		angle << setfill('0') << setw(3) <<i;
-		Transformation camTransformation{rotationZ(i*M_PI/180)*translation(Vec{1.f, 0.f, 0.f})};
-		PerspectiveCamera cam{aspectRatio, camTransformation};
-		ImageTracer tracer{image, cam};
-		tracer.fireAllRays([&world](Ray ray) {
-			if (world.rayIntersection(ray).hit)
-				return Color{1.f, 1.f, 1.f};
-			else
-				return Color{0.f, 0.f, 0.f};
-		});
-
-		ofstream outPfm;
-		outPfm.open("animation_demo/demo-"+ angle.str() +".pfm");
-		image.writePfm(outPfm);
-		outPfm.close();
-		angle.str("");
-		angle.clear();
-		char spinner[4] = {'/', '-', '\\', '|'};
-		cout << "Loading... "<<spinner[i%4] <<'	'<< to_string((int)(i/3.6)) <<"%\r";
-		cout.flush();
-	}
-	cout <<endl;
-}
-
 int demo(argh::parser cmdl) {
-	HdrImage image{width, height};
 
+	if (cmdl[{"-h", "--help"}]) {
+		cerr << HELP_DEMO <<endl;
+		return 0;
+	}
+	int width, height;
+	cmdl({"-w", "--width"}, 300) >> width;
+	cmdl({"-h", "--height"}, 200) >> height;
+	float aspectRatio = width/height;
+
+	string projString;
+	int angle;
+	cmdl({"-p", "--projection"}, "perspective") >> projString;
+	cmdl({"--angleDeg"}, 0) >> angle;
+	Transformation camTransformation{rotationZ(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
+	shared_ptr<Camera> cam;
+	if (projString == "orthogonal")
+		cam = make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, camTransformation});
+	else if (projString == "perspective")
+		cam = make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, camTransformation});
+	else {
+		cout << "Projection unrecognized. Try \"orthogonal\" or \"perspective\"." <<endl;
+		return 1;
+	}
+	string ofilename;
+	cmdl({"-o", "--output"}, "demo.pfm") >> ofilename;
+
+	HdrImage image{width, height};
 	World world;
 	for(int i{}; i<2; i++){
 		for(int j{}; j<2; j++){
@@ -231,18 +235,9 @@ int demo(argh::parser cmdl) {
 				world.add(Sphere{translation(Vec{(float)(0.5-i), (float)(0.5-j), (float)(0.5-k)})*scaling(0.1, 0.1, 0.1)});
 		}
 	}
-
 	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
 	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
 
-	Transformation camTransformation{translation(Vec{-1.f, 0.f, 0.f})};
-	float aspectRatio = width/height;
-	shared_ptr<Camera> cam;
-	CameraProjection camProj{CameraProjection::perspective};
-	if (camProj == CameraProjection::orthogonal)
-		cam = make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, camTransformation});
-	else if (camProj == CameraProjection::perspective)
-		cam = make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, camTransformation});
 	ImageTracer tracer{image, *cam};
 	tracer.fireAllRays([&world](Ray ray) {
 		if (world.rayIntersection(ray).hit)
@@ -252,7 +247,9 @@ int demo(argh::parser cmdl) {
 	});
 
 	ofstream outPfm;
-	outPfm.open("demo.pfm");
+	outPfm.open(ofilename);
 	image.writePfm(outPfm);
 	outPfm.close();
+
+	return 0;
 }
