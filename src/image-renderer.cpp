@@ -57,10 +57,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 using namespace std;
 
 enum class ImageFormat { png, webp, jpeg , tiff, bmp, gif };
-
 enum class CameraProjection { orthogonal, perspective };
 
-void makeCam (shared_ptr<Camera> cam, CameraProjection proj, float a, Transformation camT);
 void demo(int width, int height);  //additional argument CameraProjection camProj
 void animation(int width, int height); //additional argument CameraProjection camProj
 
@@ -199,8 +197,6 @@ void animation(int width, int height) {
 
 	float aspectRatio = width/height;
 	ostringstream angle;
-	//shared_ptr<Camera> cam;
-	//makeCam(cam, camProj, aspectRatio, camTransformation);
 	for (int i{}; i<360; i++){
 		angle << setfill('0') << setw(3) <<i;
 		Transformation camTransformation{rotationZ(i*M_PI/180)*translation(Vec{1.f, 0.f, 0.f})};
@@ -240,12 +236,15 @@ void demo(int width, int height) {
 	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
 	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
 
-	Transformation camTransformation{translation(Vec{1.f, 0.f, 0.f})};
+	Transformation camTransformation{translation(Vec{-1.f, 0.f, 0.f})};
 	float aspectRatio = width/height;
-	//shared_ptr<Camera> cam;
-	//makeCam(cam, camProj, aspectRatio, camTransformation);
-	PerspectiveCamera cam{aspectRatio, camTransformation};
-	ImageTracer tracer{image, cam};
+	shared_ptr<Camera> cam;
+	CameraProjection camProj{CameraProjection::perspective};
+	if (camProj == CameraProjection::orthogonal)
+		cam = make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, camTransformation});
+	else if (camProj == CameraProjection::perspective)
+		cam = make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, camTransformation});
+	ImageTracer tracer{image, *cam};
 	tracer.fireAllRays([&world](Ray ray) {
 		if (world.rayIntersection(ray).hit)
 			return Color{1.f, 1.f, 1.f};
@@ -257,12 +256,4 @@ void demo(int width, int height) {
 	outPfm.open("demo.pfm");
 	image.writePfm(outPfm);
 	outPfm.close();
-}
-
-
-void makeCam (shared_ptr<Camera> cam, CameraProjection proj, float a, Transformation camT){
-	if(proj == CameraProjection::orthogonal)
-		OrthogonalCamera cam{a, camT};
-	else if (proj == CameraProjection::perspective)
-		PerspectiveCamera cam{a, camT};
 }

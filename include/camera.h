@@ -136,8 +136,8 @@ struct PerspectiveCamera : Camera {
 	Transformation transformation{};
 
 	PerspectiveCamera(float a, float d, Transformation t) : Camera(a, d), transformation{t} {}
-	PerspectiveCamera(float a, Transformation t, float d = -1.f) : Camera(a, d), transformation{t} {}
-	PerspectiveCamera(float a, float d = -1.f) : Camera(a, d) {}
+	PerspectiveCamera(float a, Transformation t, float d = 1.f) : Camera(a, d), transformation{t} {}
+	PerspectiveCamera(float a, float d = 1.f) : Camera(a, d) {}
 	PerspectiveCamera(Transformation t) : transformation{t} {}
 
 	virtual Ray fireRay(float u, float v) {
