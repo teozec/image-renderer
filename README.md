@@ -64,36 +64,64 @@ cmake -G "Xcode" ..
 ```
 Now that it is all set you can open up the Xcode project built in the `build` directory and compile it from within the IDE.
 
+## Basic Tutorial
+We prepared a fun animation for you to start off: from the `image-renderer/` repo run the following
+```bash
+chmod +rx tutorial.sh
+./tutorial.sh
+```
+and enjoy the animation saved in the `build/animation_demo/` folder.
+
+![animation](https://media.giphy.com/media/JUbfrBiFQnYfyQ0oM6/giphy.gif)
 
 ## Usage examples
+You can choose one of two subcommands: `demo` or `pfm2ldr`.
 
-### Converting a PFM file to a LDR image
+### Run a demo of our program with `demo`
+
+In order to get used to our program you can run our demo:
+```bash
+image-renderer demo
+```
+
+You can also set some parameters like width and height of the final image, e.g.
+```bash
+image-renderer demo -w 300 -h 200
+```
+This will output a `demo.pfm` which can be then converted to any LDR image supported ([see next pararaph](#converting-a-pfm-file-to-a-ldr-image-with-`pfm2ldr`)).
+
+To get a list of all options available run
+```bash
+image-renderer pfm2ldr --help
+```
+
+### Converting a PFM file to a LDR image with `pfm2ldr`
 
 After rendering a PFM file, you can use the executable to convert it to a LDR image format.
 
 Usage:
 ```bash
-image-renderer [options] <format> <input> <output>
+image-renderer pfm2ldr [options] <format> <input> <output>
 ```
 
 For example, to save it as a 24-bit png file you can run:
 ```bash
-image-renderer png input.pfm output.png
+image-renderer pfm2ldr png input.pfm output.png
 ```
 
 If you wish to convert your PFM to a 8-bit colormap PNG (using a palette), with a compression factor of 5, run:
 ```bash
-image-renderer -p -c 5 png input.pfm output.png 
+image-renderer pfm2ldr -p -c 5 png input.pfm output.png 
 ```
 
 To generate a webp with a normalization factor a=2.5 and a gamma of 1.3, run:
 ```bash
-image-renderer --afactor=2.5 --gamma=1.3 webp input.pfm output.webp
+image-renderer pfm2ldr --afactor=2.5 --gamma=1.3 webp input.pfm output.webp
 ```
 
 To generate a jpeg with a quality of 60 (max is 95) run:
 ```bash
-image-renderer -c 60 jpeg input.pfm output.jpeg
+image-renderer pfm2ldr -c 60 jpeg input.pfm output.jpeg
 ```
 
 Similarly all other formats. Here a list of all supported formats:
@@ -106,7 +134,7 @@ Similarly all other formats. Here a list of all supported formats:
 
 To get a list of supported options for each format, please run
 ```bash
-image-renderer --help
+image-renderer pfm2ldr --help
 ```
 
 ## Contributing
