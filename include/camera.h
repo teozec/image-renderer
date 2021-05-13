@@ -18,7 +18,6 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <geometry.h>
 #include <limits>
 #include "geometry.h"
 #include "hdr-image.h"
@@ -43,6 +42,15 @@ struct Ray {
 
 	bool operator!=(Ray other) {
 		return !(*this == other);
+	}
+	
+	Ray operator=(const Ray &other) {
+		origin = other.origin;
+		dir = other.dir;
+		tmin = other.tmin;
+		tmax = other.tmax;
+		depth = other.depth;
+		return *this;
 	}
 
 	/**
@@ -87,10 +95,6 @@ struct Camera {
 	 * @see Ray
 	 */
 	virtual Ray fireRay(float u, float v) = 0;
-		/* To be continued...
-		float a[3] = {-d, 0.f, 0.f};
-		float b[3] = {d, (1.f-2*u)*a, 2*v-1.f};
-		*/
 };
 
 /** OrthogonalCamera class
@@ -132,7 +136,8 @@ struct PerspectiveCamera : Camera {
 	Transformation transformation{};
 
 	PerspectiveCamera(float a, float d, Transformation t) : Camera(a, d), transformation{t} {}
-	PerspectiveCamera(float a, float d = -1.f) : Camera(a, d) {}
+	PerspectiveCamera(float a, Transformation t, float d = 1.f) : Camera(a, d), transformation{t} {}
+	PerspectiveCamera(float a, float d = 1.f) : Camera(a, d) {}
 	PerspectiveCamera(Transformation t) : transformation{t} {}
 
 	virtual Ray fireRay(float u, float v) {
@@ -143,10 +148,10 @@ struct PerspectiveCamera : Camera {
 };
 
 struct ImageTracer {
-	HdrImage image;
+	HdrImage &image;
 	Camera &camera;
 
-	ImageTracer(HdrImage image, Camera &camera): image{image}, camera{camera} {}
+	ImageTracer(HdrImage &image, Camera &camera): image{image}, camera{camera} {}
 
 	/**
 	 * @brief Return a Ray starting from the observer and passing through the screen at (col, row)
@@ -166,14 +171,15 @@ struct ImageTracer {
 	/**
 	 * @brief Write the scene to the image, calculating the color for each pixel using the color function
 	 *
-	 * @tparam T The signature of the color function
+	 * @tparam T	The signature of the color function
 	 * @param color The function to compute a Color given a Ray
 	 */
-	template <typename T> void fireAllRays(T color) {
+	template <typename T> void fireAllRays(T colorFunc) {
 		for (int row{}; row < image.height; row++) {
 			for (int col{}; col < image.width; col++) {
 				Ray ray = fireRay(col, row);
-				image.setPixel(col, row, color(ray));
+				Color color = colorFunc(ray);
+				image.setPixel(col, row, color);
 			}
 		}
 	}

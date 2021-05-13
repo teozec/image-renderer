@@ -83,9 +83,20 @@ add_test(NAME geometry-test
 add_executable(camera-test
 	test/camera.cpp
 	)
+
 target_link_libraries(camera-test PUBLIC trace)
 add_test(NAME camera-test
 	COMMAND camera-test
+	)
+
+# shape-test
+add_executable(shape-test
+	test/shape.cpp
+	)
+
+target_link_libraries(shape-test PUBLIC trace)
+add_test(NAME shape-test
+	COMMAND shape-test
 	)
 
 target_compile_features(image-renderer PUBLIC cxx_std_17)
