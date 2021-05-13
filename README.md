@@ -17,7 +17,8 @@ It is based on the lectures of the _Numerical tecniques for photorealistic image
     - [Standard Unix and Windows](#standard-unix-and-windows)
     - [MacOS (Xcode)](#macOS-(Xcode))
 - [Usage examples](#usage-examples)
-    - [Converting a PFM file to a LDR image](#converting-a-pfm-file-to-a-ldr-image)
+	- [Run a demo of our program with `demo`](#Run-a-demo-of-our-program-with-`demo`)
+    - [Converting a PFM file to a LDR image with `pfm2ldr`](#Converting-a-PFM-file-to-a-LDR-image-with-pfm2ldr)
 - [Contributing](#contributing)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
@@ -88,11 +89,11 @@ You can also set some parameters like width and height of the final image, e.g.
 ```bash
 image-renderer demo -w 300 -h 200
 ```
-This will output a `demo.pfm` which can be then converted to any LDR image supported ([see next pararaph](#converting-a-pfm-file-to-a-ldr-image-with-`pfm2ldr`)).
+This will output a `demo.pfm` which can be then converted to any LDR image supported ([see next pararaph](#Converting-a-PFM-file-to-a-LDR-image-with-`pfm2ldr`)).
 
 To get a list of all options available run
 ```bash
-image-renderer pfm2ldr --help
+image-renderer demo --help
 ```
 
 ### Converting a PFM file to a LDR image with `pfm2ldr`
