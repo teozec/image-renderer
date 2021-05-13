@@ -240,9 +240,8 @@ int demo(argh::parser cmdl) {
 
 	ImageTracer tracer{image, *cam};
 	Color col[3] = {Color{1.f, 0.f, 0.f}, Color{0.f, 1.f, 0.f}, Color{0.f, 0.f, 1.f}};
-	tracer.fireAllRays([&world, &col](Ray ray) {
+	tracer.fireAllRays([&world](Ray ray) {
 		HitRecord record = world.rayIntersection(ray);
-		int counter = 0;
 		if (record.hit){
 			return Color{5.f, 2.f, 0.f};
 		} else
