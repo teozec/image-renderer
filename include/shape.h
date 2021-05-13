@@ -50,8 +50,8 @@ struct HitRecord {
 		hit{other.hit}, worldPoint{other.worldPoint}, normal{other.normal}, //
 		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray} {}
 	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray):
-		worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint},
-		t{t}, ray{ray}, hit{true} {}
+		hit{true}, worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint},
+		t{t}, ray{ray} {}
 
 	HitRecord operator=(const HitRecord &other) {
 		hit = other.hit;
@@ -138,8 +138,8 @@ struct Plane : public Shape {
 
 		if (std::abs(dir.z - 0.f) < epsilon)
 			return HitRecord{};
-
 		float t = -origin.z / dir.z;
+
 		Point hitPoint{invRay(t)};
 		return HitRecord{
 			transformation * hitPoint,
@@ -217,7 +217,7 @@ struct World {
 			HitRecord intersection = shapes[i]->rayIntersection(ray);
 			if(!intersection.hit)
 				continue;
-			if(!closest.hit or intersection.t < closest.t)
+			if((!closest.hit) || (intersection.t < closest.t))
 				closest = intersection;
 		}
 		return closest;

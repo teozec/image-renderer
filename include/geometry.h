@@ -203,7 +203,7 @@ struct Normal {
 	// Compare Normals with a default precision.
 	// For a different precision, call areClose<Normal> directly.
 	bool operator==(const Normal &other) {
-		const float epsilon = 1e-10f;
+		const float epsilon = 1e-5f;
 		return areClose<Normal>(*this, other, epsilon);
 	}
 

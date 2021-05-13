@@ -97,7 +97,6 @@ void testSphereTransformation()
 	assert(hit2.hit);
 	assert((hit2.worldPoint == Point{11.f, 0.f, 0.f}));
 	assert((hit2.normal == Normal{1.f, 0.f, 0.f}));
-	cout << hit2.surfacePoint.u << '\t' << hit2.surfacePoint.v << endl;
 	assert((areSphereSurfacePointsClose(hit2.surfacePoint, Vec2D{0.5f, 0.f})));
 	assert(areClose(hit2.t, 2.f));
 	assert(hit2.ray == ray2);
@@ -108,6 +107,38 @@ void testSphereTransformation()
 	Ray ray4{Point{-10.f, 0.f, 0.f}, Vec{0.f, 0.f, -1.f}};
 	HitRecord hit4{sphere.rayIntersection(ray4)};
 	assert(!hit4.hit);
+}
+
+void testPlane()
+{
+	Plane plane1;
+	Ray ray1{Point{0.f, 0.f, 2.f}, Vec{0.f, 0.f, -1.f}};
+	HitRecord hit1{plane1.rayIntersection(ray1)};
+	assert(hit1.hit);
+	assert((hit1.worldPoint == Point{0.f, 0.f, 0.f}));
+	assert((hit1.normal == Normal{0.f, 0.f, 1.f}));
+	assert(areClose(hit1.t, 2.f));
+	assert(hit1.ray == ray1);
+
+	Ray ray2{Point{0.f, 2.f, -2.f}, Vec{0.f, 0.f, 1.f}};
+	HitRecord hit2{plane1.rayIntersection(ray2)};
+	assert(hit2.hit);
+	assert((hit2.worldPoint == Point{0.f, 2.f, 0.f}));
+	assert((hit2.normal == Normal{0.f, 0.f, -1.f}));
+	assert(areClose(hit2.t, 2.f));
+	assert(hit2.ray == ray2);
+}
+
+void testPlaneTransformation()
+{
+	Plane plane2{rotationY(M_PI_2)};
+	Ray ray2{Point{2.f, 0.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
+	HitRecord hit2{plane2.rayIntersection(ray2)};
+	assert(hit2.hit);
+	assert((hit2.worldPoint == Point{0.f, 0.f, 0.f}));
+	assert(hit2.normal==(Normal{-1.f, 0.f, 0.f}));
+	assert(areClose(hit2.t, 2.f));
+	assert(hit2.ray == ray2);
 }
 
 void testWorld()
@@ -188,6 +219,8 @@ int main()
 	testSphere();
 	testSphereInner();
 	testSphereTransformation();
+	testPlane();
+	testPlaneTransformation();
 	testWorld();
 	testCSGUnion();
 

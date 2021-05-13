@@ -239,11 +239,14 @@ int demo(argh::parser cmdl) {
 	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
 
 	ImageTracer tracer{image, *cam};
-	tracer.fireAllRays([&world](Ray ray) {
-		if (world.rayIntersection(ray).hit)
-			return Color{1.f, 1.f, 1.f};
-		else
-			return Color{0.f, 0.f, 0.f};
+	Color col[3] = {Color{1.f, 0.f, 0.f}, Color{0.f, 1.f, 0.f}, Color{0.f, 0.f, 1.f}};
+	tracer.fireAllRays([&world, &col](Ray ray) {
+		HitRecord record = world.rayIntersection(ray);
+		int counter = 0;
+		if (record.hit){
+			return Color{5.f, 2.f, 0.f};
+		} else
+			return Color{0.01, 0.03, 0.1};
 	});
 
 	ofstream outPfm;
