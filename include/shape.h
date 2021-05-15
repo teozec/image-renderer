@@ -256,7 +256,7 @@ struct Triangle : public Shape {
 		float D2 = determinantOfMatrix(m2);
 		float D3 = determinantOfMatrix(m3);
 	
-		return std::vector<float> {D1/D, D2/D, D3/abs(D)};
+		return std::vector<float> {D1/D, D2/D, D3/D};
 		
 	}
 };
