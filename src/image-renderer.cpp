@@ -229,7 +229,7 @@ int demo(argh::parser cmdl) {
 
 	HdrImage image{width, height};
 	World world;
-	world.add(Triangle{Point{0.f, -0.5, 0.f}, Point{0.f, 0.f, 0.5}, Point{0.f, 0.f, 0.f}});
+	world.add(Triangle{rotationX(M_PI_2)*translation(Vec{0.5, 0.f, 0.f})*scaling(0.5, 0.5, 0.5)});
 	for(int i{}; i<2; i++){
 		for(int j{}; j<2; j++){
 			for(int k{}; k<2; k++)

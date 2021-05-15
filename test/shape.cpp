@@ -216,14 +216,28 @@ void testCSGUnion()
 
 void testTriangle() {
 	Triangle triangle{Point{1.f, 1.f, 0.f}, Point{0.f, 1.f, 0.f}, Point{1.f, 0.f, 0.f}};
-	Ray ray{Point{0.66666, 0.66666, 2.f}, Vec{0.f, 0.f, -1.f}};
+	Ray ray{Point{(float)2/3, (float)2/3, 2.f}, Vec{0.f, 0.f, -1.f}};
 	HitRecord hit{triangle.rayIntersection(ray)};
 	assert(hit.hit);
-	assert((hit.worldPoint == Point{0.66666, 0.66666, 0.f}));
+	assert(hit.worldPoint == (Point{(float)2/3, (float)2/3, 0.f}));
 	assert(hit.normal==(Normal{0.f, 0.f, 1.f}));
-	assert(areClose(hit.t, 2.f));
+	assert(hit.t == 2.f);
 	assert(hit.ray == ray);
 	Ray extRay{Point{(float)1/3, (float)1/3, 2.f}, Vec{0.f, 0.f, -1.f}};
+	HitRecord extHit{triangle.rayIntersection(extRay)};
+	assert(!(extHit.hit));
+}
+
+void testTriangleTransformation() {
+	Triangle triangle{rotationX(M_PI_2)};
+	Ray ray{Point{2.f, -(float)1/3, (float)1/3}, Vec{-1.f, 0.f, 0.f}};
+	HitRecord hit{triangle.rayIntersection(ray)};
+	assert(hit.hit);
+	assert(hit.worldPoint == (Point{0.f, -(float)1/3, (float)1/3}));
+	assert(hit.normal==(Normal{1.f, 0.f, 0.f}));
+	assert(areClose(hit.t, 2.f));
+	assert(hit.ray == ray);
+	Ray extRay{Point{(float)2/3, (float)2/3, 2.f}, Vec{0.f, 0.f, -1.f}};
 	HitRecord extHit{triangle.rayIntersection(extRay)};
 	assert(!(extHit.hit));
 }
@@ -238,5 +252,6 @@ int main()
 	testWorld();
 	testCSGUnion();
 	testTriangle();
+	testTriangleTransformation();
 	return 0;
 }

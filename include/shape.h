@@ -163,9 +163,16 @@ private:
 struct Triangle : public Shape {
 
 	Triangle(): Shape() {}
-	Triangle(Transformation transform): Shape(transform) {} 
-	Triangle(Point A, Point B, Point C, Transformation transform = Transformation{}) : 
-		A{A}, B{B}, C{C}, Shape{transform} {}
+	Triangle(Transformation transform): Shape(transform) {
+		A = transform*(this->A);
+		B = transform*(this->B);
+		C = transform*(this->C);
+		} 
+	Triangle(Point a, Point b, Point c, Transformation transform = Transformation{}) : Shape(transform) {
+		A = transform*a;
+		B = transform*b;
+		C = transform*c;
+	}
 
     HitRecord rayIntersection(Ray ray){
 		float s[3][3] = {{(B-A).x, (C-A).x, ray.dir.x},
@@ -192,8 +199,8 @@ struct Triangle : public Shape {
 		Vec perp = (B-A).cross(C-A);
 		Normal hitNormal = triangleNormal(perp, ray.dir);
 		return HitRecord{
-			transformation * hitPoint,
-			transformation * hitNormal,
+			hitPoint,
+			hitNormal,
 			trianglePointToUV(beta, gamma),
 			t,
 			ray};
