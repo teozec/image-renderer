@@ -214,6 +214,20 @@ void testCSGUnion()
 	assert(hit6.ray == ray5);
 }
 
+void testTriangle() {
+	Triangle triangle{Point{1.f, 1.f, 0.f}, Point{0.f, 1.f, 0.f}, Point{1.f, 0.f, 0.f}};
+	Ray ray{Point{0.66666, 0.66666, 2.f}, Vec{0.f, 0.f, -1.f}};
+	HitRecord hit{triangle.rayIntersection(ray)};
+	assert(hit.hit);
+	assert((hit.worldPoint == Point{0.66666, 0.66666, 0.f}));
+	assert(hit.normal==(Normal{0.f, 0.f, 1.f}));
+	assert(areClose(hit.t, 2.f));
+	assert(hit.ray == ray);
+	Ray extRay{Point{(float)1/3, (float)1/3, 2.f}, Vec{0.f, 0.f, -1.f}};
+	HitRecord extHit{triangle.rayIntersection(extRay)};
+	assert(!(extHit.hit));
+}
+
 int main()
 {
 	testSphere();
@@ -223,6 +237,6 @@ int main()
 	testPlaneTransformation();
 	testWorld();
 	testCSGUnion();
-
+	testTriangle();
 	return 0;
 }
