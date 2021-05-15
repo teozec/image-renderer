@@ -168,7 +168,7 @@ struct Point {
 	// Compare Points with a default precision.
 	// For a different precision, call areClose<Point> directly.
 	bool operator==(const Point &other) {
-		const float epsilon = 1e-10f;
+		const float epsilon = 1e-5f;
 		return areClose<Point>(*this, other, epsilon);
 	}
 

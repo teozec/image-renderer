@@ -229,6 +229,7 @@ int demo(argh::parser cmdl) {
 
 	HdrImage image{width, height};
 	World world;
+	world.add(Triangle{Point{0.f, -0.5, 0.f}, Point{0.f, 0.f, 0.5}, Point{0.f, 0.f, 0.f}});
 	for(int i{}; i<2; i++){
 		for(int j{}; j<2; j++){
 			for(int k{}; k<2; k++)
@@ -239,7 +240,6 @@ int demo(argh::parser cmdl) {
 	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
 
 	ImageTracer tracer{image, *cam};
-	Color col[3] = {Color{1.f, 0.f, 0.f}, Color{0.f, 1.f, 0.f}, Color{0.f, 0.f, 1.f}};
 	tracer.fireAllRays([&world](Ray ray) {
 		HitRecord record = world.rayIntersection(ray);
 		if (record.hit){

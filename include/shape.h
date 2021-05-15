@@ -160,6 +160,100 @@ private:
 	}
 };
 
+struct Triangle : public Shape {
+
+	Triangle(): Shape() {}
+	Triangle(Transformation transform): Shape(transform) {} 
+	Triangle(Point A, Point B, Point C, Transformation transform = Transformation{}) : 
+		A{A}, B{B}, C{C}, Shape{transform} {}
+
+    HitRecord rayIntersection(Ray ray){
+		float s[3][3] = {{(B-A).x, (C-A).x, ray.dir.x},
+						{(B-A).y, (C-A).y, ray.dir.y},
+						{(B-A).z, (C-A).z, ray.dir.z}};
+		Vec b{ray.origin-A};
+		float beta, gamma, t;
+
+		if (determinantOfMatrix(s) == 0.f)
+			return HitRecord{};
+
+		std::vector<float> solution = findSolution(s, b);
+		if (!(ray.tmin < abs(solution[2]) && abs(solution[2]) < ray.tmax) 
+			|| !(0 < solution[1] && solution[1] < 1)
+			|| !(0 < solution[0] && solution[0] < 1)
+			|| !(0 < 1-solution[0]-solution[1] && 1-solution[0]-solution[1] < 1)) {
+			return HitRecord{};
+		}
+
+		t = solution[2];
+		gamma = solution[1];
+		beta = solution[0];
+		Point hitPoint = ray(t);
+		Vec perp = (B-A).cross(C-A);
+		Normal hitNormal = triangleNormal(perp, ray.dir);
+		return HitRecord{
+			transformation * hitPoint,
+			transformation * hitNormal,
+			trianglePointToUV(beta, gamma),
+			t,
+			ray};
+	}
+
+  private:
+
+	Point A{0.f, 0.f, 0.f}, B{0.f, 1.f, 0.f}, C{0.f, 0.f, 1.f};
+
+  	Normal triangleNormal(Vec p, Vec dir) {
+		p.normalize();
+		Normal result{p.x, p.y, p.z};
+		return dir.dot(p) < 0. ? result : -result;
+	}
+
+	Vec2D trianglePointToUV(float beta, float gamma) {
+		return Vec2D{beta, gamma};
+	}
+
+	float determinantOfMatrix(float mat[3][3]) {
+		float ans;
+		ans = mat[0][0] * (mat[1][1] * mat[2][2] - mat[2][1] * mat[1][2])
+			- mat[0][1] * (mat[1][0] * mat[2][2] - mat[1][2] * mat[2][0])
+			+ mat[0][2] * (mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0]);
+		return ans;
+	}
+
+	// Cramer method
+	std::vector<float> findSolution(float a[3][3], Vec b) {
+		float coeff[3][4] = {
+			{a[0][0], a[0][1], a[0][2], b.x},
+			{a[1][0], a[1][1], a[1][2], b.y},
+			{a[2][0], a[2][1], a[2][2], b.z}
+		};
+		float m1[3][3] = {
+			{ coeff[0][3], coeff[0][1], coeff[0][2] },
+			{ coeff[1][3], coeff[1][1], coeff[1][2] },
+			{ coeff[2][3], coeff[2][1], coeff[2][2] }
+		};
+		float m2[3][3] = {
+			{ coeff[0][0], coeff[0][3], coeff[0][2] },
+			{ coeff[1][0], coeff[1][3], coeff[1][2] },
+			{ coeff[2][0], coeff[2][3], coeff[2][2] }
+		};
+		float m3[3][3] = {
+			{ coeff[0][0], coeff[0][1], coeff[0][3] },
+			{ coeff[1][0], coeff[1][1], coeff[1][3] },
+			{ coeff[2][0], coeff[2][1], coeff[2][3] }
+		};
+
+		float D = determinantOfMatrix(a);
+		float D1 = determinantOfMatrix(m1);
+		float D2 = determinantOfMatrix(m2);
+		float D3 = determinantOfMatrix(m3);
+	
+		return std::vector<float> {D1/D, D2/D, D3/abs(D)};
+		
+	}
+};
+
 /**
  * @brief A CSGUnion object derived from Shape.
  *
