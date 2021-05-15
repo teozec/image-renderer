@@ -185,7 +185,7 @@ struct Triangle : public Shape {
 			return HitRecord{};
 
 		std::vector<float> solution = findSolution(s, b);
-		if (!(ray.tmin < abs(solution[2]) && abs(solution[2]) < ray.tmax) 
+		if (!(ray.tmin < solution[2] && solution[2] < ray.tmax) 
 			|| !(0 < solution[1] && solution[1] < 1)
 			|| !(0 < solution[0] && solution[0] < 1)
 			|| !(0 < 1-solution[0]-solution[1] && 1-solution[0]-solution[1] < 1)) {
@@ -256,7 +256,7 @@ struct Triangle : public Shape {
 		float D2 = determinantOfMatrix(m2);
 		float D3 = determinantOfMatrix(m3);
 	
-		return std::vector<float> {D1/D, D2/D, D3/D};
+		return std::vector<float> {D1/D, D2/D, -D3/D};
 		
 	}
 };
