@@ -22,6 +22,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cassert>
 #include <iostream>
 #include <cmath>
+#include <vector>
 
 using namespace std;
 
@@ -64,6 +65,11 @@ void testSphere()
 	assert((areSphereSurfacePointsClose(hit2.surfacePoint, Vec2D{0.5f, 0.f})));
 	assert(areClose(hit2.t, 2.f));
 	assert(hit2.ray == ray2);
+
+	vector<HitRecord> hit3 = sphere2.allIntersections(ray2);
+	assert(hit3.size() == 2);
+	assert(hit3[0].t = 2.f);
+	assert(hit3[1].t = 4.f);
 }
 
 void testSphereInner()
@@ -77,6 +83,8 @@ void testSphereInner()
 	assert((areSphereSurfacePointsClose(hit1.surfacePoint, Vec2D{0.5f, 0.f})));
 	assert(areClose(hit1.t, 1.f));
 	assert(hit1.ray == ray1);
+
+	assert((sphere1.isInner(Point{0.f, 0.f, 0.f})));
 }
 
 void testSphereTransformation()
@@ -107,13 +115,16 @@ void testSphereTransformation()
 	Ray ray4{Point{-10.f, 0.f, 0.f}, Vec{0.f, 0.f, -1.f}};
 	HitRecord hit4{sphere.rayIntersection(ray4)};
 	assert(!hit4.hit);
+
+	assert((sphere.isInner(Point{10.f, 0.f, 0.f})));
+	assert(!(sphere.isInner(Point{0.f, 0.f, 0.f})));
 }
 
 void testPlane()
 {
-	Plane plane1;
+	Plane plane;
 	Ray ray1{Point{0.f, 0.f, 2.f}, Vec{0.f, 0.f, -1.f}};
-	HitRecord hit1{plane1.rayIntersection(ray1)};
+	HitRecord hit1{plane.rayIntersection(ray1)};
 	assert(hit1.hit);
 	assert((hit1.worldPoint == Point{0.f, 0.f, 0.f}));
 	assert((hit1.normal == Normal{0.f, 0.f, 1.f}));
@@ -121,24 +132,30 @@ void testPlane()
 	assert(hit1.ray == ray1);
 
 	Ray ray2{Point{0.f, 2.f, -2.f}, Vec{0.f, 0.f, 1.f}};
-	HitRecord hit2{plane1.rayIntersection(ray2)};
+	HitRecord hit2{plane.rayIntersection(ray2)};
 	assert(hit2.hit);
 	assert((hit2.worldPoint == Point{0.f, 2.f, 0.f}));
 	assert((hit2.normal == Normal{0.f, 0.f, -1.f}));
 	assert(areClose(hit2.t, 2.f));
 	assert(hit2.ray == ray2);
+
+	assert((plane.isInner(Point{1.f, 2.f, -3.f})));
+	assert(!(plane.isInner(Point{-1.f, -2.f, 3.f})));
 }
 
 void testPlaneTransformation()
 {
-	Plane plane2{rotationY(M_PI_2)};
+	Plane plane{rotationY(M_PI_2)};
 	Ray ray2{Point{2.f, 0.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
-	HitRecord hit2{plane2.rayIntersection(ray2)};
+	HitRecord hit2{plane.rayIntersection(ray2)};
 	assert(hit2.hit);
 	assert((hit2.worldPoint == Point{0.f, 0.f, 0.f}));
 	assert(hit2.normal==(Normal{-1.f, 0.f, 0.f}));
 	assert(areClose(hit2.t, 2.f));
 	assert(hit2.ray == ray2);
+
+	assert((plane.isInner(Point{1.f, 2.f, -3.f})));
+	assert(!(plane.isInner(Point{1.f, -2.f, 3.f})));
 }
 
 void testWorld()

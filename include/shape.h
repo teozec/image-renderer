@@ -21,6 +21,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <algorithm>
 #include "geometry.h"
 #include "camera.h"
 #include <cmath>
@@ -64,12 +65,22 @@ struct HitRecord {
 		}
 		return *this;
 	}	
+
+	bool operator<(const HitRecord &other) {
+		return this->t < other.t;
+	}
+
+	bool operator>(const HitRecord &other) {
+		return this->t > other.t;
+	}
 };
 
 struct Shape {
 	Transformation transformation;
 	Shape(Transformation transformation = Transformation()): transformation{transformation} {}
 	virtual HitRecord rayIntersection(Ray ray) = 0;
+	virtual std::vector<HitRecord> allIntersections(Ray ray) = 0;
+	virtual bool isInner(Point p) = 0;
 };
 
 /**
@@ -95,22 +106,50 @@ struct Sphere : public Shape {
 		float t1 = (-origin.dot(dir) - delta4) / dir.squaredNorm();
 		float t2 = (-origin.dot(dir) + delta4) / dir.squaredNorm();
 		if (invRay.tmin < t1 and t1 < invRay.tmax)
-			firstHit = t1;
+			return intersection(t1, ray, invRay);
 		else if (invRay.tmin < t2 and t2 < invRay.tmax)
-			firstHit = t2;
+			return intersection(t2, ray, invRay);
 		else
 			return HitRecord{};
+	}
 
-		Point hitPoint{invRay(firstHit)};
+	virtual std::vector<HitRecord> allIntersections(Ray ray) {
+		Ray invRay{transformation.inverse() * ray};
+		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
+		std::vector<HitRecord> intersections;
+
+		float delta4 = (origin.dot(dir)) * (origin.dot(dir)) -
+			dir.squaredNorm() * (origin.squaredNorm() - 1.f);
+
+		if (delta4 <= 0.f)
+			return intersections;
+
+		float t1 = (-origin.dot(dir) - delta4) / dir.squaredNorm();
+		float t2 = (-origin.dot(dir) + delta4) / dir.squaredNorm();
+		if (invRay.tmin < t1 and t1 < invRay.tmax)
+			intersections.push_back(intersection(t1, ray, invRay));
+		if (invRay.tmin < t2 and t2 < invRay.tmax)
+			intersections.push_back(intersection(t2, ray, invRay));
+
+		return intersections;
+	}
+
+	virtual bool isInner(Point p) {
+		p = transformation.inverse() * p;
+		return p.x * p.x + p.y * p.y + p.z * p.z < 1.f;
+	}
+
+private:
+	HitRecord intersection(float t, Ray ray, Ray invRay) {
+		Point hitPoint{invRay(t)};
 		return HitRecord{
 			transformation * hitPoint,
 			transformation * sphereNormal(hitPoint, ray.dir),
 			spherePointToUV(hitPoint),
-			firstHit,
+			t,
 			ray};
 	}
 
-private:
 	Normal sphereNormal(Point p, Vec dir) {
 		Normal result{p.x, p.y, p.z};
 		return p.toVec().dot(dir) < 0. ? result : -result;
@@ -149,6 +188,20 @@ struct Plane : public Shape {
 			ray};
 	}
 
+	virtual std::vector<HitRecord> allIntersections(Ray ray) {
+		HitRecord hit = rayIntersection(ray);
+		if (hit.hit)
+			return std::vector<HitRecord>{hit};
+		else
+			return std::vector<HitRecord>{};
+	}
+
+	// By convention, the plane inner part is the z<0 half space
+	virtual bool isInner(Point p) {
+		p = transformation.inverse() * p;
+		return p.z < 0;
+	}
+
 private:
 	Normal planeNormal(Point p, Vec dir) {
 		Normal result{0.f, 0.f, 1.f};
@@ -174,7 +227,7 @@ struct Triangle : public Shape {
 		C = transform*c;
 	}
 
-    HitRecord rayIntersection(Ray ray){
+	HitRecord rayIntersection(Ray ray){
 		float s[3][3] = {{(B-A).x, (C-A).x, ray.dir.x},
 						{(B-A).y, (C-A).y, ray.dir.y},
 						{(B-A).z, (C-A).z, ray.dir.z}};
@@ -206,7 +259,20 @@ struct Triangle : public Shape {
 			ray};
 	}
 
-  private:
+	virtual std::vector<HitRecord> allIntersections(Ray ray) {
+		HitRecord hit = rayIntersection(ray);
+		if (hit.hit)
+			return std::vector<HitRecord>{hit};
+		else
+			return std::vector<HitRecord>{};
+	}
+
+	// Not implemented
+	virtual bool isInner(Point p) {
+		return false;
+	}
+
+private:
 
 	Point A{0.f, 0.f, 0.f}, B{0.f, 1.f, 0.f}, C{0.f, 0.f, 1.f};
 
@@ -290,15 +356,27 @@ struct CSGUnion : public Shape {
 			hit = hitA;
 		else
 			hit = hitB;
-		return HitRecord{
+		return HitRecord {
 			transformation * hit.worldPoint,
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
 			ray};
 	}
-};
 
+	virtual std::vector<HitRecord> allIntersections(Ray ray) {
+		std::vector<HitRecord> intersections;
+		std::vector<HitRecord> hitA{a->allIntersections(ray)};
+		std::vector<HitRecord> hitB{b->allIntersections(ray)};
+		std::merge(hitA.begin(), hitA.end(), hitB.begin(), hitB.end(), intersections.begin());
+		return intersections;
+	}
+
+	virtual bool isInner(Point p) {
+		p = transformation.inverse() * p;
+		return a->isInner(p) or b->isInner(p);
+	}
+};
 
 /** World class
  * @brief This is the class containing all the shapes of the scene.
