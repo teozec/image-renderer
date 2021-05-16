@@ -69,7 +69,7 @@ enum class ImageFormat { png, webp, jpeg , tiff, bmp, gif };
 
 int demo(argh::parser cmdl);
 int pfm2ldr(argh::parser cmdl);
-void animation(int width, int height); //additional argument CameraProjection camProj
+int desktop(int argc, char *argv);
 
 int main(int argc, char *argv[])
 {
@@ -93,13 +93,13 @@ int main(int argc, char *argv[])
 	if (actionName == "demo") { 
 		return demo(cmdl);
 	} else if (actionName == "pfm2ldr") {
-		return pfm2ldr(cmdl);
+    	return pfm2ldr(cmdl);
 	} else if (cmdl[{"-h", "--help"}]) {
 		cout << USAGE;
 		return 0;
 	} else {
 		cout << USAGE << endl << RUN_HELP;
-	}
+    }
 }
 
 int pfm2ldr(argh::parser cmdl)
@@ -253,5 +253,5 @@ int demo(argh::parser cmdl) {
 	image.writePfm(outPfm);
 	outPfm.close();
 
-	return 0;
+    return 0;
 }

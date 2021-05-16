@@ -18,12 +18,6 @@
 cmake_minimum_required(VERSION 3.12)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
-#-------------------------- Qt -----------------------------------
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-#-----------------------------------------------------------------
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENTIONS OFF)
@@ -35,6 +29,8 @@ project(image-renderer
 	LANGUAGES CXX
 )
 enable_testing()
+
+add_subdirectory("desktop")
 
 # Library
 add_library(trace
@@ -52,27 +48,9 @@ target_include_directories(trace PUBLIC
 	${GD_INCLUDE_DIR}
 	)
 
-#-------------------------- Qt -----------------------------------
-find_package(QT NAMES Qt6 COMPONENTS Widgets REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
-
-
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(desktop
-        ${PROJECT_SOURCES}
-    )
-else()
-    add_executable(desktop
-        ${PROJECT_SOURCES}
-    )
-endif()
-
-target_link_libraries(desktop PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-#-----------------------------------------------------------------
-
 # image-renderer
 add_executable(image-renderer
-	src/image-renderer.cpp
+        src/image-renderer.cpp
 )
 target_link_libraries(image-renderer PUBLIC trace)
 
