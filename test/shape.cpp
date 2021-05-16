@@ -68,8 +68,17 @@ void testSphere()
 
 	vector<HitRecord> hit3 = sphere2.allIntersections(ray2);
 	assert(hit3.size() == 2);
-	assert(hit3[0].t = 2.f);
+	assert((hit3[0].worldPoint == Point{1.f, 0.f, 0.f}));
+	assert((hit3[0].normal == Normal{1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit3[0].surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hit3[0].t, 2.f));
+	assert(hit3[0].ray == ray2);
 	assert(hit3[1].t = 4.f);
+	assert((hit3[1].worldPoint == Point{-1.f, 0.f, 0.f}));
+	assert((hit3[1].normal == Normal{1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit3[1].surfacePoint, Vec2D{0.5f, 0.5f})));
+	assert(areClose(hit3[1].t, 4.f));
+	assert(hit3[1].ray == ray2);
 }
 
 void testSphereInner()
@@ -84,6 +93,7 @@ void testSphereInner()
 	assert(areClose(hit1.t, 1.f));
 	assert(hit1.ray == ray1);
 
+	assert(sphere1.allIntersections(ray1).size() == 1);
 	assert((sphere1.isInner(Point{0.f, 0.f, 0.f})));
 }
 
@@ -100,6 +110,19 @@ void testSphereTransformation()
 	assert(areClose(hit1.t, 1.f));
 	assert(hit1.ray == ray1);
 
+	vector<HitRecord> hitList1 = sphere.allIntersections(ray1);
+	assert(hitList1.size() == 2);
+	assert((hitList1[0].worldPoint == Point{10.f, 0.f, 1.f}));
+	assert((hitList1[0].normal == Normal{0.f, 0.f, 1.f}));
+	assert((areSphereSurfacePointsClose(hitList1[0].surfacePoint, Vec2D{0.f, 0.f})));
+	assert(areClose(hitList1[0].t, 1.f));
+	assert(hitList1[0].ray == ray1);
+	assert((hitList1[1].worldPoint == Point{10.f, 0.f, -1.f}));
+	assert((hitList1[1].normal == Normal{0.f, 0.f, 1.f}));
+	assert((areSphereSurfacePointsClose(hitList1[1].surfacePoint, Vec2D{1.f, 0.f})));
+	assert(areClose(hitList1[1].t, 3.f));
+	assert(hitList1[1].ray == ray1);
+
 	Ray ray2{Point{13.f, 0.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
 	HitRecord hit2{sphere.rayIntersection(ray2)};
 	assert(hit2.hit);
@@ -109,12 +132,26 @@ void testSphereTransformation()
 	assert(areClose(hit2.t, 2.f));
 	assert(hit2.ray == ray2);
 
+	vector<HitRecord> hitList2 = sphere.allIntersections(ray2);
+	assert(hitList2.size() == 2);
+	assert((hitList2[0].worldPoint == Point{11.f, 0.f, 0.f}));
+	assert((hitList2[0].normal == Normal{1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hitList2[0].surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hitList2[0].t, 2.f));
+	assert(hitList2[0].ray == ray2);
+	assert((hitList2[1].worldPoint == Point{9.f, 0.f, 0.f}));
+	assert((hitList2[1].normal == Normal{1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hitList2[1].surfacePoint, Vec2D{0.5f, 0.5f})));
+	assert(areClose(hitList2[1].t, 4.f));
+	assert(hitList2[1].ray == ray2);
+
 	Ray ray3{Point{0.f, 0.f, 2.f}, Vec{0.f, 0.f, -1.f}};
 	HitRecord hit3{sphere.rayIntersection(ray3)};
 	assert(!hit3.hit);
 	Ray ray4{Point{-10.f, 0.f, 0.f}, Vec{0.f, 0.f, -1.f}};
 	HitRecord hit4{sphere.rayIntersection(ray4)};
 	assert(!hit4.hit);
+	assert(sphere.allIntersections(ray3).size() == 0);
 
 	assert((sphere.isInner(Point{10.f, 0.f, 0.f})));
 	assert(!(sphere.isInner(Point{0.f, 0.f, 0.f})));
@@ -238,6 +275,30 @@ void testCSGUnion()
 	assert((areSphereSurfacePointsClose(hit6.surfacePoint, Vec2D{0.5f, 0.f})));
 	assert(areClose(hit6.t, .5f));
 	assert(hit6.ray == ray5);
+
+	Ray ray7{Point{-2.5f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
+	vector<HitRecord> hitList{union2.allIntersections(ray7)};
+	assert(hitList.size() == 4);
+	assert(hitList[0].worldPoint == (Point{-1.5f, 10.f, 0.f}));
+	assert((hitList[0].normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hitList[0].surfacePoint, Vec2D{0.5f, 0.5f})));
+	assert(areClose(hitList[0].t, 1.f));
+	assert(hitList[0].ray == ray7);
+	assert(hitList[1].worldPoint == (Point{-.5f, 10.f, 0.f}));
+	assert((hitList[1].normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hitList[1].surfacePoint, Vec2D{0.5f, 0.5f})));
+	assert(areClose(hitList[1].t, 2.f));
+	assert(hitList[1].ray == ray7);
+	assert(hitList[2].worldPoint == (Point{.5f, 10.f, 0.f}));
+	assert((hitList[2].normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hitList[2].surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hitList[2].t, 3.f));
+	assert(hitList[2].ray == ray7);
+	assert(hitList[3].worldPoint == (Point{1.5f, 10.f, 0.f}));
+	assert((hitList[3].normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hitList[3].surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hitList[3].t, 4.f));
+	assert(hitList[3].ray == ray7);
 }
 
 void testTriangle() {
