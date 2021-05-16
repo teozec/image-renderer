@@ -154,8 +154,8 @@ void testPlaneTransformation()
 	assert(areClose(hit2.t, 2.f));
 	assert(hit2.ray == ray2);
 
-	assert((plane.isInner(Point{1.f, 2.f, -3.f})));
-	assert(!(plane.isInner(Point{1.f, -2.f, 3.f})));
+	assert((plane.isInner(Point{-1.f, 2.f, 3.f})));
+	assert(!(plane.isInner(Point{1.f, 2.f, 3.f})));
 }
 
 void testWorld()
