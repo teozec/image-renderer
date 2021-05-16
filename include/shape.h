@@ -66,11 +66,11 @@ struct HitRecord {
 		return *this;
 	}	
 
-	bool operator<(const HitRecord &other) {
+	bool operator<(const HitRecord &other) const {
 		return this->t < other.t;
 	}
 
-	bool operator>(const HitRecord &other) {
+	bool operator>(const HitRecord &other) const {
 		return this->t > other.t;
 	}
 };
