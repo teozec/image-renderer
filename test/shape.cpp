@@ -198,6 +198,10 @@ void testCSGUnion()
 	assert(areClose(hit2.t, .5f));
 	assert(hit2.ray == ray2);
 
+	assert((union1.isInner(Point{0.f, 0.f, 0.f})));
+	assert((union1.isInner(Point{-1.f, 0.f, 0.f})));
+	assert((union1.isInner(Point{1.f, 0.f, 0.f})));
+
 	CSGUnion union2{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2), translation(Vec{0.f, 10.f, 0.f})};
 	Ray ray3{Point{-2.25f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	Ray ray4{Point{1.75, 10.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
@@ -220,6 +224,11 @@ void testCSGUnion()
 	assert((areSphereSurfacePointsClose(hit5.surfacePoint, Vec2D{0.5f, 0.f})));
 	assert(areClose(hit5.t, .25f));
 	assert(hit5.ray == ray4);
+
+	assert((union2.isInner(Point{0.f, 10.f, 0.f})));
+	assert((union2.isInner(Point{-1.f, 10.f, 0.f})));
+	assert((union2.isInner(Point{1.f, 10.f, 0.f})));
+	assert(!(union2.isInner(Point{0.f, 0.f, 0.f})));
 
 	Ray ray5{Point{0.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	HitRecord hit6 = union1.rayIntersection(ray5);
