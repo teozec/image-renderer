@@ -78,8 +78,8 @@ MenuPage::MenuPage(QWidget *parent)
                     "Please check what you wish: if both are checked we will take as input of pfm2ldr the output of raytrace."));
     QButtonGroup *group = new QButtonGroup(this);
     group->setExclusive(false);
-    raytraceRadioButton = new QRadioButton(tr("&RayTracer"));
-    pfm2ldrRadioButton = new QRadioButton(tr("&pfm2ldr"));
+    raytraceRadioButton = new QRadioButton(tr("&pfm2ldr"));
+    pfm2ldrRadioButton = new QRadioButton(tr("&RayTracer"));
     raytraceRadioButton->setChecked(true);
     group->addButton(raytraceRadioButton);
     group->addButton(pfm2ldrRadioButton);
@@ -102,20 +102,19 @@ int MenuPage::nextId() const
 RegisterPage::RegisterPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    setTitle(tr("Register Your Copy of <i>Super Product One</i>&trade;"));
-    setSubTitle(tr("If you have an upgrade key, please fill in "
-                   "the appropriate field."));
+    setTitle(tr("Convert PFM into LDR"));
+    setSubTitle(tr("Choose options:"));
 
-    nameLabel = new QLabel(tr("N&ame:"));
+    nameLabel = new QLabel(tr("Format output:"));
     nameLineEdit = new QLineEdit;
     nameLabel->setBuddy(nameLineEdit);
 
-    upgradeKeyLabel = new QLabel(tr("&Upgrade key:"));
+    upgradeKeyLabel = new QLabel(tr("Filename output:"));
     upgradeKeyLineEdit = new QLineEdit;
     upgradeKeyLabel->setBuddy(upgradeKeyLineEdit);
 
-    registerField("register.name*", nameLineEdit);
-    registerField("register.upgradeKey", upgradeKeyLineEdit);
+    registerField("format", nameLineEdit);
+    registerField("filename", upgradeKeyLineEdit);
 
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(nameLabel, 0, 0);
@@ -128,43 +127,34 @@ RegisterPage::RegisterPage(QWidget *parent)
 int RegisterPage::nextId() const
 {
     if (upgradeKeyLineEdit->text().isEmpty()) {
-        return Wizard::Page_Details;
-    } else {
         return Wizard::Page_Conclusion;
+    } else {
+        return Wizard::Page_Details;
     }
 }
 
 DetailsPage::DetailsPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    setTitle(tr("Fill In Your Details"));
-    setSubTitle(tr("Please fill all three fields. Make sure to provide a valid "
-                   "email address (e.g., tanaka.aya@example.co.jp)."));
+    setTitle(tr("Convert PFM into LDR"));
+    setSubTitle(tr("Choose the parameters you desire:"));
 
-    companyLabel = new QLabel(tr("&Company name:"));
-    companyLineEdit = new QLineEdit;
-    companyLabel->setBuddy(companyLineEdit);
+	companyLabel = new QLabel(tr("a factor:"));
+	companyLineEdit = new QLineEdit;
+	companyLabel->setBuddy(companyLineEdit);
 
-    emailLabel = new QLabel(tr("&Email address:"));
-    emailLineEdit = new QLineEdit;
-    emailLineEdit->setValidator(new QRegularExpressionValidator(QRegularExpression(".*@.*"), this));
-    emailLabel->setBuddy(emailLineEdit);
-
-    postalLabel = new QLabel(tr("&Postal address:"));
-    postalLineEdit = new QLineEdit;
-    postalLabel->setBuddy(postalLineEdit);
+	emailLabel = new QLabel(tr("gamma value:"));
+	emailLineEdit = new QLineEdit;
+	emailLabel->setBuddy(emailLineEdit);
 
     registerField("details.company*", companyLineEdit);
     registerField("details.email*", emailLineEdit);
-    registerField("details.postal*", postalLineEdit);
 
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(companyLabel, 0, 0);
     layout->addWidget(companyLineEdit, 0, 1);
     layout->addWidget(emailLabel, 1, 0);
     layout->addWidget(emailLineEdit, 1, 1);
-    layout->addWidget(postalLabel, 2, 0);
-    layout->addWidget(postalLineEdit, 2, 1);
     setLayout(layout);
 }
 
@@ -176,13 +166,13 @@ int DetailsPage::nextId() const
 ConclusionPage::ConclusionPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    setTitle(tr("Complete Your Registration"));
+    setTitle(tr("Completed!"));
     setPixmap(QWizard::WatermarkPixmap, QPixmap(":/images/watermark.png"));
 
     bottomLabel = new QLabel;
     bottomLabel->setWordWrap(true);
 
-    agreeCheckBox = new QCheckBox(tr("I agree to the terms of the license"));
+    agreeCheckBox = new QCheckBox(tr("I'm satisfied."));
 
     registerField("conclusion.agree*", agreeCheckBox);
 
@@ -199,21 +189,7 @@ int ConclusionPage::nextId() const
 
 void ConclusionPage::initializePage()
 {
-    QString licenseText;
-
-    if (wizard()->hasVisitedPage(Wizard::Page_Menu)) {
-        licenseText = tr("<u>Evaluation License Agreement:</u> "
-                         "You can use this software for 30 days and make one "
-                         "backup, but you are not allowed to distribute it.");
-    } else if (wizard()->hasVisitedPage(Wizard::Page_Details)) {
-        licenseText = tr("<u>First-Time License Agreement:</u> "
-                         "You can use this software subject to the license "
-                         "you will receive by email.");
-    } else {
-        licenseText = tr("<u>Upgrade License Agreement:</u> "
-                         "This software is licensed under the terms of your "
-                         "current license.");
-    }
+    QString licenseText = tr("<u>Check the box below</u> if you are satisfied.");
     bottomLabel->setText(licenseText);
 }
 
