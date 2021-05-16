@@ -75,11 +75,25 @@ struct HitRecord {
 	}
 };
 
+/**
+ * @brief A Shape abstract struct.
+ *
+ * @param transformation	The transformation to be applied to the shape.
+ */
 struct Shape {
 	Transformation transformation;
 	Shape(Transformation transformation = Transformation()): transformation{transformation} {}
+
+	/**
+	 * @brief Return a HitRecord corresponding to the first intersection between the shape and the ray.
+	 */
 	virtual HitRecord rayIntersection(Ray ray) = 0;
+
+	/**
+	 * @brief Return a vector of HitRecord corresponding to all the intersections, ordered by increasing t.
+	 */
 	virtual std::vector<HitRecord> allIntersections(Ray ray) = 0;
+
 	virtual bool isInner(Point p) = 0;
 };
 
@@ -339,6 +353,7 @@ struct CSGUnion : public Shape {
 	CSGUnion(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation):
 		Shape(transformation), a{a}, b{b} {}
 
+	// The first intersection is the one with lower t between the first intersections of a and b
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
 
@@ -356,6 +371,7 @@ struct CSGUnion : public Shape {
 			hit = hitA;
 		else
 			hit = hitB;
+
 		return HitRecord {
 			transformation * hit.worldPoint,
 			transformation * hit.normal,
@@ -369,7 +385,9 @@ struct CSGUnion : public Shape {
 		std::vector<HitRecord> hitA{a->allIntersections(invRay)};
 		std::vector<HitRecord> hitB{b->allIntersections(invRay)};
 		std::vector<HitRecord> intersections(hitA.size() + hitB.size());
-		std::merge(hitA.begin(), hitA.end(), hitB.begin(), hitB.end(), intersections.begin());
+		std::merge(hitA.begin(), hitA.end(), hitB.begin(), hitB.end(), intersections.begin()); // Merge the two ordered vectors into a ordered vector.
+
+		// Apply the CSGUnion transformation to all intersections.
 		for (auto &h : intersections) {
 			h.worldPoint = transformation * h.worldPoint;
 			h.normal = transformation * h.normal;
@@ -400,17 +418,22 @@ struct CSGDifference : public Shape {
 		std::vector<HitRecord> hitListA = a->allIntersections(ray);
 		std::vector<HitRecord> hitListB = b->allIntersections(ray);
 		HitRecord hitA{}, hitB{};
+
+		// An intersection with a is also an intersection with a-b iff it is not inside b
 		for (auto h : hitListA) {
 			Point transformed = transformation * h.worldPoint;
 			if (!b->isInner(transformed))
 				hitA = h;
 		}
+
+		// An intersection with b is also an intersection with a-b iff it is inside a
 		for (auto h : hitListB) {
 			Point transformed = transformation * h.worldPoint;
 			if (a->isInner(transformed))
 				hitB = h;
 		}
 
+		// Return the first intersection
 		HitRecord hit{};
 		if (!hitA.hit and !hitB.hit)
 			return HitRecord{};
@@ -435,11 +458,16 @@ struct CSGDifference : public Shape {
 		std::vector<HitRecord> hitListB = b->allIntersections(ray);
 		std::vector<HitRecord> validA;
 		std::vector<HitRecord> validB;
+
+
+		// An intersection with a is also an intersection with a-b iff it is not inside b
 		for (auto h : hitListA) {
 			Point transformed = transformation * h.worldPoint;
 			if (!b->isInner(transformed))
 				validA.push_back(h);
 		}
+		//
+		// An intersection with b is also an intersection with a-b iff it is inside a
 		for (auto h : hitListB) {
 			Point transformed = transformation * h.worldPoint;
 			if (a->isInner(transformed))
@@ -447,7 +475,7 @@ struct CSGDifference : public Shape {
 		}
 
 		std::vector<HitRecord> intersections(validA.size() + validB.size());
-		std::merge(validA.begin(), validA.end(), validB.begin(), validB.end(), intersections.begin());
+		std::merge(validA.begin(), validA.end(), validB.begin(), validB.end(), intersections.begin()); // Merge two ordered vectors into an ordered vector.
 		for (auto &h : intersections) {
 			h.worldPoint = transformation * h.worldPoint;
 			h.normal = transformation * h.normal;
