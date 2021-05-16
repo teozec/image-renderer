@@ -7,11 +7,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
 
-if (MACOS)
-	set (CMAKE_PREFIX_PATH "/usr/local/Cellar/qt5/5.2.1/")
-endif (MACOS)
-
 # This will find the Qt5 files.
+if (APPLE)
+	set (CMAKE_PREFIX_PATH "/usr/local/opt/qt/lib/cmake/")
+endif (APPLE)
+
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5PrintSupport REQUIRED) 
 
