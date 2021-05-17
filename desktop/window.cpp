@@ -1,7 +1,4 @@
 #include <QtWidgets>
-#include <QPrinter>
-#include <QPrintDialog>
-#include <QRegularExpressionValidator>
 
 #include "window.h"
 
@@ -10,8 +7,9 @@ Wizard::Wizard(QWidget *parent)
 {
     setPage(Page_Intro, new IntroPage);
     setPage(Page_Menu, new MenuPage);
-    setPage(Page_Register, new RegisterPage);
-    setPage(Page_Details, new DetailsPage);
+    setPage(Page_pfm2ldr, new pfm2ldrPage);
+	setPage(Page_pfm2png, new pfm2pngPage);
+    setPage(Page_raytracer, new raytracerPage);
     setPage(Page_Conclusion, new ConclusionPage);
 
     setStartId(Page_Intro);
@@ -20,7 +18,7 @@ Wizard::Wizard(QWidget *parent)
     setWizardStyle(ModernStyle);
 #endif
     setOption(HaveHelpButton, true);
-    setPixmap(QWizard::LogoPixmap, QPixmap(":/images/logo.png"));
+    setPixmap(QWizard::LogoPixmap, QPixmap(":/images/demo.png"));
 
     connect(this, &QWizard::helpRequested, this, &Wizard::showHelp);
 
@@ -35,21 +33,19 @@ void Wizard::showHelp()
 
     switch (currentId()) {
     case Page_Menu:
-        message = tr("Choose the job you want us to do for you.");
-        break;
-    case Page_Conclusion:
-        message = tr("You must accept the terms and conditions of the "
-                     "license to proceed.");
+        message = tr("'pfm2ldr'	- Convert PFM images into a supported LDR format.\n"
+					"'demo'	- Run a basic render.\n"
+					"If both are checked we will take as input of 'pfm2ldr' the output of 'Raytracer'");
         break;
     default:
-        message = tr("Credits: Luca Nigro & Matteo Zeccoli Marazzini");
+        message = tr("Credits: Luca Nigro & Matteo Zeccoli Marazzini.");
     }
 
     if (lastHelpMessage == message)
         message = tr("Sorry, I already gave what help I could. "
                      "Maybe you should try asking a human?");
 
-    QMessageBox::information(this, tr("image-renderer help"), message);
+    QMessageBox::information(this, tr("Help"), message);
 
     lastHelpMessage = message;
 }
@@ -57,10 +53,10 @@ void Wizard::showHelp()
 IntroPage::IntroPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    setTitle(tr("Welcome!"));
-    setPixmap(QWizard::WatermarkPixmap, QPixmap(":/images/watermark.png"));
+    setTitle(tr("Welcome to image-renderer!"));
+    setPixmap(QWizard::WatermarkPixmap, QPixmap(":/images/demo.png"));
 
-    topLabel = new QLabel(tr("image-renderer is a C++ tool to generate photo-realistic images. "
+    topLabel = new QLabel(tr("image-renderer is a C++ tool to generate photo-realistic images.\n"
         "It is based on the lectures of the Numerical tecniques for photorealistic image generation course,"
         "held by Prof. Maurizio Tomasi in 2021."));
     topLabel->setWordWrap(true);
@@ -73,13 +69,12 @@ IntroPage::IntroPage(QWidget *parent)
 MenuPage::MenuPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    setTitle(tr("What can we do for you?"));
-    setSubTitle(tr("This program can do two things: it can raytrace an image of your choice or it can convert any .pfm file into a LDR file."
-                    "Please check what you wish: if both are checked we will take as input of pfm2ldr the output of raytrace."));
+    setTitle(tr("Choose an action"));
+    setSubTitle(tr("This program can do two things: it can raytrace an image of your choice or it can convert any .pfm file into a supported LDR format."));
     QButtonGroup *group = new QButtonGroup(this);
     group->setExclusive(false);
-    raytraceRadioButton = new QRadioButton(tr("&pfm2ldr"));
-    pfm2ldrRadioButton = new QRadioButton(tr("&RayTracer"));
+    pfm2ldrRadioButton = new QRadioButton(tr("&pfm2ldr"));
+    raytraceRadioButton = new QRadioButton(tr("&RayTracer"));
     raytraceRadioButton->setChecked(true);
     group->addButton(raytraceRadioButton);
     group->addButton(pfm2ldrRadioButton);
@@ -92,73 +87,116 @@ MenuPage::MenuPage(QWidget *parent)
 
 int MenuPage::nextId() const
 {
-    if (raytraceRadioButton->isChecked()) {
-        return Wizard::Page_Register;
-    } else {
+	if (raytraceRadioButton->isChecked()) {
+		return Wizard::Page_raytracer;
+    } else if (pfm2ldrRadioButton->isChecked() && !raytraceRadioButton->isChecked()) {
+        return Wizard::Page_pfm2ldr;
+	} else {
         return Wizard::Page_Conclusion;
     }
 }
 
-RegisterPage::RegisterPage(QWidget *parent)
+pfm2ldrPage::pfm2ldrPage(QWidget *parent)
     : QWizardPage(parent)
 {
     setTitle(tr("Convert PFM into LDR"));
-    setSubTitle(tr("Choose options:"));
+    setSubTitle(tr("Enter your preferences."));
 
-    nameLabel = new QLabel(tr("Format output:"));
-    nameLineEdit = new QLineEdit;
-    nameLabel->setBuddy(nameLineEdit);
+    formatLabel = new QLabel(tr("Format output:"));
+    formatLineEdit = new QLineEdit;
+    formatLabel->setBuddy(formatLineEdit);
 
-    upgradeKeyLabel = new QLabel(tr("Filename output:"));
-    upgradeKeyLineEdit = new QLineEdit;
-    upgradeKeyLabel->setBuddy(upgradeKeyLineEdit);
+	ifilenameLabel = new QLabel(tr("Filename input:"));
+    ifilenameLineEdit = new QLineEdit;
+    ifilenameLabel->setBuddy(ifilenameLineEdit);
 
-    registerField("format", nameLineEdit);
-    registerField("filename", upgradeKeyLineEdit);
+    ofilenameLabel = new QLabel(tr("Filename output:"));
+    ofilenameLineEdit = new QLineEdit;
+    ofilenameLabel->setBuddy(ofilenameLineEdit);
+
+	aFactorLabel = new QLabel(tr("a factor:"));
+	aFactorLineEdit = new QLineEdit;
+	aFactorLabel->setBuddy(aFactorLineEdit);
+
+	gammaLabel = new QLabel(tr("gamma value:"));
+	gammaLineEdit = new QLineEdit;
+	gammaLabel->setBuddy(gammaLineEdit);
+
+    registerField("format", formatLineEdit);
+	registerField("ifilename", ifilenameLineEdit);
+    registerField("ofilename", ofilenameLineEdit);
+    registerField("aFactor", aFactorLineEdit);
+    registerField("gamma", gammaLineEdit);
 
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(nameLabel, 0, 0);
-    layout->addWidget(nameLineEdit, 0, 1);
-    layout->addWidget(upgradeKeyLabel, 1, 0);
-    layout->addWidget(upgradeKeyLineEdit, 1, 1);
+    layout->addWidget(formatLabel, 0, 0);
+    layout->addWidget(formatLineEdit, 0, 1);
+    layout->addWidget(ifilenameLabel, 1, 0);
+    layout->addWidget(ifilenameLineEdit, 1, 1);
+    layout->addWidget(ofilenameLabel, 2, 0);
+    layout->addWidget(ofilenameLineEdit, 2, 1);
+	layout->addWidget(aFactorLabel, 3, 0);
+    layout->addWidget(aFactorLineEdit, 3, 1);
+    layout->addWidget(gammaLabel, 4, 0);
+    layout->addWidget(gammaLineEdit, 4, 1);
+
     setLayout(layout);
 }
 
-int RegisterPage::nextId() const
+int pfm2ldrPage::nextId() const
 {
-    if (upgradeKeyLineEdit->text().isEmpty()) {
-        return Wizard::Page_Conclusion;
-    } else {
-        return Wizard::Page_Details;
-    }
+    if (field("format").toString() == "png")
+        return Wizard::Page_pfm2png;
+    else
+		return Wizard::Page_Conclusion;
 }
 
-DetailsPage::DetailsPage(QWidget *parent)
+
+pfm2pngPage::pfm2pngPage(QWidget *parent)
+: QWizardPage(parent)
+{
+    setTitle(tr("Convert PFM into PNG"));
+    setSubTitle(tr("Enter the fine parameters."));
+
+}
+
+int pfm2pngPage::nextId() const {
+	return Wizard::Page_Conclusion;
+}
+
+raytracerPage::raytracerPage(QWidget *parent)
     : QWizardPage(parent)
 {
-    setTitle(tr("Convert PFM into LDR"));
-    setSubTitle(tr("Choose the parameters you desire:"));
+    setTitle(tr("Try our demo!"));
+    setSubTitle(tr("Set your options."));
 
-	companyLabel = new QLabel(tr("a factor:"));
-	companyLineEdit = new QLineEdit;
-	companyLabel->setBuddy(companyLineEdit);
+	widthLabel = new QLabel(tr("width:"));
+	widthLineEdit = new QLineEdit;
+	widthLabel->setBuddy(widthLineEdit);
 
-	emailLabel = new QLabel(tr("gamma value:"));
-	emailLineEdit = new QLineEdit;
-	emailLabel->setBuddy(emailLineEdit);
+	heightLabel = new QLabel(tr("height:"));
+	heightLineEdit = new QLineEdit;
+	heightLabel->setBuddy(heightLineEdit);
 
-    registerField("details.company*", companyLineEdit);
-    registerField("details.email*", emailLineEdit);
+	projectionLabel = new QLabel(tr("projection:"));
+	projectionLineEdit = new QLineEdit;
+	projectionLabel->setBuddy(projectionLineEdit);
+
+    registerField("width", widthLineEdit);
+    registerField("height", heightLineEdit);
+	registerField("projection", projectionLineEdit);
 
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(companyLabel, 0, 0);
-    layout->addWidget(companyLineEdit, 0, 1);
-    layout->addWidget(emailLabel, 1, 0);
-    layout->addWidget(emailLineEdit, 1, 1);
+    layout->addWidget(widthLabel, 0, 0);
+    layout->addWidget(widthLineEdit, 0, 1);
+    layout->addWidget(heightLabel, 1, 0);
+    layout->addWidget(heightLineEdit, 1, 1);
+	layout->addWidget(projectionLabel, 2, 0);
+    layout->addWidget(projectionLineEdit, 2, 1);
     setLayout(layout);
 }
 
-int DetailsPage::nextId() const
+int raytracerPage::nextId() const
 {
     return Wizard::Page_Conclusion;
 }
@@ -191,32 +229,4 @@ void ConclusionPage::initializePage()
 {
     QString licenseText = tr("<u>Check the box below</u> if you are satisfied.");
     bottomLabel->setText(licenseText);
-}
-
-void ConclusionPage::setVisible(bool visible)
-{
-    QWizardPage::setVisible(visible);
-
-    if (visible) {
-        wizard()->setButtonText(QWizard::CustomButton1, tr("&Print"));
-        wizard()->setOption(QWizard::HaveCustomButton1, true);
-        connect(wizard(), &QWizard::customButtonClicked,
-                this, &ConclusionPage::printButtonClicked);
-    } else {
-        wizard()->setOption(QWizard::HaveCustomButton1, false);
-        disconnect(wizard(), &QWizard::customButtonClicked,
-                   this, &ConclusionPage::printButtonClicked);
-    }
-}
-
-void ConclusionPage::printButtonClicked()
-{
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
-    QPrinter printer;
-    QPrintDialog dialog(&printer, this);
-    if (dialog.exec())
-        QMessageBox::warning(this, tr("Print License"),
-                             tr("As an environmentally friendly measure, the "
-                                "license text will not actually be printed."));
-#endif
 }

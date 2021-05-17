@@ -13,7 +13,7 @@ class Wizard : public QWizard
     Q_OBJECT
 
 public:
-    enum { Page_Intro, Page_Menu, Page_Register, Page_Details,
+    enum { Page_Intro, Page_Menu, Page_pfm2ldr, Page_pfm2png, Page_raytracer,
            Page_Conclusion };
 
     Wizard(QWidget *parent = 0);
@@ -47,38 +47,56 @@ private:
     QRadioButton *pfm2ldrRadioButton;
 };
 
-class RegisterPage : public QWizardPage
+class pfm2ldrPage : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    RegisterPage(QWidget *parent = 0);
+	pfm2ldrPage(QWidget *parent = 0);
 
     int nextId() const Q_DECL_OVERRIDE;
 
 private:
-    QLabel *nameLabel;
-    QLabel *upgradeKeyLabel;
-    QLineEdit *nameLineEdit;
-    QLineEdit *upgradeKeyLineEdit;
+    QLabel *formatLabel;
+	QLabel *ifilenameLabel;
+    QLabel *ofilenameLabel;
+	QLabel *aFactorLabel;
+	QLabel *gammaLabel;
+    QLineEdit *formatLineEdit;
+	QLineEdit *ifilenameLineEdit;
+    QLineEdit *ofilenameLineEdit;
+	QLineEdit *aFactorLineEdit;
+	QLineEdit *gammaLineEdit;
 };
 
-class DetailsPage : public QWizardPage
+class pfm2pngPage : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    DetailsPage(QWidget *parent = 0);
+	pfm2pngPage(QWidget *parent = 0);
 
     int nextId() const Q_DECL_OVERRIDE;
 
 private:
-    QLabel *companyLabel;
-    QLabel *emailLabel;
-    QLabel *postalLabel;
-    QLineEdit *companyLineEdit;
-    QLineEdit *emailLineEdit;
-    QLineEdit *postalLineEdit;
+};
+
+class raytracerPage : public QWizardPage
+{
+    Q_OBJECT
+
+public:
+    raytracerPage(QWidget *parent = 0);
+
+    int nextId() const Q_DECL_OVERRIDE;
+
+private:
+    QLabel *widthLabel;
+    QLabel *heightLabel;
+    QLabel *projectionLabel;
+    QLineEdit *widthLineEdit;
+    QLineEdit *heightLineEdit;
+    QLineEdit *projectionLineEdit;
 };
 
 class ConclusionPage : public QWizardPage
@@ -90,10 +108,8 @@ public:
 
     void initializePage() Q_DECL_OVERRIDE;
     int nextId() const Q_DECL_OVERRIDE;
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
 
 private slots:
-    void printButtonClicked();
 
 private:
     QLabel *bottomLabel;
