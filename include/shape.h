@@ -415,22 +415,25 @@ struct CSGDifference : public Shape {
 		Shape(transformation), a{a}, b{b} {}
 
 	virtual HitRecord rayIntersection(Ray ray) override {
-		std::vector<HitRecord> hitListA = a->allIntersections(ray);
-		std::vector<HitRecord> hitListB = b->allIntersections(ray);
+		Ray invRay{transformation.inverse() * ray};
+		std::vector<HitRecord> hitListA = a->allIntersections(invRay);
+		std::vector<HitRecord> hitListB = b->allIntersections(invRay);
 		HitRecord hitA{}, hitB{};
 
 		// An intersection with a is also an intersection with a-b iff it is not inside b
 		for (auto h : hitListA) {
-			Point transformed = transformation * h.worldPoint;
-			if (!b->isInner(transformed))
+			if (!b->isInner(h.worldPoint)) {
 				hitA = h;
+				break;
+			}
 		}
 
 		// An intersection with b is also an intersection with a-b iff it is inside a
 		for (auto h : hitListB) {
-			Point transformed = transformation * h.worldPoint;
-			if (a->isInner(transformed))
+			if (a->isInner(h.worldPoint)) {
 				hitB = h;
+				break;
+			}
 		}
 
 		// Return the first intersection
@@ -454,23 +457,22 @@ struct CSGDifference : public Shape {
 	}
 
 	virtual std::vector<HitRecord> allIntersections(Ray ray) override {
-		std::vector<HitRecord> hitListA = a->allIntersections(ray);
-		std::vector<HitRecord> hitListB = b->allIntersections(ray);
+		Ray invRay{transformation.inverse() * ray};
+		std::vector<HitRecord> hitListA = a->allIntersections(invRay);
+		std::vector<HitRecord> hitListB = b->allIntersections(invRay);
 		std::vector<HitRecord> validA;
 		std::vector<HitRecord> validB;
 
 
 		// An intersection with a is also an intersection with a-b iff it is not inside b
 		for (auto h : hitListA) {
-			Point transformed = transformation * h.worldPoint;
-			if (!b->isInner(transformed))
+			if (!b->isInner(h.worldPoint))
 				validA.push_back(h);
 		}
-		//
+
 		// An intersection with b is also an intersection with a-b iff it is inside a
 		for (auto h : hitListB) {
-			Point transformed = transformation * h.worldPoint;
-			if (a->isInner(transformed))
+			if (a->isInner(h.worldPoint))
 				validB.push_back(h);
 		}
 
@@ -485,6 +487,7 @@ struct CSGDifference : public Shape {
 	}
 
 	virtual bool isInner(Point p) override {
+		p = transformation.inverse() * p;
 		return a->isInner(p) and !b->isInner(p);
 	}
 };
