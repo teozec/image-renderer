@@ -238,6 +238,12 @@ int demo(argh::parser cmdl) {
 	}
 	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
 	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
+	world.add(CSGUnion{make_shared<Sphere>(Sphere{translation(Vec{0.f, .5f, 0.f})}),
+				make_shared<Sphere>(Sphere{translation(Vec{0.f, -.5f, 0.f})}),
+				translation(Vec{0.f, 0.f, -1.5f})*scaling(.1f, .1f, .1f)});
+	world.add(CSGDifference{make_shared<Sphere>(Sphere{translation(Vec{0.f, .5f, 0.f})}),
+				make_shared<Sphere>(Sphere{translation(Vec{0.f, -.5f, 0.f})}),
+				translation(Vec{0.f, 0.f, 1.5f})*scaling(.1f, .1f, .1f)});
 
 	ImageTracer tracer{image, *cam};
 	tracer.fireAllRays([&world](Ray ray) {
