@@ -492,7 +492,95 @@ struct CSGDifference : public Shape {
 	}
 };
 
+/**
+ * @brief A CSGIntersection object derived from Shape.
+ *
+ * @param transformation	The transformation to the shape.
+ * @see Shape.
+ */
+struct CSGIntersection : public Shape {
+	std::shared_ptr<Shape> a, b;
+	CSGIntersection(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b): Shape(), a{a}, b{b} {}
+	CSGIntersection(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation):
+		Shape(transformation), a{a}, b{b} {}
 
+	virtual HitRecord rayIntersection(Ray ray) override {
+		Ray invRay{transformation.inverse() * ray};
+		std::vector<HitRecord> hitListA = a->allIntersections(invRay);
+		std::vector<HitRecord> hitListB = b->allIntersections(invRay);
+		HitRecord hitA{}, hitB{};
+
+		// An intersection with a is also an intersection with a-b iff it is not inside b
+		for (auto h : hitListA) {
+			if (b->isInner(h.worldPoint)) {
+				hitA = h;
+				break;
+			}
+		}
+
+		// An intersection with b is also an intersection with a-b iff it is inside a
+		for (auto h : hitListB) {
+			if (a->isInner(h.worldPoint)) {
+				hitB = h;
+				break;
+			}
+		}
+
+		// Return the first intersection
+		HitRecord hit{};
+		if (!hitA.hit and !hitB.hit)
+			return HitRecord{};
+		else if (!hitA.hit)
+			hit = hitB;
+		else if (!hitB.hit)
+			hit = hitA;
+		else if (hitA.t < hitB.t)
+			hit = hitA;
+		else
+			hit = hitB;
+		return HitRecord {
+			transformation * hit.worldPoint,
+			transformation * hit.normal,
+			hit.surfacePoint,
+			hit.t,
+			ray};
+	}
+
+	virtual std::vector<HitRecord> allIntersections(Ray ray) override {
+		Ray invRay{transformation.inverse() * ray};
+		std::vector<HitRecord> hitListA = a->allIntersections(invRay);
+		std::vector<HitRecord> hitListB = b->allIntersections(invRay);
+		std::vector<HitRecord> validA;
+		std::vector<HitRecord> validB;
+
+
+		// An intersection with a is also an intersection with a-b iff it is not inside b
+		for (auto h : hitListA) {
+			if (b->isInner(h.worldPoint))
+				validA.push_back(h);
+		}
+
+		// An intersection with b is also an intersection with a-b iff it is inside a
+		for (auto h : hitListB) {
+			if (a->isInner(h.worldPoint))
+				validB.push_back(h);
+		}
+
+		std::vector<HitRecord> intersections(validA.size() + validB.size());
+		std::merge(validA.begin(), validA.end(), validB.begin(), validB.end(), intersections.begin()); // Merge two ordered vectors into an ordered vector.
+		for (auto &h : intersections) {
+			h.worldPoint = transformation * h.worldPoint;
+			h.normal = transformation * h.normal;
+			h.ray = ray;
+		}
+		return intersections;
+	}
+
+	virtual bool isInner(Point p) override {
+		p = transformation.inverse() * p;
+		return a->isInner(p) and b->isInner(p);
+	}
+};
 
 /** World class
  * @brief This is the class containing all the shapes of the scene.

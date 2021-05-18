@@ -215,6 +215,7 @@ void testCSGUnion()
 	Sphere sphere1{translation(Vec{-.5f, 0.f, 0.f})};
 	Sphere sphere2{translation(Vec{.5f, 0.f, 0.f})};
 
+	// Test rayIntersection form both sides without transformation
 	CSGUnion union1{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2)};
 	Ray ray1{Point{-2.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	Ray ray2{Point{2.f, 0.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
@@ -235,10 +236,12 @@ void testCSGUnion()
 	assert(areClose(hit2.t, .5f));
 	assert(hit2.ray == ray2);
 
+	// Test isInner without transformation
 	assert((union1.isInner(Point{0.f, 0.f, 0.f})));
 	assert((union1.isInner(Point{-1.f, 0.f, 0.f})));
 	assert((union1.isInner(Point{1.f, 0.f, 0.f})));
 
+	// Test rayIntersection form both sides with transformation
 	CSGUnion union2{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2), translation(Vec{0.f, 10.f, 0.f})};
 	Ray ray3{Point{-2.25f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	Ray ray4{Point{1.75, 10.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
@@ -262,11 +265,13 @@ void testCSGUnion()
 	assert(areClose(hit5.t, .25f));
 	assert(hit5.ray == ray4);
 
+	// Test isInner with transformation
 	assert((union2.isInner(Point{0.f, 10.f, 0.f})));
 	assert((union2.isInner(Point{-1.f, 10.f, 0.f})));
 	assert((union2.isInner(Point{1.f, 10.f, 0.f})));
 	assert(!(union2.isInner(Point{0.f, 0.f, 0.f})));
 
+	// Test rayIntersection starting from inner point, without transformation
 	Ray ray5{Point{0.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	HitRecord hit6 = union1.rayIntersection(ray5);
 	assert(hit6.hit);
@@ -276,6 +281,7 @@ void testCSGUnion()
 	assert(areClose(hit6.t, .5f));
 	assert(hit6.ray == ray5);
 
+	// Test allIntersections with transformation
 	Ray ray7{Point{-2.5f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	vector<HitRecord> hitList{union2.allIntersections(ray7)};
 	assert(hitList.size() == 4);
@@ -306,6 +312,7 @@ void testCSGDifference()
 	Sphere sphere1{translation(Vec{-.5f, 0.f, 0.f})};
 	Sphere sphere2{translation(Vec{.5f, 0.f, 0.f})};
 
+	// Test rayIntersection form both sides without transformation
 	CSGDifference diff1{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2)};
 	Ray ray1{Point{-2.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	Ray ray2{Point{2.f, 0.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
@@ -326,10 +333,12 @@ void testCSGDifference()
 	assert(areClose(hit2.t, 2.5f));
 	assert(hit2.ray == ray2);
 
+	// Test isInner without transformation
 	assert(!(diff1.isInner(Point{0.f, 0.f, 0.f})));
 	assert((diff1.isInner(Point{-1.f, 0.f, 0.f})));
 	assert(!(diff1.isInner(Point{1.f, 0.f, 0.f})));
 
+	// Test rayIntersection form both sides with transformation
 	CSGDifference diff2{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2), translation(Vec{0.f, 10.f, 0.f})};
 	Ray ray3{Point{-2.25f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	Ray ray4{Point{1.75, 10.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
@@ -353,11 +362,13 @@ void testCSGDifference()
 	assert(areClose(hit5.t, 2.25f));
 	assert(hit5.ray == ray4);
 
+	// Test isInner with transformation
 	assert(!(diff2.isInner(Point{0.f, 10.f, 0.f})));
 	assert((diff2.isInner(Point{-1.f, 10.f, 0.f})));
 	assert(!(diff2.isInner(Point{1.f, 10.f, 0.f})));
 	assert(!(diff2.isInner(Point{-1.f, 0.f, 0.f})));
 
+	// Test rayIntersection starting from inner point, without transformation
 	Ray ray5{Point{-1.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	HitRecord hit6 = diff1.rayIntersection(ray5);
 	assert(hit6.hit);
@@ -367,6 +378,7 @@ void testCSGDifference()
 	assert(areClose(hit6.t, .5f));
 	assert(hit6.ray == ray5);
 
+	// Test allIntersections with transformation
 	Ray ray7{Point{-2.5f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	vector<HitRecord> hitList{diff2.allIntersections(ray7)};
 	assert(hitList.size() == 2);
@@ -375,13 +387,100 @@ void testCSGDifference()
 	assert((areSphereSurfacePointsClose(hitList[0].surfacePoint, Vec2D{0.5f, 0.5f})));
 	assert(areClose(hitList[0].t, 1.f));
 	assert(hitList[0].ray == ray7);
-	cout << string(hitList[1].worldPoint) << endl;
 	assert(hitList[1].worldPoint == (Point{-.5f, 10.f, 0.f}));
 	assert((hitList[1].normal == Normal{-1.f, 0.f, 0.f}));
 	assert((areSphereSurfacePointsClose(hitList[1].surfacePoint, Vec2D{0.5f, 0.5f})));
 	assert(areClose(hitList[1].t, 2.f));
 	assert(hitList[1].ray == ray7);
 }
+
+void testCSGIntersection()
+{
+	Sphere sphere1{translation(Vec{-.5f, 0.f, 0.f})};
+	Sphere sphere2{translation(Vec{.5f, 0.f, 0.f})};
+
+	// Test rayIntersection form both sides without transformation
+	CSGIntersection inters1{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2)};
+	Ray ray1{Point{-2.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
+	Ray ray2{Point{2.f, 0.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
+
+	HitRecord hit1 = inters1.rayIntersection(ray1);
+	assert(hit1.hit);
+	assert(hit1.worldPoint == (Point{-.5f, 0.f, 0.f}));
+	assert((hit1.normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit1.surfacePoint, Vec2D{0.5f, 0.5f})));
+	assert(areClose(hit1.t, 1.5f));
+	assert(hit1.ray == ray1);
+
+	HitRecord hit2 = inters1.rayIntersection(ray2);
+	assert(hit2.hit);
+	assert(hit2.worldPoint == (Point{.5f, 0.f, 0.f}));
+	assert((hit2.normal == Normal{1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit2.surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hit2.t, 1.5f));
+	assert(hit2.ray == ray2);
+
+	// Test isInner without transformation
+	assert((inters1.isInner(Point{0.f, 0.f, 0.f})));
+	assert(!(inters1.isInner(Point{-1.f, 0.f, 0.f})));
+	assert(!(inters1.isInner(Point{1.f, 0.f, 0.f})));
+
+	// Test rayIntersection form both sides with transformation
+	CSGIntersection inters2{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2), translation(Vec{0.f, 10.f, 0.f})};
+	Ray ray3{Point{-2.25f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
+	Ray ray4{Point{1.75, 10.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
+
+	HitRecord hit3 = inters2.rayIntersection(ray1);
+	assert(!hit3.hit);
+
+	HitRecord hit4 = inters2.rayIntersection(ray3);
+	assert(hit4.hit);
+	assert(hit4.worldPoint == (Point{-0.5f, 10.f, 0.f}));
+	assert((hit4.normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit4.surfacePoint, Vec2D{0.5f, 0.5f})));
+	assert(areClose(hit4.t, 1.75f));
+	assert(hit4.ray == ray3);
+
+	HitRecord hit5 = inters2.rayIntersection(ray4);
+	assert(hit5.hit);
+	assert(hit5.worldPoint == (Point{0.5f, 10.f, 0.f}));
+	assert((hit5.normal == Normal{1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit5.surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hit5.t, 1.25f));
+	assert(hit5.ray == ray4);
+
+	// Test isInner with transformation
+	assert((inters2.isInner(Point{0.f, 10.f, 0.f})));
+	assert(!(inters2.isInner(Point{-1.f, 10.f, 0.f})));
+	assert(!(inters2.isInner(Point{1.f, 10.f, 0.f})));
+	assert(!(inters2.isInner(Point{0.f, 0.f, 0.f})));
+
+	// Test rayIntersection starting from inner point, without transformation
+	Ray ray5{Point{-1.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
+	HitRecord hit6 = inters1.rayIntersection(ray5);
+	assert(hit6.hit);
+	assert(hit6.worldPoint == (Point{-.5f, 0.f, 0.f}));
+	assert((hit6.normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit6.surfacePoint, Vec2D{0.5f, 0.5f})));
+	assert(areClose(hit6.t, .5f));
+	assert(hit6.ray == ray5);
+
+	// Test allIntersections with transformation
+	Ray ray7{Point{-2.5f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
+	vector<HitRecord> hitList{inters2.allIntersections(ray7)};
+	assert(hitList.size() == 2);
+	assert(hitList[0].worldPoint == (Point{-.5f, 10.f, 0.f}));
+	assert((hitList[0].normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hitList[0].surfacePoint, Vec2D{0.5f, 0.5f})));
+	assert(areClose(hitList[0].t, 2.f));
+	assert(hitList[0].ray == ray7);
+	assert(hitList[1].worldPoint == (Point{.5f, 10.f, 0.f}));
+	assert((hitList[1].normal == Normal{-1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hitList[1].surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hitList[1].t, 3.f));
+	assert(hitList[1].ray == ray7);
+}
+
 
 void testTriangle() {
 	Triangle triangle{Point{1.f, 1.f, 0.f}, Point{0.f, 1.f, 0.f}, Point{1.f, 0.f, 0.f}};
@@ -421,6 +520,7 @@ int main()
 	testWorld();
 	testCSGUnion();
 	testCSGDifference();
+	testCSGIntersection();
 	testTriangle();
 	testTriangleTransformation();
 	return 0;
