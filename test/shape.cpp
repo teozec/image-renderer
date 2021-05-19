@@ -305,6 +305,12 @@ void testCSGUnion()
 	assert((areSphereSurfacePointsClose(hitList[3].surfacePoint, Vec2D{0.5f, 0.f})));
 	assert(areClose(hitList[3].t, 4.f));
 	assert(hitList[3].ray == ray7);
+
+	// Test rayIntersection with only one of the two shapes, without transformation
+	Ray ray8{Point{-1.f, -2.f, 0.f}, Vec{0.f, 1.f, 0.f}};
+	assert(union1.rayIntersection(ray8).hit);
+	Ray ray9{Point{1.f, -2.f, 0.f}, Vec{0.f, 1.f, 0.f}};
+	assert(union1.rayIntersection(ray9).hit);
 }
 
 void testCSGDifference()
@@ -392,6 +398,12 @@ void testCSGDifference()
 	assert((areSphereSurfacePointsClose(hitList[1].surfacePoint, Vec2D{0.5f, 0.5f})));
 	assert(areClose(hitList[1].t, 2.f));
 	assert(hitList[1].ray == ray7);
+
+	// Test rayIntersection with only one of the two shapes, without transformation
+	Ray ray8{Point{-1.f, -2.f, 0.f}, Vec{0.f, 1.f, 0.f}};
+	assert(diff1.rayIntersection(ray8).hit);
+	Ray ray9{Point{1.f, -2.f, 0.f}, Vec{0.f, 1.f, 0.f}};
+	assert(!diff1.rayIntersection(ray9).hit);
 }
 
 void testCSGIntersection()
@@ -479,6 +491,12 @@ void testCSGIntersection()
 	assert((areSphereSurfacePointsClose(hitList[1].surfacePoint, Vec2D{0.5f, 0.f})));
 	assert(areClose(hitList[1].t, 3.f));
 	assert(hitList[1].ray == ray7);
+
+	// Test rayIntersection with only one of the two shapes, without transformation
+	Ray ray8{Point{-1.f, -2.f, 0.f}, Vec{0.f, 1.f, 0.f}};
+	assert(!inters1.rayIntersection(ray8).hit);
+	Ray ray9{Point{1.f, -2.f, 0.f}, Vec{0.f, 1.f, 0.f}};
+	assert(!inters1.rayIntersection(ray9).hit);
 }
 
 
