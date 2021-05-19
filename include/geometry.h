@@ -416,4 +416,16 @@ Transformation rotationZ(const float theta) {
 	return Transformation{m, mInv};
 }
 
+struct Vec2D {
+	float u, v;
+	Vec2D() {}
+	Vec2D(float u, float v): u{u}, v{v} {}
+
+	Vec2D operator=(const Vec2D &other) {
+		u = other.u;
+		v = other.v;
+		return *this;
+	}
+};
+
 #endif //GEOMETRY_H

@@ -22,9 +22,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cmath>
 #include "color.h"
 #include "geometry.h"
-#include "shape.h"
 #include "hdr-image.h"
-#include "shape.h"
 
 struct Pigment {
 	virtual Color operator()(Vec2D coords) = 0;

@@ -21,21 +21,12 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <cmath>
 #include "geometry.h"
 #include "camera.h"
-#include <cmath>
+#include "material.h"
 
-struct Vec2D {
-	float u, v;
-	Vec2D() {}
-	Vec2D(float u, float v): u{u}, v{v} {}
-
-	Vec2D operator=(const Vec2D &other) {
-		u = other.u;
-		v = other.v;
-		return *this;
-	}
-};
+struct Shape;
 
 struct HitRecord {
 	bool hit = false;
@@ -44,11 +35,12 @@ struct HitRecord {
 	Vec2D surfacePoint;
 	float t;
 	Ray ray;
+	std::shared_ptr<Shape> shape = nullptr;
 
 	HitRecord() {}
 	HitRecord(const HitRecord &other) :	//
 		hit{other.hit}, worldPoint{other.worldPoint}, normal{other.normal}, //
-		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray} {}
+		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, shape{other.shape} {}
 	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray):
 		hit{true}, worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint},
 		t{t}, ray{ray} {}
@@ -61,6 +53,7 @@ struct HitRecord {
 			surfacePoint = other.surfacePoint;
 			t = other.t;
 			ray = other.ray;
+			shape = other.shape;
 		}
 		return *this;
 	}	
@@ -68,7 +61,11 @@ struct HitRecord {
 
 struct Shape {
 	Transformation transformation;
-	Shape(Transformation transformation = Transformation()): transformation{transformation} {}
+	Material material;
+	Shape(): Shape{Transformation{}, Material{}} {}
+	Shape(Material material): Shape{Transformation{}, material} {}
+	Shape(Transformation transformation): Shape{transformation, Material{}} {}
+	Shape(Transformation transformation, Material material): transformation{transformation}, material{material} {}
 	virtual HitRecord rayIntersection(Ray ray) = 0;
 };
 
@@ -81,6 +78,8 @@ struct Shape {
 struct Sphere : public Shape {
 	Sphere(): Shape() {}
 	Sphere(Transformation transformation): Shape(transformation) {}
+	Sphere(Material material): Shape(material) {}
+	Sphere(Transformation transformation, Material material): Shape(transformation, material) {}
 
 	HitRecord rayIntersection(Ray ray) {
 		Ray invRay{transformation.inverse() * ray};
@@ -130,6 +129,8 @@ private:
 struct Plane : public Shape {
 	Plane(): Shape() {}
 	Plane(Transformation transformation): Shape(transformation) {}
+	Plane(Material material): Shape(material) {}
+	Plane(Transformation transformation, Material material): Shape(transformation, material) {}
 
 	HitRecord rayIntersection(Ray ray) {
 		Ray invRay{transformation.inverse() * ray};
@@ -217,8 +218,10 @@ struct World {
 			HitRecord intersection = shapes[i]->rayIntersection(ray);
 			if(!intersection.hit)
 				continue;
-			if((!closest.hit) || (intersection.t < closest.t))
+			if((!closest.hit) || (intersection.t < closest.t)) {
 				closest = intersection;
+				closest.shape = shapes[i];
+			}
 		}
 		return closest;
 	}
