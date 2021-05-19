@@ -27,7 +27,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include "shape.h"
 
 struct Pigment {
-	virtual Color getColor(Vec2D coords) = 0;
+	virtual Color operator()(Vec2D coords) = 0;
 };
 
 struct UniformPigment : public Pigment {
@@ -36,15 +36,42 @@ struct UniformPigment : public Pigment {
 	UniformPigment() : Pigment() {}
 	UniformPigment(Color color) : Pigment(), color{color} {}
 
-	Color operator()(Vec2D coords) {
+	virtual Color operator()(Vec2D coords) {
 		return color;
 	}
 };
-/*
-struct CheckeredPigment : public Pigment {
 
-}
-*/
+struct CheckeredPigment : public Pigment {
+	Color c1{1.f, 1.f, 1.f};
+	Color c2{0.f, 0.f, 0.f};
+	int nSteps = 10;
+
+	CheckeredPigment() : Pigment() {}
+	CheckeredPigment(Color c1, Color c2, int n = 10) : Pigment(), c1{c1}, c2{c2}, nSteps{n} {}
+
+	virtual Color operator()(Vec2D coords) {
+		int u = floor(coords.u * nSteps);
+		int v = floor(coords.v * nSteps);
+		return (u%2)==(v%2) ? c1 : c2;
+	}
+};
+
+struct ImagePigment : public Pigment {
+	HdrImage img{};
+
+	ImagePigment() : Pigment() {}
+	ImagePigment(HdrImage img) : Pigment(), img{img} {}
+
+	virtual Color operator()(Vec2D coords) {
+		int col = coords.u * img.width;
+        int row = coords.v * img.height;
+        if (col >= img.width)
+            col = img.width - 1;
+        if (row >= img.height)
+            row = img.height - 1;
+        return img.getPixel(col, row);
+	}
+};
 
 struct BRDF {
 	std::shared_ptr<Pigment> pigment;
