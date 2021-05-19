@@ -18,4 +18,30 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #ifndef RANDOM_H
 #define RANDOM_H
 
+#include <cstdint>
+
+/**
+ * @brief A random number generator using the PCG algorithm.
+ * 
+ * @param initState	The seed of the generator
+ * @param initSeq	The sequence identifier, to ensure that orthogonal sequences are generated.
+ */
+struct PCG {
+	uint64_t state, inc;
+	PCG(uint64_t initState = 42, uint64_t initSeq = 54): state{initState}, inc{(initSeq << 1) | 1} {
+		(void) (*this)();
+		state += initState;
+		(void) (*this)();
+	}
+
+	uint32_t operator()() {
+		uint64_t oldState = state;
+		state = oldState * 6364136223846793005 + inc;
+		uint32_t xorShifted = ((oldState >> 18) ^ oldState) << 27;
+		uint32_t rot = oldState >> 59;
+		return (xorShifted >> rot) | (xorShifted << ((-rot) & 31));
+	}
+};
+
+
 #endif // RANDOM_H
