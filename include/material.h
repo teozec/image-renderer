@@ -27,7 +27,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include "shape.h"
 
 struct Pigment {
-	virtual Color getColor(Vec2D coords) = 0;
+	virtual Color operator()(Vec2D coords) = 0;
 };
 
 struct UniformPigment : public Pigment {
@@ -40,25 +40,34 @@ struct UniformPigment : public Pigment {
 		return color;
 	}
 };
-/*
-struct CheckeredPigment : public Pigment {
-
-}
-*/
 
 struct BRDF {
 	std::shared_ptr<Pigment> pigment;
-	BRDF(std::shared_ptr<Pigment> pigment): pigment{pigment} {}
+	BRDF(std::shared_ptr<Pigment> pigment = std::make_shared<UniformPigment>(UniformPigment{})): pigment{pigment} {}
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) = 0;
 };
 
 struct DiffusiveBRDF : BRDF {
 	float reflectance;
+	DiffusiveBRDF(float reflectance = 1.f):
+		reflectance{reflectance}, BRDF() {};
+	DiffusiveBRDF(std::shared_ptr<Pigment> pigment):
+		reflectance{1.f}, BRDF(pigment) {};
 	DiffusiveBRDF(float reflectance, std::shared_ptr<Pigment> pigment):
-		reflectance{reflectance}, BRDF{pigment} {};
+		reflectance{reflectance}, BRDF(pigment) {};
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
-		return pigment(uv) * reflectance / M_PI;
+		return (*pigment)(uv) * (reflectance / M_PI);
 	}
+};
+
+struct Material {
+	std::shared_ptr<BRDF> brdf;
+	std::shared_ptr<Pigment> pigment;
+
+	Material(): Material{std::make_shared<DiffusiveBRDF>(DiffusiveBRDF{}), std::make_shared<UniformPigment>(UniformPigment{Color{0.f, 0.f, 0.f}})} {}
+	Material(std::shared_ptr<BRDF> brdf): Material{brdf, std::make_shared<UniformPigment>(UniformPigment{Color{0.f, 0.f, 0.f}})} {}
+	Material(std::shared_ptr<Pigment> pigment): Material{std::make_shared<DiffusiveBRDF>(DiffusiveBRDF{}), pigment} {}
+	Material(std::shared_ptr<BRDF> brdf, std::shared_ptr<Pigment> pigment): brdf{brdf}, pigment{pigment} {}
 };
 
 #endif // MATERIAL_H
