@@ -18,4 +18,25 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
+#include <memory>
+#include <cmath>
+#include "color.h"
+#include "geometry.h"
+#include "shape.h"
+
+struct BRDF {
+	std::shared_ptr<Pigment> pigment;
+	BRDF(std::shared_ptr<Pigment> pigment): pigment{pigment} {}
+	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) = 0;
+};
+
+struct DiffusiveBRDF : BRDF {
+	float reflectance;
+	DiffusiveBRDF(float reflectance, std::shared_ptr<Pigment> pigment):
+		reflectance{reflectance}, BRDF{pigment} {};
+	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
+		return pigment(uv) * reflectance / M_PI;
+	}
+};
+
 #endif // MATERIAL_H
