@@ -22,7 +22,6 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <memory>
 #include <vector>
 #include <cmath>
-#include "geometry.h"
 #include "camera.h"
 #include "material.h"
 

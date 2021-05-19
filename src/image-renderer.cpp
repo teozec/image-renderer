@@ -15,9 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include "hdr-image.h"
-#include "color.h"
-#include "shape.h"
+#include "renderer.h"
 #include "argh.h"
 #undef NDEBUG
 #include <cassert>
@@ -240,13 +238,8 @@ int demo(argh::parser cmdl) {
 
 	ImageTracer tracer{image, *cam};
 	Color col[3] = {Color{1.f, 0.f, 0.f}, Color{0.f, 1.f, 0.f}, Color{0.f, 0.f, 1.f}};
-	tracer.fireAllRays([&world](Ray ray) {
-		HitRecord record = world.rayIntersection(ray);
-		if (record.hit){
-			return Color{5.f, 2.f, 0.f};
-		} else
-			return Color{0.01, 0.03, 0.1};
-	});
+	OnOffRenderer renderer{world};
+	tracer.fireAllRays([&renderer](Ray ray) { return renderer.render(ray); });
 
 	ofstream outPfm;
 	outPfm.open(ofilename);
