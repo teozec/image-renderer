@@ -20,7 +20,6 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "shape.h"
 
-
 struct Renderer {
 	World world;
 	Color backgroundColor, color;
@@ -32,21 +31,41 @@ struct Renderer {
 	virtual Color render(Ray ray) = 0;
 };
 
+/**
+ * @brief Rendering algorithm based on a simple hit (white) or miss (black) method.
+ * 
+ */
 struct OnOffRenderer : public Renderer {
 
 	OnOffRenderer() : Renderer() {}
 	OnOffRenderer(World w, Color c = Color{1.f, 1.f, 1.f}, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, c, bg) {}
 
+    /**
+     * @brief Given a ray returns white if the ray hits the shape surface, the background color otherwise.
+     * 
+     * @param ray 
+     * @return Color 
+     */
 	virtual Color render(Ray ray) {
 		return world.rayIntersection(ray).hit ? color : backgroundColor;
 	}
 };
 
+/**
+ * @brief Rendering algorithm based on a flat material surface.
+ * 
+ */
 struct FlatRenderer : public Renderer {
 
 	FlatRenderer() : Renderer() {}
 	FlatRenderer(World w, Color c = Color{1.f, 1.f, 1.f}, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, c, bg) {}
 
+    /**
+     * @brief Given a ray returns the proper shape pigment if it hits the surface, the background color otherwise.
+     * 
+     * @param ray 
+     * @return Color 
+     */
 	virtual Color render(Ray ray) {
 	    HitRecord record = world.rayIntersection(ray);
 		return record.hit ? record.shape->material.brdf->pigment->operator()(record.surfacePoint) : backgroundColor;

@@ -141,7 +141,7 @@ int pfm2ldr(argh::parser cmdl)
 
 	// Parse parameters (also specifying default values).
 	float aFactor;
-	cmdl({"-a", "--afactor"}, 0.18f) >> aFactor;
+	cmdl({"-a", "--afactor"}, 0.3f) >> aFactor;
 
 	float gamma = 1.f;
 	cmdl({"-g", "--gamma"}, 1.f) >> gamma;
@@ -164,7 +164,7 @@ int pfm2ldr(argh::parser cmdl)
 	}
 
 	// Convert HDR to LDR
-	img.normalizeImage(aFactor);
+	img.normalizeImage(aFactor, .5f);
 	img.clampImage();
 
 	// Write to output file
@@ -219,7 +219,7 @@ int demo(argh::parser cmdl) {
 	else if (projString == "perspective")
 		cam = make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, camTransformation});
 	else {
-		cout << "Projection unrecognized. Try \"orthogonal\" or \"perspective\"." <<endl;
+		cout << "Projection unrecognized. Try 'orthogonal' or 'perspective'." <<endl;
 		return 1;
 	}
 	string ofilename;
@@ -233,13 +233,12 @@ int demo(argh::parser cmdl) {
 				world.add(Sphere{translation(Vec{(float)(0.5-i), (float)(0.5-j), (float)(0.5-k)})*scaling(0.1, 0.1, 0.1)});
 		}
 	}
+
 	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
 	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
 
 	ImageTracer tracer{image, *cam};
-	Color col[3] = {Color{1.f, 0.f, 0.f}, Color{0.f, 1.f, 0.f}, Color{0.f, 0.f, 1.f}};
-	OnOffRenderer renderer{world};
-	tracer.fireAllRays([&renderer](Ray ray) { return renderer.render(ray); });
+	tracer.fireAllRays([&world](Ray ray) { return OnOffRenderer{world}.render(ray); });
 
 	ofstream outPfm;
 	outPfm.open(ofilename);
