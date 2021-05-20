@@ -9,6 +9,7 @@ class QLineEdit;
 class QRadioButton;
 class QComboBox;
 class QDoubleSpinBox;
+class QSpinBox;
 
 class Wizard : public QWizard
 {
@@ -100,9 +101,18 @@ private:
     QLabel *widthLabel;
     QLabel *heightLabel;
     QLabel *projectionLabel;
-    QLineEdit *widthLineEdit;
-    QLineEdit *heightLineEdit;
-    QLineEdit *projectionLineEdit;
+    QLabel *angleCamLabel;
+    QLabel *ofilenameLabel;
+
+    QSpinBox *widthSpinner;
+    QSpinBox *heightSpinner;
+    QComboBox *projectionDropdownMenu;
+    QSpinBox *angleCamSpinner;
+    QLineEdit *ofilenameLineEdit;
+    QCheckBox *advancedCheckBox;
+    QComboBox *oformat;
+
+    QString projection;
 };
 
 class ConclusionPage : public QWizardPage

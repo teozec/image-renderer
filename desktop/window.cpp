@@ -29,8 +29,7 @@ void Wizard::showHelp()
 	switch (currentId()) {
 	case Page_Menu:
 		message = tr("'pfm2ldr'	- Convert PFM images into a supported LDR format.\n"
-					"'demo'	- Run a basic render.\n"
-					"If both are checked we will take as input of 'pfm2ldr' the output of 'Raytracer'");
+					"'demo'	- Run a basic render.\n");
 		break;
 	default:
 		message = tr("Credits: Luca Nigro & Matteo Zeccoli Marazzini.");
@@ -62,9 +61,11 @@ IntroPage::IntroPage(QWidget *parent) : QWizardPage(parent)
 MenuPage::MenuPage(QWidget *parent) : QWizardPage(parent)
 {
 	setTitle(tr("Choose an action"));
-	setSubTitle(tr("This program can do two things: it can raytrace an image of your choice or it can convert any .pfm file into a supported LDR format."));
+	setSubTitle(tr("This program can do two things: "
+					"it can raytrace an image of your choice or it can convert "
+					"any .pfm file into a supported LDR format."));
 	QButtonGroup *group = new QButtonGroup(this);
-	group->setExclusive(false);
+	group->setExclusive(true);
 	pfm2ldrRadioButton = new QRadioButton(tr("&pfm2ldr"));
 	raytraceRadioButton = new QRadioButton(tr("&RayTracer"));
 	raytraceRadioButton->setChecked(true);
@@ -79,13 +80,10 @@ MenuPage::MenuPage(QWidget *parent) : QWizardPage(parent)
 
 int MenuPage::nextId() const
 {
-	if (raytraceRadioButton->isChecked()) {
+	if (raytraceRadioButton->isChecked())
 		return Wizard::Page_raytracer;
-	} else if (pfm2ldrRadioButton->isChecked() && !raytraceRadioButton->isChecked()) {
+	else
 		return Wizard::Page_pfm2ldr;
-	} else {
-		return Wizard::Page_Conclusion;
-	}
 }
 
 pfm2ldrPage::pfm2ldrPage(QWidget *parent) : QWizardPage(parent)
@@ -168,69 +166,117 @@ int pfm2pngPage::nextId() const {
 	return Wizard::Page_Conclusion;
 }
 
-raytracerPage::raytracerPage(QWidget *parent)
-    : QWizardPage(parent)
+raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 {
-    setTitle(tr("Try our demo!"));
-    setSubTitle(tr("Set your options."));
+	setTitle(tr("Try our demo!"));
+	setSubTitle(tr("Set your options."));
 
 	widthLabel = new QLabel(tr("width:"));
-	widthLineEdit = new QLineEdit;
-	widthLabel->setBuddy(widthLineEdit);
+	widthSpinner = new QSpinBox;
+	widthSpinner->setRange(0, 3840);
+	widthSpinner->setSuffix(tr(" px"));
+	widthSpinner->setSingleStep(10);
+	widthSpinner->setValue(400);
+	widthLabel->setBuddy(widthSpinner);
 
 	heightLabel = new QLabel(tr("height:"));
-	heightLineEdit = new QLineEdit;
-	heightLabel->setBuddy(heightLineEdit);
+	heightSpinner = new QSpinBox;
+	heightSpinner->setRange(0, 2160);
+	heightSpinner->setSuffix(tr(" px"));
+	heightSpinner->setSingleStep(10);
+	heightSpinner->setValue(300);
+	heightLabel->setBuddy(heightSpinner);
+
+	ofilenameLabel = new QLabel(tr("Output filename:"));
+	ofilenameLineEdit = new QLineEdit;
+	ofilenameLineEdit->setPlaceholderText(tr("e.g. \x20 demo"));
+	ofilenameLabel->setBuddy(ofilenameLineEdit);
+	oformat = new QComboBox;
+	QStringList supportedFormats{".pfm", ".bmp", ".gif", ".jpeg", ".png", ".tiff", ".webp"};
+	oformat->addItems(supportedFormats);
 
 	projectionLabel = new QLabel(tr("projection:"));
-	projectionLineEdit = new QLineEdit;
-	projectionLabel->setBuddy(projectionLineEdit);
+	projectionDropdownMenu = new QComboBox;
+	QStringList supportedProjections{"Perspective", "Orthogonal"};
+	projectionDropdownMenu->addItems(supportedProjections);
+	projectionDropdownMenu->setVisible(false);
+	projectionLabel->setBuddy(projectionDropdownMenu);
+	projectionLabel->setVisible(false);
 
-    registerField("width", widthLineEdit);
-    registerField("height", heightLineEdit);
-	registerField("projection", projectionLineEdit);
+	angleCamLabel = new QLabel(tr("angle-offset of cam:"));
+	angleCamSpinner = new QSpinBox;
+	angleCamSpinner->setRange(0, 360);
+	angleCamSpinner->setSuffix(tr("°"));
+	angleCamSpinner->setSingleStep(1);
+	angleCamSpinner->setValue(0);
+	angleCamSpinner->setVisible(false);
+	angleCamLabel->setBuddy(angleCamSpinner);
+	angleCamLabel->setVisible(false);
 
-    QGridLayout *layout = new QGridLayout;
-    layout->addWidget(widthLabel, 0, 0);
-    layout->addWidget(widthLineEdit, 0, 1);
-    layout->addWidget(heightLabel, 1, 0);
-    layout->addWidget(heightLineEdit, 1, 1);
-	layout->addWidget(projectionLabel, 2, 0);
-    layout->addWidget(projectionLineEdit, 2, 1);
-    setLayout(layout);
+	advancedCheckBox = new QCheckBox(tr("Advanced options"));
+	connect(advancedCheckBox, SIGNAL(clicked(bool)), angleCamLabel, SLOT(setVisible(bool)));
+	connect(advancedCheckBox, SIGNAL(clicked(bool)), angleCamSpinner, SLOT(setVisible(bool)));
+	connect(advancedCheckBox, SIGNAL(clicked(bool)), projectionLabel, SLOT(setVisible(bool)));
+	connect(advancedCheckBox, SIGNAL(clicked(bool)), projectionDropdownMenu, SLOT(setVisible(bool)));
+
+	registerField("width", widthSpinner);
+	registerField("height", heightSpinner);
+	projection  = projectionDropdownMenu->currentText();
+	registerField("angleDeg", angleCamSpinner);
+
+	QGridLayout *layout1 = new QGridLayout;
+	layout1->addWidget(widthLabel, 0, 0);
+	layout1->addWidget(widthSpinner, 0, 1);
+	layout1->addWidget(heightLabel, 0, 2);
+	layout1->addWidget(heightSpinner, 0, 3);
+	QGridLayout *layout2 = new QGridLayout;
+	layout2->addWidget(ofilenameLabel, 0, 0);
+	layout2->addWidget(ofilenameLineEdit, 0, 1);
+	layout2->addWidget(oformat, 0, 3);
+	QGridLayout *layout3 = new QGridLayout;
+	layout3->addWidget(advancedCheckBox, 0, 0);
+	QGridLayout *layout4 = new QGridLayout;
+	layout4->addWidget(angleCamLabel, 0, 0);
+	layout4->addWidget(angleCamSpinner, 0, 1);
+	layout4->addWidget(projectionLabel, 1, 0);
+	layout4->addWidget(projectionDropdownMenu, 1, 1);
+	QGridLayout *layout = new QGridLayout;
+	layout->addLayout(layout1, 0, 0);
+	layout->addLayout(layout2, 1, 0);
+	layout->addLayout(layout3, 2, 0);
+	layout->addLayout(layout4, 3, 0);
+	setLayout(layout);
 }
 
 int raytracerPage::nextId() const
 {
-    return Wizard::Page_Conclusion;
+	return Wizard::Page_Conclusion;
 }
 
-ConclusionPage::ConclusionPage(QWidget *parent)
-    : QWizardPage(parent)
+ConclusionPage::ConclusionPage(QWidget *parent) : QWizardPage(parent)
 {
-    setTitle(tr("Completed!"));
-    setPixmap(QWizard::WatermarkPixmap, QPixmap(":/images/watermark.png"));
+	setTitle(tr("Completed!"));
 
-    bottomLabel = new QLabel;
-    bottomLabel->setWordWrap(true);
+	bottomLabel = new QLabel;
+	bottomLabel->setWordWrap(true);
 
-    agreeCheckBox = new QCheckBox(tr("I'm satisfied."));
+	agreeCheckBox = new QCheckBox(tr("I'm satisfied."));
 
-    registerField("conclusion.agree*", agreeCheckBox);
+	registerField("conclusion.agree*", agreeCheckBox);
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(bottomLabel);
-    layout->addWidget(agreeCheckBox);
-    setLayout(layout);
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->addWidget(bottomLabel);
+	layout->addWidget(agreeCheckBox);
+	setLayout(layout);
 }
 
 int ConclusionPage::nextId() const
 {
-    return -1;
+	return -1;
 }
 
 void ConclusionPage::initializePage()
 {
-    QString licenseText = tr("<u>Check the box below</u> if you are satisfied.");
-    bottomLabel->setText(licenseText);
+	QString licenseText = tr("<u>Check the box below</u> if you are satisfied.");
+	bottomLabel->setText(licenseText);
 }
