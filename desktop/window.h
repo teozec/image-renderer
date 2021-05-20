@@ -7,6 +7,8 @@ class QCheckBox;
 class QLabel;
 class QLineEdit;
 class QRadioButton;
+class QComboBox;
+class QDoubleSpinBox;
 
 class Wizard : public QWizard
 {
@@ -62,11 +64,15 @@ private:
     QLabel *ofilenameLabel;
 	QLabel *aFactorLabel;
 	QLabel *gammaLabel;
-    QLineEdit *formatLineEdit;
+    QComboBox *formatDropdownMenu;
+    QString format;
 	QLineEdit *ifilenameLineEdit;
     QLineEdit *ofilenameLineEdit;
-	QLineEdit *aFactorLineEdit;
-	QLineEdit *gammaLineEdit;
+	QDoubleSpinBox *aFactorSpinner;
+	QDoubleSpinBox *gammaSpinner;
+
+public slots:
+    void setPlaceholder();
 };
 
 class pfm2pngPage : public QWizardPage
