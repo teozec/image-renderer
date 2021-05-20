@@ -16,8 +16,18 @@ You should have received a copy of the GNU General Public License
 along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "random.h"
+#undef NDEBUG
+#include <cassert>
 
 int main()
 {
+	PCG pcg{};
+	assert(pcg.state == 1753877967969059832); // FAILS
+	assert(pcg.inc == 109);
+	uint32_t expected[6] = {2707161783, 2068313097, 3122475824, 2211639955, 3215226955, 3421331566};
+	for (int i{}; i<6; i++){	// FAILS
+		uint32_t result = pcg();
+		assert(expected[i] == result);
+	}
 	return 0;
 }
