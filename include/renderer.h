@@ -28,7 +28,7 @@ struct Renderer {
 	Renderer(World w) : world{w} {}
 	Renderer(World w, Color c = Color{1.f, 1.f, 1.f}, Color bg = Color{0.f, 0.f, 0.f}) : world{w}, color{c}, backgroundColor{bg} {}
 
-	virtual Color render(Ray ray) = 0;
+	virtual Color operator()(Ray ray) = 0;
 };
 
 /**
@@ -40,13 +40,13 @@ struct OnOffRenderer : public Renderer {
 	OnOffRenderer() : Renderer() {}
 	OnOffRenderer(World w, Color c = Color{1.f, 1.f, 1.f}, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, c, bg) {}
 
-    /**
-     * @brief Given a ray returns white if the ray hits the shape surface, the background color otherwise.
-     * 
-     * @param ray 
-     * @return Color 
-     */
-	virtual Color render(Ray ray) {
+	/**
+	* @brief Given a ray returns white if the ray hits the shape surface, the background color otherwise.
+	* 
+	* @param ray 
+	* @return Color 
+	*/
+	virtual Color operator()(Ray ray) {
 		return world.rayIntersection(ray).hit ? color : backgroundColor;
 	}
 };
@@ -60,14 +60,14 @@ struct FlatRenderer : public Renderer {
 	FlatRenderer() : Renderer() {}
 	FlatRenderer(World w, Color c = Color{1.f, 1.f, 1.f}, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, c, bg) {}
 
-    /**
-     * @brief Given a ray returns the proper shape pigment if it hits the surface, the background color otherwise.
-     * 
-     * @param ray 
-     * @return Color 
-     */
-	virtual Color render(Ray ray) {
-	    HitRecord record = world.rayIntersection(ray);
+	/**
+	* @brief Given a ray returns the proper shape pigment if it hits the surface, the background color otherwise.
+	* 
+	* @param ray 
+	* @return Color 
+	*/
+	virtual Color operator()(Ray ray) {
+		HitRecord record = world.rayIntersection(ray);
 		return record.hit ? record.shape->material.brdf->pigment->operator()(record.surfacePoint) : backgroundColor;
 	}
 };

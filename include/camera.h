@@ -113,6 +113,7 @@ struct OrthogonalCamera : Camera {
 	OrthogonalCamera(float a, Transformation t) : Camera(a), transformation{t} {}
 	OrthogonalCamera(float a) : Camera(a) {}
 	OrthogonalCamera(Transformation t) : transformation{t} {}
+	OrthogonalCamera() {}
 
 	virtual Ray fireRay(float u, float v) {
 		Point origin{-1.f, (1.f-2*u)*a, 2*v-1.f}; //bottom-left is (0, 1, -1)

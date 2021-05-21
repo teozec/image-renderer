@@ -238,7 +238,7 @@ int demo(argh::parser cmdl) {
 	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
 
 	ImageTracer tracer{image, *cam};
-	tracer.fireAllRays([&world](Ray ray) { return OnOffRenderer{world}.render(ray); });
+	tracer.fireAllRays([&world](Ray ray) { return OnOffRenderer{world}(ray); });
 
 	ofstream outPfm;
 	outPfm.open(ofilename);

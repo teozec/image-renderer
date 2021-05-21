@@ -119,4 +119,14 @@ add_test(NAME random-test
 	COMMAND random-test
 	)
 
+# renderer-test
+add_executable(renderer-test
+	test/renderer.cpp
+	)
+
+target_link_libraries(renderer-test PUBLIC trace)
+add_test(NAME renderer-test
+	COMMAND renderer-test
+	)
+
 target_compile_features(image-renderer PUBLIC cxx_std_17)

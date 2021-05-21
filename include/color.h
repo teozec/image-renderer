@@ -48,4 +48,7 @@ struct Color {
 
 bool areColorsClose(Color a, Color b, float epsilon);
 
+const Color WHITE{1.f, 1.f, 1.f};
+const Color BLACK{0.f, 0.f, 0.f};
+
 #endif // COLOR_H

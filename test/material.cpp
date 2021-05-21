@@ -17,6 +17,9 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "material.h"
 
+#undef NDEBUG
+#include <cassert>
+
 void testPigments(){
 	Color color{1.f, 2.f, 3.f};
 	UniformPigment pigmentUniform{color};
