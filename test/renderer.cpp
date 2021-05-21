@@ -52,8 +52,34 @@ void testOnOffRenderer()
 	assert(image.getPixel(2, 2) == BLACK);
 }
 
+void testFlatRenderer()
+{
+	Color sphereColor{1.f, 2.f, 3.f};
+	Sphere sphere{translation(Vec{2.f, 0.f, 0.f}) * scaling(0.2f, 0.2f, 0.2f),
+			Material{make_shared<DiffusiveBRDF>(DiffusiveBRDF{make_shared<UniformPigment>(UniformPigment{sphereColor})})}};
+	HdrImage image{3, 3};
+	OrthogonalCamera camera;
+	ImageTracer tracer{image, camera};
+	World world;
+	world.add(sphere);
+	FlatRenderer renderer{world};
+	tracer.fireAllRays(renderer);
+
+	assert(image.getPixel(0, 0) == BLACK);
+	assert(image.getPixel(1, 0) == BLACK);
+	assert(image.getPixel(2, 0) == BLACK);
+	assert(image.getPixel(0, 1) == BLACK);
+	assert(image.getPixel(1, 1) == sphereColor);
+	assert(image.getPixel(2, 1) == BLACK);
+	assert(image.getPixel(0, 2) == BLACK);
+	assert(image.getPixel(1, 2) == BLACK);
+	assert(image.getPixel(2, 2) == BLACK);
+}
+
+
 int main()
 {
 	testOnOffRenderer();
+	testFlatRenderer();
 	return 0;
 }
