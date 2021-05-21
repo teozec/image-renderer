@@ -1,5 +1,8 @@
 #include <QtWidgets>
-
+#include <string.h>
+#include <stdio.h>
+#include "argh.h"
+#include "actions.h"
 #include "window.h"
 
 Wizard::Wizard(QWidget *parent) : QWizard(parent)
@@ -149,10 +152,7 @@ void pfm2ldrPage::setPlaceholder() {
 
 int pfm2ldrPage::nextId() const
 {
-	if (format == tr("png"))
-		return Wizard::Page_pfm2png;
-	else
-		return Wizard::Page_Conclusion;
+	return Wizard::Page_Conclusion;
 }
 
 
@@ -171,10 +171,13 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	setTitle(tr("Try our demo!"));
 	setSubTitle(tr("Set your options."));
 
+	demoButton = new QPushButton(tr("Run"));
+	connect(demoButton, SIGNAL (clicked(bool)), this, SLOT (setupDemo()));
+
 	widthLabel = new QLabel(tr("width:"));
 	widthSpinner = new QSpinBox;
 	widthSpinner->setRange(0, 3840);
-	widthSpinner->setSuffix(tr(" px"));
+	//widthSpinner->setSuffix(tr(" px"));
 	widthSpinner->setSingleStep(10);
 	widthSpinner->setValue(400);
 	widthLabel->setBuddy(widthSpinner);
@@ -182,7 +185,7 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	heightLabel = new QLabel(tr("height:"));
 	heightSpinner = new QSpinBox;
 	heightSpinner->setRange(0, 2160);
-	heightSpinner->setSuffix(tr(" px"));
+	//heightSpinner->setSuffix(tr(" px"));
 	heightSpinner->setSingleStep(10);
 	heightSpinner->setValue(300);
 	heightLabel->setBuddy(heightSpinner);
@@ -191,9 +194,9 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	ofilenameLineEdit = new QLineEdit;
 	ofilenameLineEdit->setPlaceholderText(tr("e.g. \x20 demo"));
 	ofilenameLabel->setBuddy(ofilenameLineEdit);
-	oformat = new QComboBox;
+	oformatDropdownMenu = new QComboBox;
 	QStringList supportedFormats{".pfm", ".bmp", ".gif", ".jpeg", ".png", ".tiff", ".webp"};
-	oformat->addItems(supportedFormats);
+	oformatDropdownMenu->addItems(supportedFormats);
 
 	projectionLabel = new QLabel(tr("projection:"));
 	projectionDropdownMenu = new QComboBox;
@@ -223,6 +226,8 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	registerField("height", heightSpinner);
 	projection  = projectionDropdownMenu->currentText();
 	registerField("angleDeg", angleCamSpinner);
+	registerField("output filename", ofilenameLineEdit);
+	oformat  = oformatDropdownMenu->currentText();
 
 	QGridLayout *layout1 = new QGridLayout;
 	layout1->addWidget(widthLabel, 0, 0);
@@ -232,7 +237,7 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	QGridLayout *layout2 = new QGridLayout;
 	layout2->addWidget(ofilenameLabel, 0, 0);
 	layout2->addWidget(ofilenameLineEdit, 0, 1);
-	layout2->addWidget(oformat, 0, 3);
+	layout2->addWidget(oformatDropdownMenu, 0, 3);
 	QGridLayout *layout3 = new QGridLayout;
 	layout3->addWidget(advancedCheckBox, 0, 0);
 	QGridLayout *layout4 = new QGridLayout;
@@ -240,6 +245,7 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	layout4->addWidget(angleCamSpinner, 0, 1);
 	layout4->addWidget(projectionLabel, 1, 0);
 	layout4->addWidget(projectionDropdownMenu, 1, 1);
+	layout4->addWidget(demoButton, 2,1);
 	QGridLayout *layout = new QGridLayout;
 	layout->addLayout(layout1, 0, 0);
 	layout->addLayout(layout2, 1, 0);
@@ -251,6 +257,60 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 int raytracerPage::nextId() const
 {
 	return Wizard::Page_Conclusion;
+}
+
+void raytracerPage::setupDemo() const
+{
+	argh::parser cmdl;
+
+	cmdl.add_params({"-a", "--afactor",
+			 "-g", "--gamma",
+			 "-c", "--compression",
+			 "-q", "--quality",
+			 "-w", "--width",
+			 "-h", "--height",
+			 "-p", "--projection",
+			 "--angleDeg",
+			 "-o", "--outfile"});
+
+	std::vector<char *> args;
+
+	std::string progName = "./image-renderer ";
+	char *argProgName = new char[progName.size()+1];
+	strcpy(argProgName, progName.c_str());
+	argProgName[progName.size()] = '\0';
+	args.push_back(argProgName);
+
+	std::string action = "demo ";
+	char *argAction = new char[action.size()+1];
+	strcpy(argAction, action.c_str());
+	argAction[action.size()] = '\0';
+	args.push_back(argAction);
+
+	std::string width = "-w "+field("width").toString().toStdString()+"\x20";
+	char *argWidth = new char[width.size()+1];
+	strcpy(argWidth, width.data());
+	argWidth[width.size()] = '\0';
+	args.push_back(argWidth);
+
+	std::string height = "-h "+field("height").toString().toStdString()+"\x20";
+	char *argHeight = new char[height.size()+1];
+	strcpy(argHeight, height.data());
+	argHeight[height.size()] = '\0';
+	args.push_back(argHeight);
+
+	args.push_back(0);
+	const char* const* argv = args.data();
+	cmdl.parse(argv);
+	
+	if (oformat == tr(".pfm")){
+		int exit = 0;
+		std::cout << "Executing: "<<endl;
+		for (int i{}; i<args.size()-1; i++)
+			std::cout << args[i];
+		std::cout <<endl;
+		demo(cmdl, exit);
+	}
 }
 
 ConclusionPage::ConclusionPage(QWidget *parent) : QWizardPage(parent)
