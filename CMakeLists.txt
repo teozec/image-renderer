@@ -33,7 +33,7 @@ enable_testing()
 add_subdirectory("desktop")
 
 # Library
-add_library(trace
+add_library(trace STATIC
 	src/color.cpp
 	src/hdr-image.cpp
 	)
@@ -50,7 +50,7 @@ target_include_directories(trace PUBLIC
 
 # image-renderer
 add_executable(image-renderer
-        src/image-renderer.cpp
+		src/image-renderer.cpp
 )
 target_link_libraries(image-renderer PUBLIC trace)
 

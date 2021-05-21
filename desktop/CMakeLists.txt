@@ -31,4 +31,4 @@ set(HEADERS window.h)
 add_executable(desktop ${SOURCES} ${HEADERS})
 
 # Link necessary Qt5 libraries to the project
-target_link_libraries(desktop Qt5::Widgets)
+target_link_libraries(desktop trace Qt5::Widgets)
