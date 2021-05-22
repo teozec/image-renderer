@@ -5,6 +5,8 @@
 #include "actions.h"
 #include "window.h"
 
+//#define DEFAULT_THEME true
+
 Wizard::Wizard(QWidget *parent) : QWizard(parent)
 {
 	setPage(Page_Intro, new IntroPage);
@@ -15,12 +17,68 @@ Wizard::Wizard(QWidget *parent) : QWizard(parent)
 	setPage(Page_Conclusion, new ConclusionPage);
 	setStartId(Page_Intro);
 
-#ifndef Q_OS_MAC
-	setWizardStyle(ModernStyle);
+#ifdef DEFAULT_THEME
+	#ifndef Q_OS_MAC
+		setWizardStyle(ModernStyle);
+	#endif
+#else
+	QString path = QDir::currentPath();     // Get current dir
+	path.append("/../../desktop/theme.qss");
+	QFile styleSheetFile(path);
+	if (!styleSheetFile.exists())
+		qDebug() <<"Non esiste il file";
+	//qDebug() <<path;
+	styleSheetFile.open(QIODevice::ReadOnly);
+	QString styleSheet = QLatin1String(styleSheetFile.readAll());
+	setStyleSheet(styleSheet);
 #endif
+
 	setOption(HaveHelpButton, true);
 	connect(this, &QWizard::helpRequested, this, &Wizard::showHelp);
 	setWindowTitle(tr("Image Renderer Desktop"));
+	setButtonText(QWizard::HelpButton, tr(" ? "));
+	button(QWizard::HelpButton)->setStyleSheet(
+		"QPushButton {"
+			"background-color: #e7e9e7;"
+			"color: #39444A;"
+			"font-size: 11px;"
+			"font-weight: bold;"
+			"border: none;"
+			"height: 10px;"
+			"width:	10px;"
+			"border-radius: 10px;"
+			"padding: 5px;"
+		"}"
+		"QPushButton:hover {"
+			"background-color: #e7e9e7;"
+			"color: #39444A;"
+			"font-size: 11px;"
+			"border: 1px solid #39444A;"
+			"height: 10px;"
+			"width:	10px;"
+			"border-radius: 10px;"
+			"padding: 5px;"
+		"}"
+		"QPushButton::pressed {"
+			"background-color: #39444A;"
+			"color: #e7e9e7;"
+			"font-size: 11px;"
+			"font-weight: bold;"
+			"height: 10px;"
+			"width:	10px;"
+			"border-radius: 10px;"
+			"padding: 5px;"
+		"}"
+		"QPushButton:disabled {"
+			"background-color: transparent;"
+			"color: transparent;"
+			"border: transparent;"
+			"height: 10px;"
+			"width:	10px;"
+			"border-radius: 10px;"
+			"padding: 5px;"
+		"}"
+	);
 }
 
 void Wizard::showHelp()
@@ -69,8 +127,8 @@ MenuPage::MenuPage(QWidget *parent) : QWizardPage(parent)
 					"any .pfm file into a supported LDR format."));
 	QButtonGroup *group = new QButtonGroup(this);
 	group->setExclusive(true);
-	pfm2ldrRadioButton = new QRadioButton(tr("&pfm2ldr"));
-	raytraceRadioButton = new QRadioButton(tr("&RayTracer"));
+	pfm2ldrRadioButton = new QRadioButton(tr(" pfm2ldr"));
+	raytraceRadioButton = new QRadioButton(tr(" RayTracer"));
 	raytraceRadioButton->setChecked(true);
 	group->addButton(raytraceRadioButton);
 	group->addButton(pfm2ldrRadioButton);
@@ -177,7 +235,7 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	widthLabel = new QLabel(tr("width:"));
 	widthSpinner = new QSpinBox;
 	widthSpinner->setRange(0, 3840);
-	//widthSpinner->setSuffix(tr(" px"));
+	widthSpinner->setSuffix(tr(" px"));
 	widthSpinner->setSingleStep(10);
 	widthSpinner->setValue(400);
 	widthLabel->setBuddy(widthSpinner);
@@ -185,7 +243,7 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	heightLabel = new QLabel(tr("height:"));
 	heightSpinner = new QSpinBox;
 	heightSpinner->setRange(0, 2160);
-	//heightSpinner->setSuffix(tr(" px"));
+	heightSpinner->setSuffix(tr(" px"));
 	heightSpinner->setSingleStep(10);
 	heightSpinner->setValue(300);
 	heightLabel->setBuddy(heightSpinner);
@@ -216,7 +274,7 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	angleCamLabel->setBuddy(angleCamSpinner);
 	angleCamLabel->setVisible(false);
 
-	advancedCheckBox = new QCheckBox(tr("Advanced options"));
+	advancedCheckBox = new QCheckBox(tr(" Advanced options"));
 	connect(advancedCheckBox, SIGNAL(clicked(bool)), angleCamLabel, SLOT(setVisible(bool)));
 	connect(advancedCheckBox, SIGNAL(clicked(bool)), angleCamSpinner, SLOT(setVisible(bool)));
 	connect(advancedCheckBox, SIGNAL(clicked(bool)), projectionLabel, SLOT(setVisible(bool)));
@@ -245,7 +303,7 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	layout4->addWidget(angleCamSpinner, 0, 1);
 	layout4->addWidget(projectionLabel, 1, 0);
 	layout4->addWidget(projectionDropdownMenu, 1, 1);
-	layout4->addWidget(demoButton, 2,1);
+	layout4->addWidget(demoButton, 2, 0, 1, 2);
 	QGridLayout *layout = new QGridLayout;
 	layout->addLayout(layout1, 0, 0);
 	layout->addLayout(layout2, 1, 0);
