@@ -216,7 +216,7 @@ void testCSGUnion()
 	Sphere sphere2{translation(Vec{.5f, 0.f, 0.f})};
 
 	// Test rayIntersection form both sides without transformation
-	CSGUnion union1{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2)};
+	CSGUnion union1{sphere1, sphere2};
 	Ray ray1{Point{-2.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	Ray ray2{Point{2.f, 0.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
 
@@ -242,7 +242,7 @@ void testCSGUnion()
 	assert((union1.isInner(Point{1.f, 0.f, 0.f})));
 
 	// Test rayIntersection form both sides with transformation
-	CSGUnion union2{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2), translation(Vec{0.f, 10.f, 0.f})};
+	CSGUnion union2{sphere1, sphere2, translation(Vec{0.f, 10.f, 0.f})};
 	Ray ray3{Point{-2.25f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	Ray ray4{Point{1.75, 10.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
 
@@ -319,7 +319,7 @@ void testCSGDifference()
 	Sphere sphere2{translation(Vec{.5f, 0.f, 0.f})};
 
 	// Test rayIntersection form both sides without transformation
-	CSGDifference diff1{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2)};
+	CSGDifference diff1{sphere1, sphere2};
 	Ray ray1{Point{-2.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	Ray ray2{Point{2.f, 0.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
 
@@ -345,7 +345,7 @@ void testCSGDifference()
 	assert(!(diff1.isInner(Point{1.f, 0.f, 0.f})));
 
 	// Test rayIntersection form both sides with transformation
-	CSGDifference diff2{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2), translation(Vec{0.f, 10.f, 0.f})};
+	CSGDifference diff2{sphere1, sphere2, translation(Vec{0.f, 10.f, 0.f})};
 	Ray ray3{Point{-2.25f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	Ray ray4{Point{1.75, 10.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
 
@@ -412,7 +412,7 @@ void testCSGIntersection()
 	Sphere sphere2{translation(Vec{.5f, 0.f, 0.f})};
 
 	// Test rayIntersection form both sides without transformation
-	CSGIntersection inters1{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2)};
+	CSGIntersection inters1{sphere1, sphere2};
 	Ray ray1{Point{-2.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	Ray ray2{Point{2.f, 0.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
 
@@ -438,7 +438,7 @@ void testCSGIntersection()
 	assert(!(inters1.isInner(Point{1.f, 0.f, 0.f})));
 
 	// Test rayIntersection form both sides with transformation
-	CSGIntersection inters2{make_shared<Sphere>(sphere1), make_shared<Sphere>(sphere2), translation(Vec{0.f, 10.f, 0.f})};
+	CSGIntersection inters2{sphere1, sphere2, translation(Vec{0.f, 10.f, 0.f})};
 	Ray ray3{Point{-2.25f, 10.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 	Ray ray4{Point{1.75, 10.f, 0.f}, Vec{-1.f, 0.f, 0.f}};
 

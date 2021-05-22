@@ -349,9 +349,8 @@ private:
  */
 struct CSGUnion : public Shape {
 	std::shared_ptr<Shape> a, b;
-	CSGUnion(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b): Shape(), a{a}, b{b} {}
-	CSGUnion(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation):
-		Shape(transformation), a{a}, b{b} {}
+	template <class A, class B> CSGUnion(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
+	template <class A, class B> CSGUnion(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 
 	// The first intersection is the one with lower t between the first intersections of a and b
 	virtual HitRecord rayIntersection(Ray ray) override {
@@ -410,9 +409,8 @@ struct CSGUnion : public Shape {
  */
 struct CSGDifference : public Shape {
 	std::shared_ptr<Shape> a, b;
-	CSGDifference(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b): Shape(), a{a}, b{b} {}
-	CSGDifference(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation):
-		Shape(transformation), a{a}, b{b} {}
+	template <class A, class B> CSGDifference(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
+	template <class A, class B> CSGDifference(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
@@ -500,9 +498,8 @@ struct CSGDifference : public Shape {
  */
 struct CSGIntersection : public Shape {
 	std::shared_ptr<Shape> a, b;
-	CSGIntersection(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b): Shape(), a{a}, b{b} {}
-	CSGIntersection(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation):
-		Shape(transformation), a{a}, b{b} {}
+	template <class A, class B> CSGIntersection(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
+	template <class A, class B> CSGIntersection(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};

@@ -229,28 +229,20 @@ int demo(argh::parser cmdl) {
 
 	HdrImage image{width, height};
 	World world;
-	world.add(Triangle{rotationX(M_PI_2)*translation(Vec{0.5, 0.f, 0.f})*scaling(0.5, 0.5, 0.5)});
-	for(int i{}; i<2; i++){
-		for(int j{}; j<2; j++){
-			for(int k{}; k<2; k++)
-				world.add(Sphere{translation(Vec{(float)(0.5-i), (float)(0.5-j), (float)(0.5-k)})*scaling(0.1, 0.1, 0.1)});
-		}
-	}
-	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
-	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
-	world.add(CSGUnion{make_shared<Sphere>(Sphere{translation(Vec{0.f, .5f, 0.f})}),
-				make_shared<Sphere>(Sphere{translation(Vec{0.f, -.5f, 0.f})}),
-				translation(Vec{0.f, 0.f, -1.5f})*scaling(.1f, .1f, .1f)});
-	world.add(CSGDifference{make_shared<Sphere>(Sphere{translation(Vec{0.f, .5f, 0.f})}),
-				make_shared<Sphere>(Sphere{translation(Vec{0.f, -.5f, 0.f})}),
-				translation(Vec{0.f, 0.f, 1.5f})*scaling(.1f, .1f, .1f)});
+
+	// Remove comments to try different CSG shapes
+	//world.add(CSGDifference{Sphere{translation(Vec{0.f, .5f, 0.f})},
+	//world.add(CSGUnion{Sphere{translation(Vec{0.f, .5f, 0.f})},
+	world.add(CSGIntersection{Sphere{translation(Vec{0.f, .5f, 0.f})},
+				Sphere{translation(Vec{0.f, -.5f, 0.f})},
+				scaling(.5f, .5f, .5f)});
 
 	ImageTracer tracer{image, *cam};
 	tracer.fireAllRays([&world](Ray ray) {
 		HitRecord record = world.rayIntersection(ray);
-		if (record.hit){
+		if (record.hit)
 			return Color{5.f, 2.f, 0.f};
-		} else
+		else
 			return Color{0.01, 0.03, 0.1};
 	});
 
