@@ -125,7 +125,8 @@ struct ImagePigment : public Pigment {
 
 struct BRDF {
 	std::shared_ptr<Pigment> pigment;
-	BRDF(std::shared_ptr<Pigment> pigment = std::make_shared<UniformPigment>(UniformPigment{})): pigment{pigment} {}
+	BRDF(): BRDF{UniformPigment{}} {}
+	template <class T> BRDF(const T &pigment): pigment{std::make_shared<T>(pigment)} {}
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) = 0;
 };
 
@@ -133,9 +134,9 @@ struct DiffusiveBRDF : BRDF {
 	float reflectance;
 	DiffusiveBRDF(float reflectance = 1.f):
 		reflectance{reflectance}, BRDF() {};
-	DiffusiveBRDF(std::shared_ptr<Pigment> pigment):
+	template <class T> DiffusiveBRDF(const T &pigment):
 		reflectance{1.f}, BRDF(pigment) {};
-	DiffusiveBRDF(float reflectance, std::shared_ptr<Pigment> pigment):
+	template <class T> DiffusiveBRDF(float reflectance, const T &pigment):
 		reflectance{reflectance}, BRDF(pigment) {};
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
 		return (*pigment)(uv) * (reflectance / M_PI);
@@ -146,10 +147,10 @@ struct Material {
 	std::shared_ptr<BRDF> brdf;
 	std::shared_ptr<Pigment> pigment;
 
-	Material() : Material{std::make_shared<DiffusiveBRDF>(DiffusiveBRDF{}), std::make_shared<UniformPigment>(UniformPigment{Color{0.f, 0.f, 0.f}})} {}
-	Material(std::shared_ptr<BRDF> brdf) : Material{brdf, std::make_shared<UniformPigment>(UniformPigment{Color{0.f, 0.f, 0.f}})} {}
-	Material(std::shared_ptr<Pigment> pigment) : Material{std::make_shared<DiffusiveBRDF>(DiffusiveBRDF{}), pigment} {}
-	Material(std::shared_ptr<BRDF> brdf, std::shared_ptr<Pigment> pigment) : brdf{brdf}, pigment{pigment} {}
+	Material() : Material{DiffusiveBRDF{}, UniformPigment{BLACK}} {}
+	template <class B> Material(const B &brdf) : Material{brdf, UniformPigment{BLACK}} {}
+	//template <class P> Material(const P &pigment) : Material{DiffusiveBRDF{}, pigment} {} // Cannot have both Material(brdf) and Material(pigment) using templates
+	template <class B, class P> Material(const B &brdf, const P &pigment) : brdf{std::make_shared<B>(brdf)}, pigment{std::make_shared<P>(pigment)} {}
 };
 
 #endif // MATERIAL_H

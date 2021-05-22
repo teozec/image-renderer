@@ -32,7 +32,7 @@ using namespace std;
 void testOnOffRenderer()
 {
 	Sphere sphere{translation(Vec{2.f, 0.f, 0.f}) * scaling(0.2f, 0.2f, 0.2f),
-			Material{make_shared<DiffusiveBRDF>(DiffusiveBRDF{make_shared<UniformPigment>(UniformPigment{WHITE})})}};
+			Material{DiffusiveBRDF{UniformPigment{WHITE}}}};
 	HdrImage image{3, 3};
 	OrthogonalCamera camera;
 	ImageTracer tracer{image, camera};
@@ -56,7 +56,7 @@ void testFlatRenderer()
 {
 	Color sphereColor{1.f, 2.f, 3.f};
 	Sphere sphere{translation(Vec{2.f, 0.f, 0.f}) * scaling(0.2f, 0.2f, 0.2f),
-			Material{make_shared<DiffusiveBRDF>(DiffusiveBRDF{make_shared<UniformPigment>(UniformPigment{sphereColor})})}};
+			Material{DiffusiveBRDF{UniformPigment{sphereColor}}}};
 	HdrImage image{3, 3};
 	OrthogonalCamera camera;
 	ImageTracer tracer{image, camera};
