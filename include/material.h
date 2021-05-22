@@ -74,14 +74,14 @@ struct UniformPigment : public Pigment {
  */
 struct CheckeredPigment : public Pigment {
 	Color c1{1.f, 1.f, 1.f};
-	Color c2{0.f, 0.f, 0.f};
+	Color c2{0.5f, 0.5f, 0.5f};
 	int nSteps = 10;
 
 	CheckeredPigment() : Pigment() {}
 	CheckeredPigment(Color c1, Color c2, int n = 10) : Pigment(), c1{c1}, c2{c2}, nSteps{n} {}
 
 	/**
-	 * @brief Overloading operator(). It let you get the color in a given surface coordinates (u, v).
+	 * @brief Overloading operator(). It let you get the color in a given surface coordinates pair (u, v).
 	 * 
 	 * @param coords 
 	 * @return Color 
