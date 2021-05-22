@@ -115,9 +115,6 @@ private:
 	QLineEdit *ofilenameLineEdit;
 	QCheckBox *advancedCheckBox;
 	QComboBox *oformatDropdownMenu;
-
-	QString projection;
-	QString oformat;
 };
 
 class ConclusionPage : public QWizardPage
@@ -129,8 +126,6 @@ public:
 
 	void initializePage() Q_DECL_OVERRIDE;
 	int nextId() const Q_DECL_OVERRIDE;
-
-private slots:
 
 private:
 	QLabel *bottomLabel;

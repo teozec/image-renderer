@@ -229,9 +229,6 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	setTitle(tr("Try our demo!"));
 	setSubTitle(tr("Set your options."));
 
-	demoButton = new QPushButton(tr("Run"));
-	connect(demoButton, SIGNAL (clicked(bool)), this, SLOT (setupDemo()));
-
 	widthLabel = new QLabel(tr("width:"));
 	widthSpinner = new QSpinBox;
 	widthSpinner->setRange(0, 3840);
@@ -250,10 +247,11 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 
 	ofilenameLabel = new QLabel(tr("Output filename:"));
 	ofilenameLineEdit = new QLineEdit;
+	ofilenameLineEdit->setText(tr("demo"));
 	ofilenameLineEdit->setPlaceholderText(tr("e.g. \x20 demo"));
 	ofilenameLabel->setBuddy(ofilenameLineEdit);
 	oformatDropdownMenu = new QComboBox;
-	QStringList supportedFormats{".pfm", ".bmp", ".gif", ".jpeg", ".png", ".tiff", ".webp"};
+	QStringList supportedFormats{"pfm", "bmp", "gif", "jpeg", "png", "tiff", "webp"};
 	oformatDropdownMenu->addItems(supportedFormats);
 
 	projectionLabel = new QLabel(tr("projection:"));
@@ -280,12 +278,13 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	connect(advancedCheckBox, SIGNAL(clicked(bool)), projectionLabel, SLOT(setVisible(bool)));
 	connect(advancedCheckBox, SIGNAL(clicked(bool)), projectionDropdownMenu, SLOT(setVisible(bool)));
 
+	demoButton = new QPushButton(tr("Run"));
+	connect(demoButton, SIGNAL (clicked(bool)), this, SLOT (setupDemo()));
+
 	registerField("width", widthSpinner);
 	registerField("height", heightSpinner);
-	projection  = projectionDropdownMenu->currentText();
 	registerField("angleDeg", angleCamSpinner);
 	registerField("output filename", ofilenameLineEdit);
-	oformat  = oformatDropdownMenu->currentText();
 
 	QGridLayout *layout1 = new QGridLayout;
 	layout1->addWidget(widthLabel, 0, 0);
@@ -320,7 +319,6 @@ int raytracerPage::nextId() const
 void raytracerPage::setupDemo() const
 {
 	argh::parser cmdl;
-
 	cmdl.add_params({"-a", "--afactor",
 			 "-g", "--gamma",
 			 "-c", "--compression",
@@ -331,6 +329,8 @@ void raytracerPage::setupDemo() const
 			 "--angleDeg",
 			 "-o", "--outfile"});
 
+	QString oformat  = oformatDropdownMenu->currentText();
+	QString projection  = projectionDropdownMenu->currentText();
 	std::vector<char *> args;
 
 	std::string progName = "./image-renderer ";
@@ -339,7 +339,7 @@ void raytracerPage::setupDemo() const
 	argProgName[progName.size()] = '\0';
 	args.push_back(argProgName);
 
-	std::string action = "demo ";
+	std::string	action = "demo ";
 	char *argAction = new char[action.size()+1];
 	strcpy(argAction, action.c_str());
 	argAction[action.size()] = '\0';
@@ -357,17 +357,46 @@ void raytracerPage::setupDemo() const
 	argHeight[height.size()] = '\0';
 	args.push_back(argHeight);
 
+	std::string proj = "-p "+projection.toLower().toStdString()+"\x20";
+	char *argProjection = new char[proj.size()+1];
+	strcpy(argProjection, proj.c_str());
+	argProjection[proj.size()] = '\0';
+	args.push_back(argProjection);
+
+	std::string angle = "--angleDeg "+field("angleDeg").toString().toStdString()+"\x20";
+	char *argAngle = new char[angle.size()+1];
+	strcpy(argAngle, angle.data());
+	argAngle[angle.size()] = '\0';
+	args.push_back(argAngle);
+
+	std::string	outfile = "-o "+field("output filename").toString().toStdString()+".pfm ";
+	char *argOutfile = new char[outfile.size()+1];
+	strcpy(argOutfile, outfile.data());
+	argOutfile[outfile.size()] = '\0';
+	args.push_back(argOutfile);
+
 	args.push_back(0);
 	const char* const* argv = args.data();
 	cmdl.parse(argv);
 	
-	if (oformat == tr(".pfm")){
+	if (oformat == tr("pfm")){
 		int exit = 0;
 		std::cout << "Executing: "<<endl;
 		for (int i{}; i<args.size()-1; i++)
 			std::cout << args[i];
 		std::cout <<endl;
 		demo(cmdl, exit);
+	}
+	else {
+		int exit = 0;
+		std::cout << "Executing: "<<endl;
+		for (int i{}; i<args.size()-1; i++)
+			std::cout << args[i];
+		std::cout <<endl;
+		demo(cmdl, exit);
+		std::cout 	<< "./image-renderer pfm2ldr " <<oformat.toStdString() <<" " 
+					<<field("output filename").toString().toStdString()+".pfm "
+					<<field("output filename").toString().toStdString()+"." <<oformat.toStdString() <<endl;
 	}
 }
 
