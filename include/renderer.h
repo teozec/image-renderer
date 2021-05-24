@@ -68,7 +68,7 @@ struct FlatRenderer : public Renderer {
 	*/
 	virtual Color operator()(Ray ray) {
 		HitRecord record = world.rayIntersection(ray);
-		return record.hit ? record.shape->material.brdf->pigment->operator()(record.surfacePoint) : backgroundColor;
+		return record.hit ? (*record.shape->material.brdf->pigment)(record.surfacePoint) : backgroundColor;
 	}
 };
 
