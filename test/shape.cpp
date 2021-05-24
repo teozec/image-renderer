@@ -147,7 +147,7 @@ void testPlaneTransformation()
 	HitRecord hit2{plane2.rayIntersection(ray2)};
 	assert(hit2.hit);
 	assert((hit2.worldPoint == Point{0.f, 0.f, 0.f}));
-	assert(hit2.normal==(Normal{-1.f, 0.f, 0.f}));
+	assert(hit2.normal==(Normal{1.f, 0.f, 0.f}));
 	assert(areClose(hit2.t, 2.f));
 	assert(hit2.ray == ray2);
 }
