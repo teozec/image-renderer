@@ -64,6 +64,17 @@ void testSphere()
 	assert((areSphereSurfacePointsClose(hit2.surfacePoint, Vec2D{0.5f, 0.f})));
 	assert(areClose(hit2.t, 2.f));
 	assert(hit2.ray == ray2);
+	
+	Sphere sphere3;
+	Ray ray3{Point{7.f, 0.f, 0.f}, Vec{-2.f, 0.f, 0.f}};
+	HitRecord hit3{sphere3.rayIntersection(ray3)};
+	assert(hit3.hit);
+	assert((hit3.worldPoint == Point{1.f, 0.f, 0.f}));
+	assert((hit3.normal == Normal{1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit3.surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hit3.t, 3.f));
+	assert(hit3.ray == ray3);
+
 }
 
 void testSphereInner()
