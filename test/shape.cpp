@@ -79,6 +79,16 @@ void testSphere()
 	assert((areSphereSurfacePointsClose(hit3[1].surfacePoint, Vec2D{0.5f, 0.5f})));
 	assert(areClose(hit3[1].t, 4.f));
 	assert(hit3[1].ray == ray2);
+	
+	Sphere sphere3;
+	Ray ray3{Point{7.f, 0.f, 0.f}, Vec{-2.f, 0.f, 0.f}};
+	HitRecord hit4{sphere3.rayIntersection(ray3)};
+	assert(hit4.hit);
+	assert((hit4.worldPoint == Point{1.f, 0.f, 0.f}));
+	assert((hit4.normal == Normal{1.f, 0.f, 0.f}));
+	assert((areSphereSurfacePointsClose(hit4.surfacePoint, Vec2D{0.5f, 0.f})));
+	assert(areClose(hit4.t, 3.f));
+	assert(hit4.ray == ray3);
 }
 
 void testSphereInner()
@@ -178,6 +188,10 @@ void testPlane()
 
 	assert((plane.isInner(Point{1.f, 2.f, -3.f})));
 	assert(!(plane.isInner(Point{-1.f, -2.f, 3.f})));
+
+	Ray ray3{Point{0.f, 2.f, -2.f}, Vec{0.f, 0.f, -1.f}};
+	HitRecord hit3{plane1.rayIntersection(ray3)};
+	assert(!hit3.hit);
 }
 
 void testPlaneTransformation()
@@ -187,7 +201,7 @@ void testPlaneTransformation()
 	HitRecord hit2{plane.rayIntersection(ray2)};
 	assert(hit2.hit);
 	assert((hit2.worldPoint == Point{0.f, 0.f, 0.f}));
-	assert(hit2.normal==(Normal{-1.f, 0.f, 0.f}));
+	assert(hit2.normal==(Normal{1.f, 0.f, 0.f}));
 	assert(areClose(hit2.t, 2.f));
 	assert(hit2.ray == ray2);
 

@@ -18,7 +18,9 @@ jobs:
 
     - name: Install dependencies
       # This project depends on libgd
-      run: brew install libgd
+      run: |
+        brew install libgd
+        brew install qt5
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
