@@ -138,6 +138,10 @@ void testPlane()
 	assert((hit2.normal == Normal{0.f, 0.f, -1.f}));
 	assert(areClose(hit2.t, 2.f));
 	assert(hit2.ray == ray2);
+
+	Ray ray3{Point{0.f, 2.f, -2.f}, Vec{0.f, 0.f, -1.f}};
+	HitRecord hit3{plane1.rayIntersection(ray3)};
+	assert(!hit3.hit);
 }
 
 void testPlaneTransformation()

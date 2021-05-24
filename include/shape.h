@@ -139,10 +139,10 @@ struct Plane : public Shape {
 
 		if (std::abs(dir.z - 0.f) < epsilon)
 			return HitRecord{};
-		if (origin.z*dir.z > 0)
-			return HitRecord{};
 
-		float t = std::abs( origin.z / dir.z );
+		float t = -origin.z / dir.z;
+		if (invRay.tmin > t or t > invRay.tmax)
+			return HitRecord{};
 
 		Point hitPoint{invRay(t)};
 		return HitRecord{
