@@ -90,8 +90,9 @@ struct Sphere : public Shape {
 			return HitRecord{};
 
 		float firstHit;
-		float t1 = (-origin.dot(dir) - delta4) / dir.squaredNorm();
-		float t2 = (-origin.dot(dir) + delta4) / dir.squaredNorm();
+		float sqrtDelta4 = std::sqrt(delta4);
+		float t1 = (-origin.dot(dir) - sqrtDelta4) / dir.squaredNorm();
+		float t2 = (-origin.dot(dir) + sqrtDelta4) / dir.squaredNorm();
 		if (invRay.tmin < t1 and t1 < invRay.tmax)
 			firstHit = t1;
 		else if (invRay.tmin < t2 and t2 < invRay.tmax)
@@ -102,7 +103,7 @@ struct Sphere : public Shape {
 		Point hitPoint{invRay(firstHit)};
 		return HitRecord{
 			transformation * hitPoint,
-			transformation * sphereNormal(hitPoint, ray.dir),
+			transformation * sphereNormal(hitPoint, invRay.dir),
 			spherePointToUV(hitPoint),
 			firstHit,
 			ray};
@@ -138,12 +139,15 @@ struct Plane : public Shape {
 
 		if (std::abs(dir.z - 0.f) < epsilon)
 			return HitRecord{};
+
 		float t = -origin.z / dir.z;
+		if (invRay.tmin > t or t > invRay.tmax)
+			return HitRecord{};
 
 		Point hitPoint{invRay(t)};
 		return HitRecord{
 			transformation * hitPoint,
-			transformation * planeNormal(hitPoint, ray.dir),
+			transformation * planeNormal(hitPoint, invRay.dir),
 			planePointToUV(hitPoint),
 			t,
 			ray};
@@ -211,13 +215,13 @@ struct World {
 		shapes.push_back(std::make_shared<T>(newShape));
 	}
 
-	HitRecord rayIntersection(Ray ray){
+	HitRecord rayIntersection(Ray ray) {
 		HitRecord closest{};
-		for(int i{}; i < std::size(shapes); i++){
+		for(int i{}; i < std::size(shapes); i++) {
 			HitRecord intersection = shapes[i]->rayIntersection(ray);
 			if(!intersection.hit)
 				continue;
-			if((!closest.hit) || (intersection.t < closest.t)) {
+			if((!closest.hit) or (intersection.t < closest.t)) {
 				closest = intersection;
 				closest.shape = shapes[i];
 			}
