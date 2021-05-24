@@ -219,7 +219,8 @@ int demo(argh::parser cmdl) {
 	sphereTexture.setPixel(1, 1, Color{.3f, .1f, .2f});
 	Material material3{DiffusiveBRDF(ImagePigment(sphereTexture))};
 
-	Material materialPlane{DiffusiveBRDF(UniformPigment(Color{.1f, .3f, .5f}))};
+	Material materialSky{DiffusiveBRDF(UniformPigment(Color{.1f, .3f, .5f}))};
+	Material materialGround{DiffusiveBRDF(UniformPigment(Color{.3f, .5f, .1f}))};
 
 	string projString;
 	int angle;
@@ -250,7 +251,8 @@ int demo(argh::parser cmdl) {
 	world.add(Sphere{translation(Vec{0.f, 0.f, -.5f})*scaling(.1f, .1f, .1f), material2});
 	world.add(Sphere{translation(Vec{0.f, .5f, 0.f})*scaling(.1f, .1f, .1f), material3});
 
-	world.add(Plane{translation(Vec{0.f, 0.f, 10.f}), materialPlane}); //weird output
+	world.add(Plane{translation(Vec{0.f, 0.f, 10.f}), materialSky});
+	world.add(Plane{translation(Vec{0.f, 0.f, -10.f}), materialGround});
 
 	ImageTracer tracer{image, *cam};
 	tracer.fireAllRays(FlatRenderer{world});
