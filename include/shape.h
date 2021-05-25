@@ -116,7 +116,8 @@ private:
 	}
 
 	Vec2D spherePointToUV(Point p) {
-		return Vec2D{std::acos(p.z) / (float) M_PI, std::atan2(p.y, p.x) / (float) (2. * M_PI)};
+		float u = std::atan2(p.y, p.x) / (float) (2 * M_PI);
+		return Vec2D{u>1 ? u : u+1, std::acos(p.z) / (float) M_PI};
 	}
 };
 
