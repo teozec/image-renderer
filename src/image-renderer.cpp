@@ -204,23 +204,23 @@ int demo(argh::parser cmdl) {
 		return 0;
 	}
 	int width, height;
-	cmdl({"-w", "--width"}, 300) >> width;
-	cmdl({"-h", "--height"}, 200) >> height;
+	cmdl({"-w", "--width"}, 1000) >> width;
+	cmdl({"-h", "--height"}, 1000) >> height;
 	float aspectRatio = 1.f;
 
 	Material material1{DiffusiveBRDF(UniformPigment(Color{.7f, .3f, .2f}))};
 
-	Material material2{DiffusiveBRDF(CheckeredPigment(Color{.2f, .7f, .3f}, Color{.3f, .2f, .7f}, 4))};
+	Material material2{DiffusiveBRDF(CheckeredPigment(Color{.7f, .8f, .5f}, Color{.7f, .2f, .3f}, 8))};
 
 	HdrImage sphereTexture{2, 2};
-	sphereTexture.setPixel(0, 0, Color{.1f, .2f, .3f});
-	sphereTexture.setPixel(0, 1, Color{.2f, .1f, .3f});
-	sphereTexture.setPixel(1, 0, Color{.3f, .2f, .1f});
-	sphereTexture.setPixel(1, 1, Color{.3f, .1f, .2f});
+	sphereTexture.setPixel(0, 0, Color{.2f, .4f, .6f});
+	sphereTexture.setPixel(0, 1, Color{.4f, .2f, .6f});
+	sphereTexture.setPixel(1, 0, Color{.6f, .4f, .2f});
+	sphereTexture.setPixel(1, 1, Color{.6f, .2f, .4f});
 	Material material3{DiffusiveBRDF(ImagePigment(sphereTexture))};
 
-	Material materialSky{DiffusiveBRDF(UniformPigment(Color{.1f, .3f, .5f}))};
-	Material materialGround{DiffusiveBRDF(UniformPigment(Color{.3f, .5f, .1f}))};
+	Material materialSky{DiffusiveBRDF(UniformPigment(Color{.5f, .8f, 1.f}))};
+	Material materialGround{DiffusiveBRDF(CheckeredPigment(Color{.3f, .5f, .1f}, Color{.8f, .8f, .8f}, 2))};
 
 	string projString;
 	int angle;
@@ -248,11 +248,11 @@ int demo(argh::parser cmdl) {
 		}
 	}
 
-	world.add(Sphere{translation(Vec{0.f, 0.f, -.5f})*scaling(.1f, .1f, .1f), material2});
+	world.add(Sphere{translation(Vec{0.f, 0.f, -.5f})*scaling(.1f, .1f, .1f)*rotationZ(M_PI_2), material2});
 	world.add(Sphere{translation(Vec{0.f, .5f, 0.f})*scaling(.1f, .1f, .1f), material3});
 
 	world.add(Plane{translation(Vec{0.f, 0.f, 10.f}), materialSky});
-	world.add(Plane{translation(Vec{0.f, 0.f, -10.f}), materialGround});
+	world.add(Plane{translation(Vec{0.f, 0.f, -2.f}), materialGround});
 
 	ImageTracer tracer{image, *cam};
 	tracer.fireAllRays(FlatRenderer{world});
