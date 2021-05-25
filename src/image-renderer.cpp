@@ -143,8 +143,8 @@ int pfm2ldr(argh::parser cmdl)
 	float aFactor;
 	cmdl({"-a", "--afactor"}, 0.3f) >> aFactor;
 
-	float gamma = 1.f;
-	cmdl({"-g", "--gamma"}, 1.f) >> gamma;
+	float gamma;
+	cmdl({"-g", "--gamma"}, .7f) >> gamma;
 
 	bool palette = cmdl[{"-p", "--palette"}];
 
@@ -164,7 +164,7 @@ int pfm2ldr(argh::parser cmdl)
 	}
 
 	// Convert HDR to LDR
-	img.normalizeImage(aFactor, 0.1f); //
+	img.normalizeImage(aFactor, .1f); //
 	img.clampImage();
 
 	// Write to output file
@@ -210,7 +210,7 @@ int demo(argh::parser cmdl) {
 
 	Material material1{DiffusiveBRDF(UniformPigment(Color{.7f, .3f, .2f}))};
 
-	Material material2{DiffusiveBRDF(CheckeredPigment(Color{.7f, .8f, .5f}, Color{.7f, .2f, .3f}, 8))};
+	Material material2{DiffusiveBRDF(CheckeredPigment(Color{.7f, .8f, .5f}, Color{.7f, .2f, .3f}, 4))};
 
 	HdrImage sphereTexture{2, 2};
 	sphereTexture.setPixel(0, 0, Color{.2f, .4f, .6f});
@@ -248,7 +248,7 @@ int demo(argh::parser cmdl) {
 		}
 	}
 
-	world.add(Sphere{translation(Vec{0.f, 0.f, -.5f})*scaling(.1f, .1f, .1f)*rotationZ(M_PI_2), material2});
+	world.add(Sphere{translation(Vec{0.f, 0.f, -.5f})*scaling(.1f, .1f, .1f), material2});
 	world.add(Sphere{translation(Vec{0.f, .5f, 0.f})*scaling(.1f, .1f, .1f), material3});
 
 	world.add(Plane{translation(Vec{0.f, 0.f, 10.f}), materialSky});
