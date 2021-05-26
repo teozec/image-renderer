@@ -41,6 +41,11 @@ struct PCG {
 		uint32_t rot = oldState >> 59;
 		return (xorShifted >> rot) | (xorShifted << ((-rot) & 31));
 	}
+
+	float randFloat(){
+		//Return a random float (uniform distribution) in [0,1]
+		return (float)(*this)() / UINT32_MAX;
+	}
 };
 
 

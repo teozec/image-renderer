@@ -22,6 +22,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cmath>
 #include "geometry.h"
 #include "hdr-image.h"
+#include "random.h"
+#include "camera.h"
 
 /**
  * @brief Abstract struct for pigments.
@@ -127,7 +129,9 @@ struct BRDF {
 	std::shared_ptr<Pigment> pigment;
 	BRDF(): BRDF{UniformPigment{}} {}
 	template <class T> BRDF(const T &pigment): pigment{std::make_shared<T>(pigment)} {}
+	
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) = 0;
+	virtual Ray scatterRay(PCG pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) = 0;
 };
 
 struct DiffusiveBRDF : BRDF {
@@ -138,9 +142,58 @@ struct DiffusiveBRDF : BRDF {
 		reflectance{1.f}, BRDF(pigment) {};
 	template <class T> DiffusiveBRDF(float reflectance, const T &pigment):
 		reflectance{reflectance}, BRDF(pigment) {};
+	
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
 		return (*pigment)(uv) * (reflectance / M_PI);
 	}
+
+	virtual Ray scatterRay(PCG pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) override {
+		ONB onb{normal};
+		float cosThetaSq = pcg.randFloat();
+		float cosTheta = sqrt(cosThetaSq);
+		float sinTheta = sqrt(1-cosThetaSq);
+		float phi = 2.f * M_PI * pcg.randFloat();
+
+		return Ray{interactionPoint,
+			onb.e1*cos(phi)*cosTheta + onb.e2*sin(phi)*cosTheta + onb.e3*sinTheta,
+			depth,
+			1e-3f};
+	}
+};
+
+struct SpecularBRDF : BRDF {
+	float thresholdAngle = M_PI/1800.f; //radian
+	SpecularBRDF(float thresholdAngle):
+		thresholdAngle{thresholdAngle}, BRDF() {};
+	template <class T> SpecularBRDF(const T &pigment):
+		BRDF(pigment) {};
+	template <class T> SpecularBRDF(float thresholdAngle, const T &pigment):
+		thresholdAngle{thresholdAngle}, BRDF(pigment) {};
+
+	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
+		//unused
+		float thetaIn = acos(normal.toVec().dot(in));
+		float thetaOut = acos(normal.toVec().dot(out));
+		if (abs(thetaIn - thetaOut) < thresholdAngle)
+			return (*pigment)(uv);
+		else
+			return Color{0.f, 0.f, 0.f};
+	}
+
+	virtual Ray scatterRay(PCG pcg, Vec incomingDir, Point interactionPoint, Normal n, int depth) override {
+		
+		Vec dir{incomingDir.x, incomingDir.y, incomingDir.z};
+		dir.normalize();
+		Vec normal = n.toVec();
+		normal.normalize();
+		float dotProd = normal.dot(dir);
+
+		return Ray{interactionPoint,
+			dir - normal*2*dotProd,
+			depth,
+			1e-5f};
+	}
+
 };
 
 struct Material {
