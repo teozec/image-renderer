@@ -355,7 +355,14 @@ Transformation translation(const Vec v) {
 	return Transformation{m, mInv};
 }
 
-// Function that construct a scaling Transformation given a vector of scaling factors
+/**
+ * @brief Rescales the shape by a scaling factor for each dimension.
+ * 
+ * @param cx
+ * @param cy
+ * @param cz
+ * @return Transformation
+ */
 Transformation scaling(const float cx, const float cy, const float cz) {
 	float diag[4] = {cx, cy, cz, 1.f};
 	float diagInv[4] = {1/cx, 1/cy, 1/cz, 1.f};
@@ -363,7 +370,17 @@ Transformation scaling(const float cx, const float cy, const float cz) {
 }
 
 /**
- * Construct a rotation around the x axis
+ * @brief Rescales the shape by a scaling factor.
+ * 
+ * @param c 
+ * @return Transformation 
+ */
+Transformation scaling(const float c) {
+	return scaling(c, c, c);
+}
+
+/**
+ * @brief Construct a rotation around the x axis
  * @param theta The rotation angle, in radians
  * @return The rotation Transformation
  */

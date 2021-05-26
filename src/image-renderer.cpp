@@ -236,7 +236,7 @@ int demo(argh::parser cmdl) {
 	world.add(CSGIntersection{Sphere{translation(Vec{0.f, .5f, 0.f})},
 				Sphere{translation(Vec{0.f, -.5f, 0.f})},
 				scaling(.5f, .5f, .5f)});
-
+	
 	ImageTracer tracer{image, *cam};
 	tracer.fireAllRays([&world](Ray ray) {
 		HitRecord record = world.rayIntersection(ray);

@@ -79,7 +79,7 @@ void testSphere()
 	assert((areSphereSurfacePointsClose(hit3[1].surfacePoint, Vec2D{0.5f, 0.5f})));
 	assert(areClose(hit3[1].t, 4.f));
 	assert(hit3[1].ray == ray2);
-	
+
 	Sphere sphere3;
 	Ray ray3{Point{7.f, 0.f, 0.f}, Vec{-2.f, 0.f, 0.f}};
 	HitRecord hit4{sphere3.rayIntersection(ray3)};

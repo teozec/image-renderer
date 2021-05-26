@@ -139,8 +139,9 @@ struct Sphere : public Shape {
 		if (delta4 <= 0.f)
 			return intersections;
 
-		float t1 = (-origin.dot(dir) - delta4) / dir.squaredNorm();
-		float t2 = (-origin.dot(dir) + delta4) / dir.squaredNorm();
+		float sqrtDelta4 = std::sqrt(delta4);
+		float t1 = (-origin.dot(dir) - sqrtDelta4) / dir.squaredNorm();
+		float t2 = (-origin.dot(dir) + sqrtDelta4) / dir.squaredNorm();
 		if (invRay.tmin < t1 and t1 < invRay.tmax)
 			intersections.push_back(intersection(t1, ray, invRay));
 		if (invRay.tmin < t2 and t2 < invRay.tmax)
