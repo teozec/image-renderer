@@ -18,15 +18,16 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include <algorithm>
 #include "shape.h"
 
 struct Renderer {
 	World world;
-	Color backgroundColor, color;
+	Color backgroundColor;
 
 	Renderer() {}
 	Renderer(World w) : world{w} {}
-	Renderer(World w, Color c = Color{1.f, 1.f, 1.f}, Color bg = Color{0.f, 0.f, 0.f}) : world{w}, color{c}, backgroundColor{bg} {}
+	Renderer(World w, Color bg = Color{0.f, 0.f, 0.f}) : world{w}, backgroundColor{bg} {}
 
 	virtual Color operator()(Ray ray) = 0;
 };
@@ -36,9 +37,9 @@ struct Renderer {
  * 
  */
 struct OnOffRenderer : public Renderer {
-
+	Color color;
 	OnOffRenderer() : Renderer() {}
-	OnOffRenderer(World w, Color c = Color{1.f, 1.f, 1.f}, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, c, bg) {}
+	OnOffRenderer(World w, Color c = Color{1.f, 1.f, 1.f}, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, bg), color{c} {}
 
 	/**
 	* @brief Given a ray returns white if the ray hits the shape surface, the background color otherwise.
@@ -46,7 +47,7 @@ struct OnOffRenderer : public Renderer {
 	* @param ray 
 	* @return Color 
 	*/
-	virtual Color operator()(Ray ray) {
+	virtual Color operator()(Ray ray) override {
 		return world.rayIntersection(ray).hit ? color : backgroundColor;
 	}
 };
@@ -58,7 +59,7 @@ struct OnOffRenderer : public Renderer {
 struct FlatRenderer : public Renderer {
 
 	FlatRenderer() : Renderer() {}
-	FlatRenderer(World w, Color c = Color{1.f, 1.f, 1.f}, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, c, bg) {}
+	FlatRenderer(World w, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, bg) {}
 
 	/**
 	* @brief Given a ray returns the proper shape pigment if it hits the surface, the background color otherwise.
@@ -66,9 +67,50 @@ struct FlatRenderer : public Renderer {
 	* @param ray 
 	* @return Color 
 	*/
-	virtual Color operator()(Ray ray) {
+	virtual Color operator()(Ray ray) override {
 		HitRecord record = world.rayIntersection(ray);
 		return record.hit ? (*record.shape->material.brdf->pigment)(record.surfacePoint) : backgroundColor;
+	}
+};
+
+struct PathTracer : public Renderer {
+	PCG pcg;
+	int nRays, maxDepth, minDepth;
+	PathTracer() {}
+	PathTracer(World w, Color bg = Color{0.f, 0.f, 0.f}, PCG pcg = PCG{}, int nRays = 100, int maxDepth = 10, int minDepth = 5) : Renderer(w, bg), pcg{pcg}, nRays{nRays}, maxDepth{maxDepth}, minDepth{minDepth} {}
+
+	virtual Color operator()(Ray ray) override {
+		if (ray.depth > maxDepth)
+			return BLACK;
+
+		HitRecord hit{world.rayIntersection(ray)};
+		if (!hit.hit)
+			return backgroundColor;
+
+		Material hitMaterial{hit.shape->material};
+		Color hitColor{(*hitMaterial.brdf->pigment)(hit.surfacePoint)};
+		Color emittedRadiance{(*hitMaterial.emittedRadiance)(hit.surfacePoint)};
+
+		float hitColorLum = std::max({hitColor.r, hitColor.g, hitColor.b});
+
+		// Russian roulette
+		if (ray.depth >= minDepth) {
+			float q = std::max(0.05f, 1 - hitColorLum);
+			if (pcg.randFloat() > q)
+				hitColor *= 1.f / (1.f - q);
+			else
+				return emittedRadiance;
+		}
+
+		// Montecarlo
+		Color cumulativeRadiance = WHITE;
+
+		if (hitColorLum > 0.f)
+			for (int i{}; i < nRays; i++)
+				cumulativeRadiance += hitColor * (*this)(hitMaterial.brdf->scatterRay(
+					pcg, hit.ray.dir, hit.worldPoint, hit.normal, ray.depth+1));	
+
+		return emittedRadiance + cumulativeRadiance / nRays;
 	}
 };
 

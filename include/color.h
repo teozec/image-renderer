@@ -27,12 +27,44 @@ struct Color {
 		return Color{r+other.r, g+other.g, b+other.b};
 	}
 
+	Color operator+=(const Color other) {
+		r += other.r;
+		g += other.g;
+		b += other.b;
+		return *this;
+	}
+
 	Color operator*(const float c) {
 		return Color{c*r, c*g, c*b};
 	}
 
+	Color operator*=(const float c) {
+		r *= c;
+		g *= c;
+		b *= c;
+		return *this;
+	}
+
+	Color operator/(const float c) {
+		return Color{c/r, c/g, c/b};
+	}
+
+	Color operator/=(const float c) {
+		r /= c;
+		g /= c;
+		b /= c;
+		return *this;
+	}
+
 	Color operator*(const Color other) {
 		return Color{other.r*r, other.g*g, other.b*b};
+	}
+
+	Color operator*=(const Color other) {
+		r *= other.r;
+		g *= other.g;
+		b *= other.b;
+		return *this;
 	}
 
 	float luminosity() {

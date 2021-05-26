@@ -198,12 +198,12 @@ struct SpecularBRDF : BRDF {
 
 struct Material {
 	std::shared_ptr<BRDF> brdf;
-	std::shared_ptr<Pigment> pigment;
+	std::shared_ptr<Pigment> emittedRadiance;
 
 	Material() : Material{DiffusiveBRDF{}, UniformPigment{BLACK}} {}
 	template <class B> Material(const B &brdf) : Material{brdf, UniformPigment{BLACK}} {}
-	//template <class P> Material(const P &pigment) : Material{DiffusiveBRDF{}, pigment} {} // Cannot have both Material(brdf) and Material(pigment) using templates
-	template <class B, class P> Material(const B &brdf, const P &pigment) : brdf{std::make_shared<B>(brdf)}, pigment{std::make_shared<P>(pigment)} {}
+	//template <class P> Material(const P &emittedRadiance) : Material{DiffusiveBRDF{}, emittedRadiance} {} // Cannot have both Material(brdf) and Material(emittedRadiance) using templates
+	template <class B, class P> Material(const B &brdf, const P &emittedRadiance) : brdf{std::make_shared<B>(brdf)}, emittedRadiance{std::make_shared<P>(emittedRadiance)} {}
 };
 
 #endif // MATERIAL_H
