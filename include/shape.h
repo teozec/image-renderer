@@ -512,7 +512,7 @@ struct CSGIntersection : public Shape {
 		std::vector<HitRecord> hitListB = b->allIntersections(invRay);
 		HitRecord hitA{}, hitB{};
 
-		// An intersection with a is also an intersection with a-b iff it is not inside b
+		// An intersection with a is also an intersection with a-b iff it is inside b
 		for (auto h : hitListA) {
 			if (b->isInner(h.worldPoint)) {
 				hitA = h;
@@ -556,7 +556,7 @@ struct CSGIntersection : public Shape {
 		std::vector<HitRecord> validB;
 
 
-		// An intersection with a is also an intersection with a-b iff it is not inside b
+		// An intersection with a is also an intersection with a-b iff it is inside b
 		for (auto h : hitListA) {
 			if (b->isInner(h.worldPoint))
 				validA.push_back(h);
