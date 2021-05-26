@@ -16,7 +16,7 @@ class Wizard : public QWizard
 	Q_OBJECT
 
 public:
-	enum { Page_Intro, Page_Menu, Page_pfm2ldr, Page_pfm2png, Page_raytracer,
+	enum { Page_Intro, Page_Menu, Page_pfm2ldr, Page_raytracer,
 		   Page_Conclusion };
 
 	Wizard(QWidget *parent = 0);
@@ -66,26 +66,15 @@ private:
 	QLabel *aFactorLabel;
 	QLabel *gammaLabel;
 	QComboBox *formatDropdownMenu;
-	QString format;
 	QLineEdit *ifilenameLineEdit;
 	QLineEdit *ofilenameLineEdit;
 	QDoubleSpinBox *aFactorSpinner;
 	QDoubleSpinBox *gammaSpinner;
+	QPushButton *pfm2ldrButton;
 
 public slots:
 	void setPlaceholder();
-};
-
-class pfm2pngPage : public QWizardPage
-{
-	Q_OBJECT
-
-public:
-	pfm2pngPage(QWidget *parent = 0);
-
-	int nextId() const Q_DECL_OVERRIDE;
-
-private:
+	void setupPfm2ldr() const;
 };
 
 class raytracerPage : public QWizardPage

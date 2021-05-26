@@ -180,15 +180,15 @@ void demo(argh::parser cmdl, int &exit) {
 
 	HdrImage image{width, height};
 	World world;
-	world.add(Triangle{rotationX(M_PI_2)*translation(Vec{0.5, 0.f, 0.f})*scaling(0.5, 0.5, 0.5)});
+	world.add(Triangle{rotationX(M_PI_2)*translation(Vec{.5f, 0.f, 0.f})*scaling(.5f, .5f, .5f)});
 	for(int i{}; i<2; i++){
 		for(int j{}; j<2; j++){
 			for(int k{}; k<2; k++)
-				world.add(Sphere{translation(Vec{(float)(0.5-i), (float)(0.5-j), (float)(0.5-k)})*scaling(0.1, 0.1, 0.1)});
+				world.add(Sphere{translation(Vec{(.5f-i), (.5f-j), (.5f-k)})*scaling(.1f, .1f, .1f)});
 		}
 	}
-	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
-	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
+	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(.1f, .1f, .1f)});
+	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(.1f, .1f, .1f)});
 
 	ImageTracer tracer{image, *cam};
 	tracer.fireAllRays([&world](Ray ray) {

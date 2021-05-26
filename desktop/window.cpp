@@ -12,7 +12,6 @@ Wizard::Wizard(QWidget *parent) : QWizard(parent)
 	setPage(Page_Intro, new IntroPage);
 	setPage(Page_Menu, new MenuPage);
 	setPage(Page_pfm2ldr, new pfm2ldrPage);
-	setPage(Page_pfm2png, new pfm2pngPage);
 	setPage(Page_raytracer, new raytracerPage);
 	setPage(Page_Conclusion, new ConclusionPage);
 	setStartId(Page_Intro);
@@ -180,11 +179,13 @@ pfm2ldrPage::pfm2ldrPage(QWidget *parent) : QWizardPage(parent)
 	gammaSpinner->setSingleStep(0.02);
 	gammaLabel->setBuddy(gammaSpinner);
 
-	format  = formatDropdownMenu->currentText();
 	registerField("ifilename", ifilenameLineEdit);
 	registerField("ofilename", ofilenameLineEdit);
 	registerField("aFactor", aFactorSpinner);
 	registerField("gamma", gammaSpinner);
+
+	pfm2ldrButton = new QPushButton(tr("Run"));
+	connect(pfm2ldrButton, SIGNAL (clicked(bool)), this, SLOT (setupPfm2ldr()));
 
 	QGridLayout *layout1 = new QGridLayout;
 	layout1->addWidget(formatLabel, 0, 0);
@@ -198,6 +199,7 @@ pfm2ldrPage::pfm2ldrPage(QWidget *parent) : QWizardPage(parent)
 	layout2->addWidget(aFactorSpinner, 1, 0);
 	layout2->addWidget(gammaLabel, 0, 2);
 	layout2->addWidget(gammaSpinner, 1, 2);
+	layout2->addWidget(pfm2ldrButton, 2, 0, 1, 2);
 	QGridLayout *layout = new  QGridLayout;
 	layout->addLayout(layout1, 0, 0);
 	layout->addLayout(layout2, 2, 0);
@@ -213,15 +215,65 @@ int pfm2ldrPage::nextId() const
 	return Wizard::Page_Conclusion;
 }
 
-
-pfm2pngPage::pfm2pngPage(QWidget *parent) : QWizardPage(parent)
+void pfm2ldrPage::setupPfm2ldr() const
 {
-	setTitle(tr("Convert PFM into PNG"));
-	setSubTitle(tr("Enter the fine parameters."));
-}
+	argh::parser cmdl;
+	cmdl.add_params({"-a", "--afactor",
+			 "-g", "--gamma",
+			 "-c", "--compression",
+			 "-q", "--quality",
+			 "-w", "--width",
+			 "-h", "--height",
+			 "-p", "--projection",
+			 "--angleDeg",
+			 "-o", "--outfile"});
 
-int pfm2pngPage::nextId() const {
-	return Wizard::Page_Conclusion;
+	QString formatQstr  = formatDropdownMenu->currentText();
+
+	std::vector<char *> args;
+
+	std::string progName = "./image-renderer ";
+	char *argProgName = new char[progName.size()+1];
+	strcpy(argProgName, progName.c_str());
+	argProgName[progName.size()] = '\0';
+	args.push_back(argProgName);
+
+	std::string	action = "pfm2ldr ";
+	char *argAction = new char[action.size()+1];
+	strcpy(argAction, action.c_str());
+	argAction[action.size()] = '\0';
+	args.push_back(argAction);
+
+	std::string format = formatQstr.toStdString()+"\x20";
+	char *argFormat = new char[format.size()+1];
+	strcpy(argFormat, format.data());
+	argFormat[format.size()] = '\0';
+	args.push_back(argFormat);
+
+	std::string infile = field("ifilename").toString().toStdString()+"\x20";
+	char *argInfile = new char[infile.size()+1];
+	strcpy(argInfile, infile.data());
+	argInfile[infile.size()] = '\0';
+	args.push_back(argInfile);
+
+	std::string	outfile = field("ofilename").toString().toStdString()+"\x20";
+	char *argOutfile = new char[outfile.size()+1];
+	strcpy(argOutfile, outfile.data());
+	argOutfile[outfile.size()] = '\0';
+	args.push_back(argOutfile);
+
+	args.push_back(0);
+	const char * const *argv = args.data();  //char **
+	cmdl.parse(argv);
+	
+	int exit = 0;
+	std::cout << "Executing: "<<endl;
+	for (int i{}; i<args.size()-1; i++)
+		std::cout << args[i];
+	std::cout <<endl;
+	//pfm2ldr(cmdl, exit);
+	const char *commandLine = ("cd ..;" + progName+action+format+infile+outfile).c_str();
+	std::system(commandLine);
 }
 
 raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
@@ -278,13 +330,13 @@ raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
 	connect(advancedCheckBox, SIGNAL(clicked(bool)), projectionLabel, SLOT(setVisible(bool)));
 	connect(advancedCheckBox, SIGNAL(clicked(bool)), projectionDropdownMenu, SLOT(setVisible(bool)));
 
-	demoButton = new QPushButton(tr("Run"));
-	connect(demoButton, SIGNAL (clicked(bool)), this, SLOT (setupDemo()));
-
 	registerField("width", widthSpinner);
 	registerField("height", heightSpinner);
 	registerField("angleDeg", angleCamSpinner);
 	registerField("output filename", ofilenameLineEdit);
+
+	demoButton = new QPushButton(tr("Run"));
+	connect(demoButton, SIGNAL (clicked(bool)), this, SLOT (setupDemo()));
 
 	QGridLayout *layout1 = new QGridLayout;
 	layout1->addWidget(widthLabel, 0, 0);
@@ -318,7 +370,8 @@ int raytracerPage::nextId() const
 
 void raytracerPage::setupDemo() const
 {
-	argh::parser cmdl;
+	//argh::parser cmdl;
+	/*
 	cmdl.add_params({"-a", "--afactor",
 			 "-g", "--gamma",
 			 "-c", "--compression",
@@ -327,7 +380,7 @@ void raytracerPage::setupDemo() const
 			 "-h", "--height",
 			 "-p", "--projection",
 			 "--angleDeg",
-			 "-o", "--outfile"});
+			 "-o", "--outfile"});*/
 
 	QString oformat  = oformatDropdownMenu->currentText();
 	QString projection  = projectionDropdownMenu->currentText();
@@ -376,8 +429,8 @@ void raytracerPage::setupDemo() const
 	args.push_back(argOutfile);
 
 	args.push_back(0);
-	const char* const* argv = args.data();
-	cmdl.parse(argv);
+	//const char * const *argv = args.data();  //char ** = &args[0]
+	//cmdl.parse(argv);
 	
 	if (oformat == tr("pfm")){
 		int exit = 0;
@@ -385,18 +438,9 @@ void raytracerPage::setupDemo() const
 		for (int i{}; i<args.size()-1; i++)
 			std::cout << args[i];
 		std::cout <<endl;
-		demo(cmdl, exit);
-	}
-	else {
-		int exit = 0;
-		std::cout << "Executing: "<<endl;
-		for (int i{}; i<args.size()-1; i++)
-			std::cout << args[i];
-		std::cout <<endl;
-		demo(cmdl, exit);
-		std::cout 	<< "./image-renderer pfm2ldr " <<oformat.toStdString() <<" " 
-					<<field("output filename").toString().toStdString()+".pfm "
-					<<field("output filename").toString().toStdString()+"." <<oformat.toStdString() <<endl;
+		//demo(cmdl, exit); NOT WORKING
+		const char *commandLine = ("cd ..;" + progName+action+width+height+proj+angle+outfile).c_str();
+		std::system(commandLine);
 	}
 }
 
