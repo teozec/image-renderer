@@ -428,4 +428,20 @@ struct Vec2D {
 	}
 };
 
+struct ONB {
+	Vec e1, e2, e3;
+	
+	ONB(Normal normal): ONB(Vec{normal.x, normal.y, normal.z}) {}
+	ONB(Vec normal) {
+		normal.normalize();
+		float sign = std::copysign(1.f, normal.z);
+		float a = -1.f / (sign + normal.z);
+		float b = normal.x * normal.y * a;
+
+		e1 = Vec{1.f + sign * normal.x * normal.x * a, sign * b, -sign * normal.x};
+		e2 = Vec{b, sign + normal.y * normal.y * a, -normal.y};
+		e3 = normal;
+	}
+};
+
 #endif //GEOMETRY_H
