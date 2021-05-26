@@ -76,10 +76,33 @@ void testFlatRenderer()
 	assert(image.getPixel(2, 2) == BLACK);
 }
 
+void testPathTracer()
+{
+	PCG pcg;
+	for (int i{}; i<100; i++){
+		World world;
+
+		float emittedRadiance = pcg.randFloat();
+		float reflectance = pcg.randFloat();
+		Material enclosureMat{
+			DiffusiveBRDF{UniformPigment{Color{1.f, 1.f, 1.f}*reflectance}},
+			UniformPigment{Color{1.f, 1.f, 1.f}*emittedRadiance}
+		};
+		world.add(Sphere{enclosureMat});
+		PathTracer tracer{pcg, 1, world, 100, 101};
+		Ray ray{Point{0.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
+		Color color = tracer(ray);
+
+		float expected = emittedRadiance/(1.f - reflectance);
+		assert(areColorsClose(Color{expected, expected, expected}, color, 1e-3f));
+	}
+}
+
 
 int main()
 {
 	testOnOffRenderer();
 	testFlatRenderer();
+	testPathTracer();
 	return 0;
 }
