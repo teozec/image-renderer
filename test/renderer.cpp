@@ -89,7 +89,7 @@ void testPathTracer()
 			UniformPigment{Color{emittedRadiance, emittedRadiance, emittedRadiance}}
 		};
 		world.add(Sphere{enclosureMat});
-		PathTracer tracer{world, BLACK, pcg, 1, 1000, 200};
+		PathTracer tracer{world, pcg, 1, 200, 201};
 		Ray ray{Point{0.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 		Color color = tracer(ray);
 
