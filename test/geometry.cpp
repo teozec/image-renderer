@@ -16,12 +16,35 @@ You should have received a copy of the GNU General Public License
 along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "geometry.h"
+#include "random.h"
 #undef NDEBUG
 #include <cassert>
 #include <cmath>
 #include <iostream>
 
 using namespace std;
+
+bool areClose(float a, float b, float epsilon = 1e-5)
+{
+	return abs(a-b) < epsilon;
+}
+
+void testONB()
+{
+	for (int i{}; i < 1000000; i++) {
+		Normal normal{pcg.randomFloat(), pcg.randomFloat(), pcg.randomFloat()};
+		ONB onb{normal};
+
+		assert((onb.e2 == Vec{normal.x, normal.y, normal.z}));
+
+		assert(areClose(onb.e1.dot(onb.e2), 0.f))
+		assert(areClose(onb.e2.dot(onb.e3), 0.f))
+		assert(areClose(onb.e3.dot(onb.e1), 0.f))
+
+		assert(areClose(onb.e1.squaredNorm(), 1.f));
+		assert(areClose(onb.e2.squaredNorm(), 1.f));
+		assert(areClose(onb.e3.squaredNorm(), 1.f));
+}
 
 int main()
 {
