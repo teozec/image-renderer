@@ -78,23 +78,23 @@ void testFlatRenderer()
 
 void testPathTracer()
 {
-	PCG pcg;
-	for (int i{}; i<100; i++){
+	PCG pcg(200);
+	for (int i{}; i<5; i++){
 		World world;
 
 		float emittedRadiance = pcg.randFloat();
-		float reflectance = pcg.randFloat();
+		float reflectance = pcg.randFloat()*.8f; // 0.9f
 		Material enclosureMat{
-			DiffusiveBRDF{UniformPigment{Color{1.f, 1.f, 1.f}*reflectance}},
-			UniformPigment{Color{1.f, 1.f, 1.f}*emittedRadiance}
+			DiffusiveBRDF{UniformPigment{Color{reflectance, reflectance, reflectance}}},
+			UniformPigment{Color{emittedRadiance, emittedRadiance, emittedRadiance}}
 		};
 		world.add(Sphere{enclosureMat});
-		PathTracer tracer{pcg, 1, world, 100, 101};
+		PathTracer tracer{world, BLACK, pcg, 1, 1000, 200};
 		Ray ray{Point{0.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 		Color color = tracer(ray);
 
 		float expected = emittedRadiance/(1.f - reflectance);
-		assert(areColorsClose(Color{expected, expected, expected}, color, 1e-3f));
+		assert(areColorsClose(Color{expected, expected, expected}, color, .6f)); //epsilon maybe better if smaller
 	}
 }
 
