@@ -72,7 +72,7 @@ struct Vec {
 
 	// Basic vector operations
 	bool operator==(const Vec &other) {
-		const float epsilon = 1e-10f;
+		const float epsilon = 1e-5f;
 		return areClose<Vec>(*this, other, epsilon);
 	}
 
@@ -220,6 +220,10 @@ struct Normal {
 		y = other.y;
 		z = other.z;
 		return *this;
+	}
+
+	Vec toVec() {
+		return Vec{x, y, z};
 	}
 };
 
@@ -431,7 +435,7 @@ struct Vec2D {
 struct ONB {
 	Vec e1, e2, e3;
 	
-	ONB(Normal normal): ONB(Vec{normal.x, normal.y, normal.z}) {}
+	ONB(Normal normal): ONB(normal.toVec()) {}
 	ONB(Vec normal) {
 		normal.normalize();
 		float sign = std::copysign(1.f, normal.z);
