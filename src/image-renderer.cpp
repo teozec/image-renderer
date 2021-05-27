@@ -206,7 +206,7 @@ int demo(argh::parser cmdl) {
 	int width, height;
 	cmdl({"-w", "--width"}, 1000) >> width;
 	cmdl({"-h", "--height"}, 1000) >> height;
-	float aspectRatio = 1.f;
+	float aspectRatio = (float) width / height;
 
 	Material material1{DiffusiveBRDF(UniformPigment(Color{.7f, .3f, .2f}))};
 
