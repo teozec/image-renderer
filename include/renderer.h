@@ -77,7 +77,7 @@ struct PathTracer : public Renderer {
 	PCG pcg;
 	int nRays, maxDepth, minDepth;
 	PathTracer() {}
-	PathTracer(World w, PCG pcg = PCG{}, int nRays = 100, int maxDepth = 10, int minDepth = 5, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, bg), pcg{pcg}, nRays{nRays}, maxDepth{maxDepth}, minDepth{minDepth} {}
+	PathTracer(World w, PCG pcg = PCG{}, int nRays = 10, int maxDepth = 2, int minDepth = 3, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, bg), pcg{pcg}, nRays{nRays}, maxDepth{maxDepth}, minDepth{minDepth} {}
 
 	virtual Color operator()(Ray ray) override {
 		if (ray.depth > maxDepth)

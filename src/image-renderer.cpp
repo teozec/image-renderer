@@ -164,7 +164,7 @@ int pfm2ldr(argh::parser cmdl)
 	}
 
 	// Convert HDR to LDR
-	img.normalizeImage(aFactor, .1f); //
+	img.normalizeImage(aFactor, 0.5f); //
 	img.clampImage();
 
 	// Write to output file
@@ -212,14 +212,7 @@ int demo(argh::parser cmdl) {
 
 	Material material2{DiffusiveBRDF(CheckeredPigment(Color{.7f, .8f, .5f}, Color{.7f, .2f, .3f}, 4))};
 
-	HdrImage sphereTexture{2, 2};
-	sphereTexture.setPixel(0, 0, Color{.2f, .4f, .6f});
-	sphereTexture.setPixel(0, 1, Color{.4f, .2f, .6f});
-	sphereTexture.setPixel(1, 0, Color{.6f, .4f, .2f});
-	sphereTexture.setPixel(1, 1, Color{.6f, .2f, .4f});
-	Material material3{DiffusiveBRDF(ImagePigment(sphereTexture))};
-
-	Material materialSky{DiffusiveBRDF(UniformPigment(Color{.5f, .8f, 1.f}))};
+	Material materialSky{DiffusiveBRDF(UniformPigment(Color{.5f, .8f, 1.f})), UniformPigment{Color{.25f, .3f, .5f}}};
 	Material materialGround{DiffusiveBRDF(CheckeredPigment(Color{.3f, .5f, .1f}, Color{.8f, .8f, .8f}, 2))};
 
 	string projString;
@@ -241,21 +234,17 @@ int demo(argh::parser cmdl) {
 
 	HdrImage image{width, height};
 	World world;
-	for(int i{}; i<2; i++){
-		for(int j{}; j<2; j++){
-			for(int k{}; k<2; k++)
-				world.add(Sphere{translation(Vec{(float)(0.5-i), (float)(0.5-j), (float)(0.5-k)})*scaling(0.1, 0.1, 0.1), material1});
-		}
-	}
 
-	world.add(Sphere{translation(Vec{0.f, 0.f, -.5f})*scaling(.1f, .1f, .1f), material2});
-	world.add(Sphere{translation(Vec{0.f, .5f, 0.f})*scaling(.1f, .1f, .1f), material3});
+	world.add(Sphere{translation(Vec{0.f, -1.5f, 0.f}), material1});
+	world.add(Sphere{translation(Vec{0.f, 1.5f, 0.f}), material2});
 
-	world.add(Plane{translation(Vec{0.f, 0.f, 10.f}), materialSky});
+	world.add(Plane{translation(Vec{0.f, 0.f, 100.f}), materialSky});
 	world.add(Plane{translation(Vec{0.f, 0.f, -2.f}), materialGround});
 
 	ImageTracer tracer{image, *cam};
-	tracer.fireAllRays(FlatRenderer{world});
+	PCG pcg{(uint64_t)200};
+
+	tracer.fireAllRays(PathTracer{world, pcg});
 
 	ofstream outPfm;
 	outPfm.open(ofilename);
