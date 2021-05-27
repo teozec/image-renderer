@@ -584,6 +584,42 @@ struct CSGIntersection : public Shape {
 	}
 };
 
+/**
+ * @brief An axis aligned box object derived from Shape.
+ *
+ * @param transformation	The transformation to the shape.
+ * @see Shape.
+ */
+struct Box : Shape {
+	Point pMin, pMax;
+	Box(Point pMin, Point pMax, Transformation transformation = Transformation()): pMin{pMin}, pMax{pMax}, Shape(transformation) {}
+
+	/**
+	 * @brief Return a HitRecord corresponding to the first intersection between the shape and the ray.
+	 */
+	virtual HitRecord rayIntersection(Ray ray) override {
+		Ray invRay = transformation.inverse() * ray;
+		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
+		float tXMin = (pMin.x - origin.x) / dir.x;
+		float tXMax = (pMax.x - origin.x) / dir.x;
+		float tYMin = (pMin.y - origin.y) / dir.y;
+		float tYMax = (pMax.y - origin.y) / dir.y;
+		float tZMin = (pMin.z - origin.z) / dir.z;
+		float tZMax = (pMax.z - origin.z) / dir.z;
+	}
+
+	/**
+	 * @brief Return a vector of HitRecord corresponding to all the intersections, ordered by increasing t.
+	 */
+	virtual std::vector<HitRecord> allIntersections(Ray ray) = 0;
+
+	virtual bool isInner(Point p) override {
+		return pMin.x < p.x and p.x < pMax.x and
+			pMin.y < p.y and p.y < pMax.y and
+			pMin.z < p.z and p.z < pMax.z;
+	}
+};
+
 /** World class
  * @brief This is the class containing all the shapes of the scene.
  * 
