@@ -208,7 +208,7 @@ int demo(argh::parser cmdl) {
 	int width, height;
 	cmdl({"-w", "--width"}, 300) >> width;
 	cmdl({"-h", "--height"}, 200) >> height;
-	float aspectRatio = width/height;
+	float aspectRatio = (float) width / height;
 
 	string projString;
 	int angle;
