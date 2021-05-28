@@ -366,6 +366,10 @@ Transformation scaling(const float cx, const float cy, const float cz) {
 	return Transformation(diag, diagInv);
 }
 
+Transformation scaling(const float c) {
+	return scaling(c, c, c);
+}
+
 /**
  * Construct a rotation around the x axis
  * @param theta The rotation angle, in radians

@@ -103,14 +103,14 @@ struct PathTracer : public Renderer {
 		}
 
 		// Montecarlo
-		Color cumulativeRadiance = WHITE;
+		Color cumulativeRadiance = BLACK;
 
 		if (hitColorLum > 0.f)
 			for (int i{}; i < nRays; i++)
 				cumulativeRadiance += hitColor * (*this)(hitMaterial.brdf->scatterRay(
 					pcg, hit.ray.dir, hit.worldPoint, hit.normal, ray.depth+1));	
 
-		return emittedRadiance + cumulativeRadiance / nRays;
+		return emittedRadiance + cumulativeRadiance / (float)nRays;
 	}
 };
 
