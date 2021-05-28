@@ -22,9 +22,10 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <memory>
 #include <vector>
 #include <algorithm>
+#include <cmath>
+#include <cfloat>
 #include "geometry.h"
 #include "camera.h"
-#include <cmath>
 
 struct Vec2D {
 	float u, v;
@@ -592,31 +593,149 @@ struct CSGIntersection : public Shape {
  */
 struct Box : Shape {
 	Point pMin, pMax;
-	Box(Point pMin, Point pMax, Transformation transformation = Transformation()): pMin{pMin}, pMax{pMax}, Shape(transformation) {}
+	Box(Point pMin, Point pMax, Transformation transformation = Transformation()): pMin{pMin}, pMax{pMax}, Shape(transformation) {
+		assert(pMin.x < pMax.x);
+		assert(pMin.y < pMax.y);
+		assert(pMin.z < pMax.z);
+	}
 
 	/**
 	 * @brief Return a HitRecord corresponding to the first intersection between the shape and the ray.
 	 */
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay = transformation.inverse() * ray;
-		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
-		float tXMin = (pMin.x - origin.x) / dir.x;
-		float tXMax = (pMax.x - origin.x) / dir.x;
-		float tYMin = (pMin.y - origin.y) / dir.y;
-		float tYMax = (pMax.y - origin.y) / dir.y;
-		float tZMin = (pMin.z - origin.z) / dir.z;
-		float tZMax = (pMax.z - origin.z) / dir.z;
+		if (!intersection(invRay))
+			return HitRecord{};
+
+		float t;
+		Normal normal;
+		if (invRay.tmin < tMin and tMin < invRay.tmax) {
+			t = tMin;
+			normal = boxNormal(faceMin);
+		} else if (invRay.tmin < tMax and tMax < invRay.tmax) {
+			t = tMax;
+			normal = -boxNormal(faceMax);
+		}
+		Point hitPoint{invRay(t)};
+		return HitRecord{
+			transformation * hitPoint,
+			transformation * normal,
+			boxPointToUV(hitPoint),
+			t,
+			ray
+		};
 	}
 
 	/**
 	 * @brief Return a vector of HitRecord corresponding to all the intersections, ordered by increasing t.
 	 */
-	virtual std::vector<HitRecord> allIntersections(Ray ray) = 0;
+	virtual std::vector<HitRecord> allIntersections(Ray ray) override {
+		Ray invRay = transformation.inverse() * ray;
+		std::vector<HitRecord> intersections;
+
+		if (!intersection(invRay))
+			return intersections;
+
+		if (invRay.tmin < tMin and tMin < invRay.tmax) {
+			Normal normal{boxNormal(faceMin)};
+			Point hitPoint{invRay(tMin)};
+			intersections.push_back(HitRecord{
+				transformation * hitPoint,
+				transformation * normal,
+				boxPointToUV(hitPoint),
+				tMin,
+				ray
+			});
+		}
+		if (invRay.tmin < tMax and tMax < invRay.tmax) {
+			Normal normal{-boxNormal(faceMax)};
+			Point hitPoint{invRay(tMax)};
+			intersections.push_back(HitRecord{
+				transformation * hitPoint,
+				transformation * normal,
+				boxPointToUV(hitPoint),
+				tMax,
+				ray
+			});
+		}
+		return intersections;
+	}
 
 	virtual bool isInner(Point p) override {
+		p = transformation.inverse() * p;
 		return pMin.x < p.x and p.x < pMax.x and
 			pMin.y < p.y and p.y < pMax.y and
 			pMin.z < p.z and p.z < pMax.z;
+	}
+
+private:
+	int faceMin;
+	int faceMax;
+	float tMin = FLT_MAX;
+	float tMax = FLT_MIN;
+
+	bool intersection(Ray invRay) {
+		float t1, t2;
+		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
+		tMin = FLT_MAX;
+		tMax = FLT_MIN;
+		for (int i{}; i < 3; i++) {
+			t1 = (pMin[i] - origin[i]) / dir[i];
+			t2 = (pMax[i] - origin[i]) / dir[i];
+
+			if (t1 < t2) {
+				// First hit face 0, 1 or 2 (min faces), then 3, 4 or 5 (max faces)
+				// Update global minimum
+				if (t1 < tMin) {
+					tMin = t1;
+					faceMin = i;
+				}
+				// Update global maximum
+				if (t2 > tMax) {
+					tMax = t2;
+					faceMax = i + 3;
+				}
+			} else {
+				// First hit face 3, 4 or 5 (max faces), then 0, 1 or 2 (min faces)
+				// Update global minimum
+				if (t2 < tMin) {
+					tMin = t2;
+					faceMin = i + 3;
+				}
+				// Update global maximum
+				if (t1 > tMax) {
+					tMax = t1;
+					faceMax = i;
+				}
+			}
+
+			if (tMin > tMax)
+				return false;
+		}
+		return true;
+	}
+
+	Normal boxNormal(int face) {
+		switch (face) {
+		case 0:
+			return Normal{1.f, 0.f, 0.f};
+		case 1:
+			return Normal{0.f, 1.f, 0.f};
+		case 2:
+			return Normal{0.f, 0.f, 1.f};
+		case 3:
+			return Normal{-1.f, 0.f, 0.f};
+		case 4:
+			return Normal{0.f, -1.f, 0.f};
+		case 5:
+			return Normal{0.f, 0.f, -1.f};
+		}
+		assert(0 <= face and face < 6);
+	}
+
+	// Not implemented
+	Vec2D boxPointToUV(Point hitPoint) {
+		return Vec2D{};
 	}
 };
 

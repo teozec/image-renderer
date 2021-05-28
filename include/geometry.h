@@ -22,6 +22,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <string>
 #include <sstream>
 #include <cmath>
+#undef NDEBUG
+#include <cassert>
 
 static bool _areClose(const float a, const float b, const float epsilon) {
 	return std::fabs(a-b) < epsilon;
@@ -101,6 +103,18 @@ struct Vec {
 		y = other.y;
 		z = other.z;
 		return *this;
+	}
+
+	float operator[](const size_t i) {
+		switch (i) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		}
+		assert(i < 3);
 	}
 
 	float dot(const Vec &other) const {
@@ -183,6 +197,18 @@ struct Point {
 		return ss.str();
 	}
 
+	float operator[](const size_t i) {
+		switch (i) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		}
+		assert(i < 3);
+	}
+
 	Vec toVec() {
 		return Vec{x, y, z};
 	}
@@ -220,6 +246,18 @@ struct Normal {
 		y = other.y;
 		z = other.z;
 		return *this;
+	}
+
+	float operator[](const size_t i) {
+		switch (i) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		}
+		assert(i < 3);
 	}
 };
 
