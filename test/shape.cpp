@@ -570,6 +570,12 @@ void testBox()
 
 	Ray ray2{Point{-4.f, 0.f, 0.f}, Vec{0.f, 1.f, 0.f}};
 	assert(!box.rayIntersection(ray2).hit);
+	Ray ray3{Point{-4.f, 0.f, 0.f}, Vec{2.f, 2.f, 2.f}};
+	cout << string(box.rayIntersection(ray3).worldPoint) << endl;
+	assert(!box.rayIntersection(ray3).hit);
+
+	assert((box.isInner(Point{0.f, 0.f, 0.f})));
+	assert(!(box.isInner(Point{9.f, 9.f, 9.f})));
 }
 
 int main()

@@ -688,8 +688,8 @@ private:
 		float t1, t2;
 		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
 		const float epsilon = 1e-5;
-		tMin = FLT_MAX;
-		tMax = FLT_MIN;
+		tMin = FLT_MIN;
+		tMax = FLT_MAX;
 		for (int i{}; i < 3; i++) {
 			// Ray parallel to one of the axes
 			if (std::abs(dir[i] - 0.f) < epsilon)
@@ -701,32 +701,35 @@ private:
 			t1 = (pMin[i] - origin[i]) / dir[i];
 			t2 = (pMax[i] - origin[i]) / dir[i];
 
+			//std::cout << t1 << std::endl << t2 << std::endl;
+
 			if (t1 < t2) {
 				// First hit face 0, 1 or 2 (min faces), then 3, 4 or 5 (max faces)
 				// Update global minimum
-				if (t1 < tMin) {
+				if (t1 > tMin) {
 					tMin = t1;
 					faceMin = i;
 				}
 				// Update global maximum
-				if (t2 > tMax) {
+				if (t2 < tMax) {
 					tMax = t2;
 					faceMax = i + 3;
 				}
 			} else {
 				// First hit face 3, 4 or 5 (max faces), then 0, 1 or 2 (min faces)
 				// Update global minimum
-				if (t2 < tMin) {
+				if (t2 > tMin) {
 					tMin = t2;
 					faceMin = i + 3;
 				}
 				// Update global maximum
-				if (t1 > tMax) {
+				if (t1 < tMax) {
 					tMax = t1;
 					faceMax = i;
 				}
 			}
 
+			// No overlap between intervals
 			if (tMin > tMax)
 				return false;
 		}
