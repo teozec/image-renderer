@@ -567,6 +567,10 @@ void testBox()
 	assert(hitAll1[1].surfacePoint == (Vec2D{(3.f + 2.f / 7.f) / 6.f, (3.f + 3.f / 9.f) / 6.f}));
 	assert(areClose(hitAll1[1].t, 8.f));
 	assert(hitAll1[1].ray == ray1);
+
+	Ray ray2{Point{-4.f, 0.f, 0.f}, Vec{0.f, 1.f, 0.f}};
+	cout << string(box.rayIntersection(ray2).worldPoint) << endl;
+	assert(!box.rayIntersection(ray2).hit);
 }
 
 int main()

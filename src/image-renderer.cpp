@@ -233,9 +233,10 @@ int demo(argh::parser cmdl) {
 	// Remove comments to try different CSG shapes
 	//world.add(CSGDifference{Sphere{translation(Vec{0.f, .5f, 0.f})},
 	//world.add(CSGUnion{Sphere{translation(Vec{0.f, .5f, 0.f})},
-	world.add(CSGIntersection{Sphere{translation(Vec{0.f, .5f, 0.f})},
-				Sphere{translation(Vec{0.f, -.5f, 0.f})},
-				scaling(.5f, .5f, .5f)});
+	world.add(Box{Point{3.f, .5f, 0.f}, Point{4.f, 1.f, 1.f}});
+	world.add(Sphere{translation(Vec{0.f, -.5f, 0.f})*scaling(.5f, .5f, .5f)});
+				//Sphere{translation(Vec{0.f, -.5f, 0.f})},
+				//scaling(.5f, .5f, .5f)});
 	
 	ImageTracer tracer{image, *cam};
 	tracer.fireAllRays([&world](Ray ray) {
