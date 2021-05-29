@@ -21,6 +21,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <vector>
 #include <string>
 #include <sstream>
+#include <limits>
 #include <cmath>
 #undef NDEBUG
 #include <cassert>
@@ -68,7 +69,7 @@ struct Vec {
 	// Convert Vec to a human readable string with the values of its elements
 	operator std::string() const {
 		std::ostringstream ss;
-		ss << "Vec(x=" << x << ", y=" << y << ", z=" << z;
+		ss << "Vec(x=" << x << ", y=" << y << ", z=" << z << ")";
 		return ss.str();
 	}
 
@@ -115,6 +116,7 @@ struct Vec {
 			return z;
 		}
 		assert(i < 3);
+		return std::numeric_limits<double>::quiet_NaN();
 	}
 
 	float dot(const Vec &other) const {
@@ -193,7 +195,7 @@ struct Point {
 	// Convert Point to a human readable string with the values of its elements
 	operator std::string() const {
 		std::ostringstream ss;
-		ss << "Point(x=" << x << ", y=" << y << ", z=" << z;
+		ss << "Point(x=" << x << ", y=" << y << ", z=" << z << ")";
 		return ss.str();
 	}
 
@@ -207,6 +209,7 @@ struct Point {
 			return z;
 		}
 		assert(i < 3);
+		return std::numeric_limits<double>::quiet_NaN();
 	}
 
 	Vec toVec() {
@@ -248,6 +251,13 @@ struct Normal {
 		return *this;
 	}
 
+	// Convert Vec to a human readable string with the values of its elements
+	operator std::string() const {
+		std::ostringstream ss;
+		ss << "Normal(x=" << x << ", y=" << y << ", z=" << z << ")";
+		return ss.str();
+	}
+
 	float operator[](const size_t i) {
 		switch (i) {
 		case 0:
@@ -258,6 +268,7 @@ struct Normal {
 			return z;
 		}
 		assert(i < 3);
+		return std::numeric_limits<double>::quiet_NaN();
 	}
 };
 

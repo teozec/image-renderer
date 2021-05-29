@@ -542,6 +542,19 @@ void testTriangleTransformation() {
 	assert(!(extHit.hit));
 }
 
+void testBox()
+{
+	Box box1{Point{-1.f, -2.f, -3.f}, Point{4.f, 5.f, 6.f}};
+	Ray ray1{Point{-4.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
+	HitRecord hit1{box1.rayIntersection(ray1)};
+	assert(hit1.hit);
+	assert(hit1.worldPoint == (Point{-1.f, 0.f, 0.f}));
+	cout << string(hit1.normal) << endl;
+	assert(hit1.normal==(Normal{-1.f, 0.f, 0.f}));
+	assert(areClose(hit1.t, 3.f));
+	assert(hit1.ray == ray1);
+}
+
 int main()
 {
 	testSphere();
@@ -555,5 +568,6 @@ int main()
 	testCSGIntersection();
 	testTriangle();
 	testTriangleTransformation();
+	testBox();
 	return 0;
 }

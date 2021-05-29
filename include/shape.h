@@ -618,7 +618,10 @@ struct Box : Shape {
 			t = tMax;
 			face = faceMax;
 			normal = -boxNormal(faceMax);
+		} else {
+			return HitRecord{};
 		}
+		std::cout << face << std::endl;
 		Point hitPoint{invRay(t)};
 		return HitRecord{
 			transformation * hitPoint,
@@ -680,9 +683,12 @@ private:
 	bool intersection(Ray invRay) {
 		float t1, t2;
 		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
+		const float epsilon = 1e-5;
 		tMin = FLT_MAX;
 		tMax = FLT_MIN;
 		for (int i{}; i < 3; i++) {
+			if (std::abs(dir[i] - 0.f) < epsilon)
+				continue;
 			t1 = (pMin[i] - origin[i]) / dir[i];
 			t2 = (pMax[i] - origin[i]) / dir[i];
 
@@ -715,23 +721,25 @@ private:
 			if (tMin > tMax)
 				return false;
 		}
+		if (tMin > tMax)
+			return false;
 		return true;
 	}
 
 	Normal boxNormal(int face) {
 		switch (face) {
 		case 0:
-			return Normal{1.f, 0.f, 0.f};
-		case 1:
-			return Normal{0.f, 1.f, 0.f};
-		case 2:
-			return Normal{0.f, 0.f, 1.f};
-		case 3:
 			return Normal{-1.f, 0.f, 0.f};
-		case 4:
+		case 1:
 			return Normal{0.f, -1.f, 0.f};
-		case 5:
+		case 2:
 			return Normal{0.f, 0.f, -1.f};
+		case 3:
+			return Normal{1.f, 0.f, 0.f};
+		case 4:
+			return Normal{0.f, 1.f, 0.f};
+		case 5:
+			return Normal{0.f, 0.f, 1.f};
 		}
 		assert(0 <= face and face < 6);
 	}
