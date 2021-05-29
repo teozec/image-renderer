@@ -37,6 +37,11 @@ struct Vec2D {
 		v = other.v;
 		return *this;
 	}
+
+	bool operator==(const Vec2D &other) const {
+		const float epsilon = 1e-5;
+		return (std::abs(u - other.u) < epsilon and std::abs(v - other.v) < epsilon);
+	}
 };
 
 struct HitRecord {
@@ -621,7 +626,6 @@ struct Box : Shape {
 		} else {
 			return HitRecord{};
 		}
-		std::cout << face << std::endl;
 		Point hitPoint{invRay(t)};
 		return HitRecord{
 			transformation * hitPoint,
@@ -747,25 +751,24 @@ private:
 	// The [0, 1] interval is divided in 6 equal subintervals, one per face
 	Vec2D boxPointToUV(Point hitPoint, int face) {
 		float u, v;
-		u = v = face / 6.f;
 		switch (face) {
 		// u: y, v: z
 		case 0:
 		case 3:
-			u += hitPoint.y / (pMax.y - pMin.y);
-			v += hitPoint.z / (pMax.z - pMin.z);
+			u = (face + (hitPoint.y - pMin.y) / (pMax.y - pMin.y)) / 6.f;
+			v = (face + (hitPoint.z - pMin.z) / (pMax.z - pMin.z)) / 6.f;
 			break;
 		// u: x, v: z
 		case 1:
 		case 4:
-			u += hitPoint.x / (pMax.x - pMin.x);
-			v += hitPoint.z / (pMax.z - pMin.z);
+			u = (face + (hitPoint.x - pMin.x) / (pMax.x - pMin.x)) / 6.f;
+			v = (face + (hitPoint.z - pMin.z) / (pMax.z - pMin.z)) / 6.f;
 			break;
 		// u: x, v: y
 		case 2:
 		case 5:
-			u += hitPoint.x / (pMax.x - pMin.x);
-			v += hitPoint.y / (pMax.y - pMin.y);
+			u = (face + (hitPoint.x - pMin.x) / (pMax.x - pMin.x)) / 6.f;
+			v = (face + (hitPoint.y - pMin.y) / (pMax.y - pMin.y)) / 6.f;
 			break;
 		}
 		return Vec2D{u, v};

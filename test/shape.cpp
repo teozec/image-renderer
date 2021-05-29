@@ -544,15 +544,29 @@ void testTriangleTransformation() {
 
 void testBox()
 {
-	Box box1{Point{-1.f, -2.f, -3.f}, Point{4.f, 5.f, 6.f}};
+	Box box{Point{-1.f, -2.f, -3.f}, Point{4.f, 5.f, 6.f}};
+
 	Ray ray1{Point{-4.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
-	HitRecord hit1{box1.rayIntersection(ray1)};
+	HitRecord hit1{box.rayIntersection(ray1)};
 	assert(hit1.hit);
 	assert(hit1.worldPoint == (Point{-1.f, 0.f, 0.f}));
-	cout << string(hit1.normal) << endl;
 	assert(hit1.normal==(Normal{-1.f, 0.f, 0.f}));
+	assert(hit1.surfacePoint == (Vec2D{(2.f / 7.f) / 6.f, (3.f / 9.f) / 6.f}));
 	assert(areClose(hit1.t, 3.f));
 	assert(hit1.ray == ray1);
+
+	vector<HitRecord> hitAll1{box.allIntersections(ray1)};
+	assert(hitAll1.size() == 2);
+	assert(hitAll1[0].worldPoint == (Point{-1.f, 0.f, 0.f}));
+	assert(hitAll1[0].normal==(Normal{-1.f, 0.f, 0.f}));
+	assert(hitAll1[0].surfacePoint == (Vec2D{(2.f / 7.f) / 6.f, (3.f / 9.f) / 6.f}));
+	assert(areClose(hitAll1[0].t, 3.f));
+	assert(hitAll1[0].ray == ray1);
+	assert(hitAll1[1].worldPoint == (Point{4.f, 0.f, 0.f}));
+	assert(hitAll1[1].normal==(Normal{-1.f, 0.f, 0.f}));
+	assert(hitAll1[1].surfacePoint == (Vec2D{(3.f + 2.f / 7.f) / 6.f, (3.f + 3.f / 9.f) / 6.f}));
+	assert(areClose(hitAll1[1].t, 8.f));
+	assert(hitAll1[1].ray == ray1);
 }
 
 int main()
