@@ -569,7 +569,6 @@ void testBox()
 	assert(hitAll1[1].ray == ray1);
 
 	Ray ray2{Point{-4.f, 0.f, 0.f}, Vec{0.f, 1.f, 0.f}};
-	cout << string(box.rayIntersection(ray2).worldPoint) << endl;
 	assert(!box.rayIntersection(ray2).hit);
 }
 
