@@ -609,18 +609,21 @@ struct Box : Shape {
 
 		float t;
 		Normal normal;
+		int face;
 		if (invRay.tmin < tMin and tMin < invRay.tmax) {
 			t = tMin;
+			face = faceMin;
 			normal = boxNormal(faceMin);
 		} else if (invRay.tmin < tMax and tMax < invRay.tmax) {
 			t = tMax;
+			face = faceMax;
 			normal = -boxNormal(faceMax);
 		}
 		Point hitPoint{invRay(t)};
 		return HitRecord{
 			transformation * hitPoint,
 			transformation * normal,
-			boxPointToUV(hitPoint),
+			boxPointToUV(hitPoint, face),
 			t,
 			ray
 		};
@@ -642,7 +645,7 @@ struct Box : Shape {
 			intersections.push_back(HitRecord{
 				transformation * hitPoint,
 				transformation * normal,
-				boxPointToUV(hitPoint),
+				boxPointToUV(hitPoint, faceMin),
 				tMin,
 				ray
 			});
@@ -653,7 +656,7 @@ struct Box : Shape {
 			intersections.push_back(HitRecord{
 				transformation * hitPoint,
 				transformation * normal,
-				boxPointToUV(hitPoint),
+				boxPointToUV(hitPoint, faceMax),
 				tMax,
 				ray
 			});
@@ -733,9 +736,31 @@ private:
 		assert(0 <= face and face < 6);
 	}
 
-	// Not implemented
-	Vec2D boxPointToUV(Point hitPoint) {
-		return Vec2D{};
+	// The [0, 1] interval is divided in 6 equal subintervals, one per face
+	Vec2D boxPointToUV(Point hitPoint, int face) {
+		float u, v;
+		u = v = face / 6.f;
+		switch (face) {
+		// u: y, v: z
+		case 0:
+		case 3:
+			u += hitPoint.y / (pMax.y - pMin.y);
+			v += hitPoint.z / (pMax.z - pMin.z);
+			break;
+		// u: x, v: z
+		case 1:
+		case 4:
+			u += hitPoint.x / (pMax.x - pMin.x);
+			v += hitPoint.z / (pMax.z - pMin.z);
+			break;
+		// u: x, v: y
+		case 2:
+		case 5:
+			u += hitPoint.x / (pMax.x - pMin.x);
+			v += hitPoint.y / (pMax.y - pMin.y);
+			break;
+		}
+		return Vec2D{u, v};
 	}
 };
 
