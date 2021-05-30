@@ -713,12 +713,12 @@ private:
 		tMax = FLT_MAX;
 		for (int i{}; i < 3; i++) {
 			// Ray parallel to one of the axes
-			if (std::abs(dir[i] - 0.f) < epsilon)
+			if (std::abs(dir[i] - 0.f) < epsilon){
 				if (pMin[i] < origin[i] and origin[i] < pMax[i])
 					continue;
 				else
 					return false;
-
+			}
 			t1 = (pMin[i] - origin[i]) / dir[i];
 			t2 = (pMax[i] - origin[i]) / dir[i];
 
