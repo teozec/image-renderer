@@ -607,6 +607,77 @@ void testBox()
 	assert(!(box.isInner(Point{9.f, 9.f, 9.f})));
 }
 
+void testBoxTransformation()
+{
+	Box box{Point{-1.f, -2.f, -3.f}, Point{4.f, 5.f, 6.f}, translation(Vec{1.f, 5.f, 10.f})};
+
+	// Intersecting ray parallel to some axes
+	Ray ray1{Point{-3.f, 5.f, 10.f}, Vec{1.f, 0.f, 0.f}};
+	HitRecord hit1{box.rayIntersection(ray1)};
+	assert(hit1.hit);
+	assert(hit1.worldPoint == (Point{0.f, 5.f, 10.f}));
+	assert(hit1.normal==(Normal{-1.f, 0.f, 0.f}));
+	assert(hit1.surfacePoint == (Vec2D{(2.f / 7.f) / 6.f, (3.f / 9.f) / 6.f}));
+	assert(areClose(hit1.t, 3.f));
+	assert(hit1.ray == ray1);
+
+	vector<HitRecord> hitAll1{box.allIntersections(ray1)};
+	assert(hitAll1.size() == 2);
+	assert(hitAll1[0].worldPoint == (Point{0.f, 5.f, 10.f}));
+	assert(hitAll1[0].normal==(Normal{-1.f, 0.f, 0.f}));
+	assert(hitAll1[0].surfacePoint == (Vec2D{(2.f / 7.f) / 6.f, (3.f / 9.f) / 6.f}));
+	assert(areClose(hitAll1[0].t, 3.f));
+	assert(hitAll1[0].ray == ray1);
+	assert(hitAll1[1].worldPoint == (Point{5.f, 5.f, 10.f}));
+	assert(hitAll1[1].normal==(Normal{-1.f, 0.f, 0.f}));
+	assert(hitAll1[1].surfacePoint == (Vec2D{(3.f + 2.f / 7.f) / 6.f, (3.f + 3.f / 9.f) / 6.f}));
+	assert(areClose(hitAll1[1].t, 8.f));
+	assert(hitAll1[1].ray == ray1);
+
+	// Non intersecting ray parallel to some axes
+	Ray ray2{Point{-3.f, 5.f, 10.f}, Vec{0.f, 1.f, 0.f}};
+	assert(!box.rayIntersection(ray2).hit);
+	assert(box.allIntersections(ray2).size() == 0);
+
+	// Intersecting ray not parallel to some axes
+	Ray ray3{Point{-3.f, 5.f, 10.f}, Vec{1.f, 1.f, 1.f}};
+	HitRecord hit2{box.rayIntersection(ray3)};
+	assert(hit2.hit);
+	assert(hit2.worldPoint == (Point{0.f, 8.f, 13.f}));
+	assert(hit2.normal==(Normal{-1.f, 0.f, 0.f}));
+	assert(hit2.surfacePoint == (Vec2D{(5.f / 7.f) / 6.f, (6.f / 9.f) / 6.f}));
+	assert(areClose(hit2.t, 3.f));
+	assert(hit2.ray == ray3);
+
+	vector<HitRecord> hitAll2{box.allIntersections(ray3)};
+	assert(hitAll2.size() == 2);
+	assert(hitAll2[0].worldPoint == (Point{0.f, 8.f, 13.f}));
+	assert(hitAll2[0].normal==(Normal{-1.f, 0.f, 0.f})); // Hit yz plane
+	assert(hitAll2[0].surfacePoint == (Vec2D{(5.f / 7.f) / 6.f, (6.f / 9.f) / 6.f}));
+	assert(areClose(hitAll2[0].t, 3.f));
+	assert(hitAll2[0].ray == ray3);
+	assert(hitAll2[1].worldPoint == (Point{2.f, 10.f, 15.f}));
+	assert(hitAll2[1].normal==(Normal{0.f, -1.f, 0.f})); // Hit xz plane
+	assert(hitAll2[1].surfacePoint == (Vec2D{(4.f + 2.f / 5.f) / 6.f, (4.f + 8.f / 9.f) / 6.f}));
+	assert(areClose(hitAll2[1].t, 5.f));
+	assert(hitAll2[1].ray == ray3);
+
+	// Non intersecting ray not parallel to some axes
+	Ray ray4{Point{-3.f, 5.f, 10.f}, Vec{1.f, 2.f, 2.f}};
+	assert(!box.rayIntersection(ray4).hit);
+	assert(box.allIntersections(ray4).size() == 0);
+
+	// Non intersecting because of transformation ray
+	Ray ray5{Point{-4.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
+	assert(!box.rayIntersection(ray5).hit);
+
+	// Inner and non inner points
+	assert(!(box.isInner(Point{0.f, 0.f, 0.f})));
+	assert(!(box.isInner(Point{9.f, 9.f, 9.f})));
+	assert((box.isInner(Point{1.f, 5.f, 10.f})));
+}
+
+
 int main()
 {
 	testSphere();
@@ -621,5 +692,6 @@ int main()
 	testTriangle();
 	testTriangleTransformation();
 	testBox();
+	testBoxTransformation();
 	return 0;
 }
