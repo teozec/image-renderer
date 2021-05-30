@@ -42,6 +42,13 @@ struct Vec2D {
 		const float epsilon = 1e-5;
 		return (std::abs(u - other.u) < epsilon and std::abs(v - other.v) < epsilon);
 	}
+
+	// Convert Vec2D to a human readable string with the values of its elements
+	operator std::string() const {
+		std::ostringstream ss;
+		ss << "Vec2D(u=" << u << ", v=" << v << ")";
+		return ss.str();
+	}
 };
 
 struct HitRecord {
