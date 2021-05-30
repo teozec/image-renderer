@@ -214,7 +214,7 @@ int demo(argh::parser cmdl) {
 	int angle;
 	cmdl({"-p", "--projection"}, "perspective") >> projString;
 	cmdl({"--angleDeg"}, 0) >> angle;
-	Transformation camTransformation{rotationZ(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
+	Transformation camTransformation{rotationZ((angle + .25f)*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
 	shared_ptr<Camera> cam;
 	if (projString == "orthogonal")
 		cam = make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, camTransformation});
@@ -230,13 +230,14 @@ int demo(argh::parser cmdl) {
 	HdrImage image{width, height};
 	World world;
 
-	// Remove comments to try different CSG shapes
-	//world.add(CSGDifference{Sphere{translation(Vec{0.f, .5f, 0.f})},
-	//world.add(CSGUnion{Sphere{translation(Vec{0.f, .5f, 0.f})},
-	world.add(Box{Point{3.f, .5f, 0.f}, Point{4.f, 1.f, 1.f}});
-	world.add(Sphere{translation(Vec{0.f, -.5f, 0.f})*scaling(.5f, .5f, .5f)});
-				//Sphere{translation(Vec{0.f, -.5f, 0.f})},
-				//scaling(.5f, .5f, .5f)});
+	world.add(CSGUnion{
+		CSGDifference{
+			Box{Point{0.f, -1.f, -1.f}, Point{1.f, 1.f, 1.f}},
+			Sphere{translation(Vec{0.f, .5f, .5f})}
+		},
+		Sphere{translation(Vec{0.f, -.5f, -.5f})},
+		scaling(.5f, .5f, .5f)
+	});
 	
 	ImageTracer tracer{image, *cam};
 	tracer.fireAllRays([&world](Ray ray) {
