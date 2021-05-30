@@ -686,11 +686,25 @@ struct Box : Shape {
 	}
 
 private:
-	int faceMin;
-	int faceMax;
 	float tMin;
 	float tMax;
 
+	/* The faces of te box are as follows:
+	 *  0: lower yz face
+	 *  1: lower xz face
+	 *  2: lower xy face
+	 *  3: upper yz face
+	 *  4: upper xz face
+	 *  5: upper xy face
+	 */
+	int faceMin;
+	int faceMax;
+
+	/**
+	 * @brief Returns true if the ray intersects the box, false otherwise.
+	 * It also sets the private members tMin, tMax, faceMin, faceMax corresponding
+	 * to the first and second hit t and face, respectively.
+	 */
 	bool intersection(Ray invRay) {
 		float t1, t2;
 		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
@@ -707,8 +721,6 @@ private:
 
 			t1 = (pMin[i] - origin[i]) / dir[i];
 			t2 = (pMax[i] - origin[i]) / dir[i];
-
-			//std::cout << t1 << std::endl << t2 << std::endl;
 
 			if (t1 < t2) {
 				// First hit face 0, 1 or 2 (min faces), then 3, 4 or 5 (max faces)
@@ -740,11 +752,12 @@ private:
 			if (tMin > tMax)
 				return false;
 		}
-		if (tMin > tMax)
-			return false;
 		return true;
 	}
 
+	/**
+	 * @brief Returns the outer-pointing Normal to the requested face.
+	 */
 	Normal boxNormal(int face) {
 		switch (face) {
 		case 0:
@@ -761,9 +774,13 @@ private:
 			return Normal{0.f, 0.f, 1.f};
 		}
 		assert(0 <= face and face < 6);
+		return Normal{}; // To remove the compiler warning. We won't get here because of the assert.
 	}
 
-	// The [0, 1] interval is divided in 6 equal subintervals, one per face
+	/**
+	 * @brief Return the UV coordinates on the plane of the hitPoint, knowing the intersection happened on face.
+	 * The [0, 1] interval is divided in 6 equal subintervals [i/6, (i+1)/6], where i is the number of the face (0-5).
+	 */
 	Vec2D boxPointToUV(Point hitPoint, int face) {
 		float u, v;
 		switch (face) {
