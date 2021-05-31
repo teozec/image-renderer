@@ -21,8 +21,8 @@ Wizard::Wizard(QWidget *parent) : QWizard(parent)
 		setWizardStyle(ModernStyle);
 	#endif
 #else
-	QString path = QDir::currentPath();     // Get current dir
-	path.append("/../../desktop/theme.qss");
+	QString path = QDir::currentPath();
+	path.append("/../../themes/blue.qss");
 	QFile styleSheetFile(path);
 	if (!styleSheetFile.exists())
 		qDebug() <<"Non esiste il file";
@@ -217,63 +217,16 @@ int pfm2ldrPage::nextId() const
 
 void pfm2ldrPage::setupPfm2ldr() const
 {
-	argh::parser cmdl;
-	cmdl.add_params({"-a", "--afactor",
-			 "-g", "--gamma",
-			 "-c", "--compression",
-			 "-q", "--quality",
-			 "-w", "--width",
-			 "-h", "--height",
-			 "-p", "--projection",
-			 "--angleDeg",
-			 "-o", "--outfile"});
-
 	QString formatQstr  = formatDropdownMenu->currentText();
 
-	std::vector<char *> args;
-
 	std::string progName = "./image-renderer ";
-	char *argProgName = new char[progName.size()+1];
-	strcpy(argProgName, progName.c_str());
-	argProgName[progName.size()] = '\0';
-	args.push_back(argProgName);
-
 	std::string	action = "pfm2ldr ";
-	char *argAction = new char[action.size()+1];
-	strcpy(argAction, action.c_str());
-	argAction[action.size()] = '\0';
-	args.push_back(argAction);
-
 	std::string format = formatQstr.toStdString()+"\x20";
-	char *argFormat = new char[format.size()+1];
-	strcpy(argFormat, format.data());
-	argFormat[format.size()] = '\0';
-	args.push_back(argFormat);
-
 	std::string infile = field("ifilename").toString().toStdString()+"\x20";
-	char *argInfile = new char[infile.size()+1];
-	strcpy(argInfile, infile.data());
-	argInfile[infile.size()] = '\0';
-	args.push_back(argInfile);
-
 	std::string	outfile = field("ofilename").toString().toStdString()+"\x20";
-	char *argOutfile = new char[outfile.size()+1];
-	strcpy(argOutfile, outfile.data());
-	argOutfile[outfile.size()] = '\0';
-	args.push_back(argOutfile);
-
-	args.push_back(0);
-	const char * const *argv = args.data();  //char **
-	cmdl.parse(argv);
 	
-	int exit = 0;
-	std::cout << "Executing: "<<endl;
-	for (int i{}; i<args.size()-1; i++)
-		std::cout << args[i];
-	std::cout <<endl;
-	//pfm2ldr(cmdl, exit);
-	const char *commandLine = ("cd ..;" + progName+action+format+infile+outfile).c_str();
-	std::system(commandLine);
+	std::string cmdl = "cd ..;" + progName+action+format+infile+outfile;
+	std::system(cmdl.c_str());
 }
 
 raytracerPage::raytracerPage(QWidget *parent) : QWizardPage(parent)
@@ -370,78 +323,25 @@ int raytracerPage::nextId() const
 
 void raytracerPage::setupDemo() const
 {
-	//argh::parser cmdl;
-	/*
-	cmdl.add_params({"-a", "--afactor",
-			 "-g", "--gamma",
-			 "-c", "--compression",
-			 "-q", "--quality",
-			 "-w", "--width",
-			 "-h", "--height",
-			 "-p", "--projection",
-			 "--angleDeg",
-			 "-o", "--outfile"});*/
-
 	QString oformat  = oformatDropdownMenu->currentText();
 	QString projection  = projectionDropdownMenu->currentText();
-	std::vector<char *> args;
 
 	std::string progName = "./image-renderer ";
-	char *argProgName = new char[progName.size()+1];
-	strcpy(argProgName, progName.c_str());
-	argProgName[progName.size()] = '\0';
-	args.push_back(argProgName);
+	std::string width = field("width").toString().toStdString()+"\x20";
+	std::string height = field("height").toString().toStdString()+"\x20";
+	std::string proj = projection.toLower().toStdString()+"\x20";
+	std::string angle = field("angleDeg").toString().toStdString()+"\x20";
+	std::string	outfile = field("output filename").toString().toStdString()+".pfm ";
 
-	std::string	action = "demo ";
-	char *argAction = new char[action.size()+1];
-	strcpy(argAction, action.c_str());
-	argAction[action.size()] = '\0';
-	args.push_back(argAction);
-
-	std::string width = "-w "+field("width").toString().toStdString()+"\x20";
-	char *argWidth = new char[width.size()+1];
-	strcpy(argWidth, width.data());
-	argWidth[width.size()] = '\0';
-	args.push_back(argWidth);
-
-	std::string height = "-h "+field("height").toString().toStdString()+"\x20";
-	char *argHeight = new char[height.size()+1];
-	strcpy(argHeight, height.data());
-	argHeight[height.size()] = '\0';
-	args.push_back(argHeight);
-
-	std::string proj = "-p "+projection.toLower().toStdString()+"\x20";
-	char *argProjection = new char[proj.size()+1];
-	strcpy(argProjection, proj.c_str());
-	argProjection[proj.size()] = '\0';
-	args.push_back(argProjection);
-
-	std::string angle = "--angleDeg "+field("angleDeg").toString().toStdString()+"\x20";
-	char *argAngle = new char[angle.size()+1];
-	strcpy(argAngle, angle.data());
-	argAngle[angle.size()] = '\0';
-	args.push_back(argAngle);
-
-	std::string	outfile = "-o "+field("output filename").toString().toStdString()+".pfm ";
-	char *argOutfile = new char[outfile.size()+1];
-	strcpy(argOutfile, outfile.data());
-	argOutfile[outfile.size()] = '\0';
-	args.push_back(argOutfile);
-
-	args.push_back(0);
-	//const char * const *argv = args.data();  //char ** = &args[0]
-	//cmdl.parse(argv);
-	
-	if (oformat == tr("pfm")){
-		int exit = 0;
-		std::cout << "Executing: "<<endl;
-		for (int i{}; i<args.size()-1; i++)
-			std::cout << args[i];
-		std::cout <<endl;
-		//demo(cmdl, exit); NOT WORKING
-		const char *commandLine = ("cd ..;" + progName+action+width+height+proj+angle+outfile).c_str();
-		std::system(commandLine);
+	std::cout << "Rendering..." <<endl;
+	std::string cmdl = "cd ..;"+progName+"demo "+"-w "+width+"-h "+height+"-p "+proj+"--angleDeg "+angle+"-o "+outfile;
+	std::system(cmdl.c_str());
+	if (oformat != tr("pfm")){
+		std::cout << "\rConverting into "+oformat.toStdString() <<endl;
+		std::string cmdl2 = "cd ..;"+progName+"pfm2ldr "+oformat.toStdString()+'\x20'+outfile+field("output filename").toString().toStdString()+"."+oformat.toStdString();
+		std::system(cmdl2.c_str());
 	}
+	std::cout <<"Finished!" <<endl;
 }
 
 ConclusionPage::ConclusionPage(QWidget *parent) : QWizardPage(parent)

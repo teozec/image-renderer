@@ -159,7 +159,7 @@ void demo(argh::parser cmdl, int &exit) {
 	int width, height;
 	cmdl({"-w", "--width"}, 300) >> width;
 	cmdl({"-h", "--height"}, 200) >> height;
-	float aspectRatio = width/height;
+	float aspectRatio = (float)width/height;
 
 	string projString;
 	int angle;
@@ -205,6 +205,14 @@ void demo(argh::parser cmdl, int &exit) {
 	outPfm.close();
 
 	exit = 0;
+}
+
+
+void makeCmdl(std::string s, std::vector<char *> args){
+	char *arg = new char[s.size()+1];
+	strcpy(arg, s.c_str());
+	arg[s.size()] = '\0';
+	args.push_back(arg);
 }
 
 #endif // ACTIONS_H
