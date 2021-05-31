@@ -21,7 +21,10 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <vector>
 #include <string>
 #include <sstream>
+#include <limits>
 #include <cmath>
+#undef NDEBUG
+#include <cassert>
 
 static bool _areClose(const float a, const float b, const float epsilon) {
 	return std::fabs(a-b) < epsilon;
@@ -66,7 +69,7 @@ struct Vec {
 	// Convert Vec to a human readable string with the values of its elements
 	operator std::string() const {
 		std::ostringstream ss;
-		ss << "Vec(x=" << x << ", y=" << y << ", z=" << z;
+		ss << "Vec(x=" << x << ", y=" << y << ", z=" << z << ")";
 		return ss.str();
 	}
 
@@ -101,6 +104,19 @@ struct Vec {
 		y = other.y;
 		z = other.z;
 		return *this;
+	}
+
+	float operator[](const size_t i) {
+		switch (i) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		}
+		assert(i < 3);
+		return std::numeric_limits<double>::quiet_NaN();
 	}
 
 	float dot(const Vec &other) const {
@@ -168,7 +184,7 @@ struct Point {
 	// Compare Points with a default precision.
 	// For a different precision, call areClose<Point> directly.
 	bool operator==(const Point &other) {
-		const float epsilon = 1e-10f;
+		const float epsilon = 1e-5f;
 		return areClose<Point>(*this, other, epsilon);
 	}
 
@@ -179,8 +195,21 @@ struct Point {
 	// Convert Point to a human readable string with the values of its elements
 	operator std::string() const {
 		std::ostringstream ss;
-		ss << "Point(x=" << x << ", y=" << y << ", z=" << z;
+		ss << "Point(x=" << x << ", y=" << y << ", z=" << z << ")";
 		return ss.str();
+	}
+
+	float operator[](const size_t i) {
+		switch (i) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		}
+		assert(i < 3);
+		return std::numeric_limits<double>::quiet_NaN();
 	}
 
 	Vec toVec() {
@@ -220,6 +249,26 @@ struct Normal {
 		y = other.y;
 		z = other.z;
 		return *this;
+	}
+
+	// Convert Vec to a human readable string with the values of its elements
+	operator std::string() const {
+		std::ostringstream ss;
+		ss << "Normal(x=" << x << ", y=" << y << ", z=" << z << ")";
+		return ss.str();
+	}
+
+	float operator[](const size_t i) {
+		switch (i) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		}
+		assert(i < 3);
+		return std::numeric_limits<double>::quiet_NaN();
 	}
 };
 
@@ -355,7 +404,14 @@ Transformation translation(const Vec v) {
 	return Transformation{m, mInv};
 }
 
-// Function that construct a scaling Transformation given a vector of scaling factors
+/**
+ * @brief Rescales the shape by a scaling factor for each dimension.
+ * 
+ * @param cx
+ * @param cy
+ * @param cz
+ * @return Transformation
+ */
 Transformation scaling(const float cx, const float cy, const float cz) {
 	float diag[4] = {cx, cy, cz, 1.f};
 	float diagInv[4] = {1/cx, 1/cy, 1/cz, 1.f};
@@ -363,7 +419,17 @@ Transformation scaling(const float cx, const float cy, const float cz) {
 }
 
 /**
- * Construct a rotation around the x axis
+ * @brief Rescales the shape by a scaling factor.
+ * 
+ * @param c 
+ * @return Transformation 
+ */
+Transformation scaling(const float c) {
+	return scaling(c, c, c);
+}
+
+/**
+ * @brief Construct a rotation around the x axis
  * @param theta The rotation angle, in radians
  * @return The rotation Transformation
  */

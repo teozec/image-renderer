@@ -214,7 +214,7 @@ int demo(argh::parser cmdl) {
 	int angle;
 	cmdl({"-p", "--projection"}, "perspective") >> projString;
 	cmdl({"--angleDeg"}, 0) >> angle;
-	Transformation camTransformation{rotationZ(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
+	Transformation camTransformation{rotationZ((angle + .25f)*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
 	shared_ptr<Camera> cam;
 	if (projString == "orthogonal")
 		cam = make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, camTransformation});
@@ -229,22 +229,22 @@ int demo(argh::parser cmdl) {
 
 	HdrImage image{width, height};
 	World world;
-	for(int i{}; i<2; i++){
-		for(int j{}; j<2; j++){
-			for(int k{}; k<2; k++)
-				world.add(Sphere{translation(Vec{(float)(0.5-i), (float)(0.5-j), (float)(0.5-k)})*scaling(0.1, 0.1, 0.1)});
-		}
-	}
-	world.add(Sphere{translation(Vec{0.f, 0.f, -0.5})*scaling(0.1, 0.1, 0.1)});
-	world.add(Sphere{translation(Vec{0.f, 0.5, 0.f})*scaling(0.1, 0.1, 0.1)});
 
+	world.add(CSGUnion{
+		CSGDifference{
+			Box{Point{0.f, -1.f, -1.f}, Point{1.f, 1.f, 1.f}},
+			Sphere{translation(Vec{0.f, .5f, .5f})}
+		},
+		Sphere{translation(Vec{0.f, -.5f, -.5f})},
+		scaling(.5f, .5f, .5f)
+	});
+	
 	ImageTracer tracer{image, *cam};
-	Color col[3] = {Color{1.f, 0.f, 0.f}, Color{0.f, 1.f, 0.f}, Color{0.f, 0.f, 1.f}};
 	tracer.fireAllRays([&world](Ray ray) {
 		HitRecord record = world.rayIntersection(ray);
-		if (record.hit){
+		if (record.hit)
 			return Color{5.f, 2.f, 0.f};
-		} else
+		else
 			return Color{0.01, 0.03, 0.1};
 	});
 
