@@ -1,5 +1,8 @@
-# HEAD
+# Version 0.2.0
 
+- Implement triangles, boxes and constructive solid geometry ([PR#8](https://github.com/teozec/image-renderer/pull/8)).
+- Bug fix: aspect ratio ([PR#14](https://github.com/teozec/image-renderer/pull/14), [#13](https://github.com/teozec/image-renderer/issues/13)).
+- Bug fix: shape behaviour ([PR#12](https://github.com/teozec/image-renderer/pull/12), [#11](https://github.com/teozec/image-renderer/issues/11)).
 - Implementation of `shape`, containing spheres, planes and world object ([PR#7](https://github.com/teozec/image-renderer/pull/7)).
 - Bug fix: image orientation ([PR#6](https://github.com/teozec/image-renderer/pull/6), [#5](https://github.com/teozec/image-renderer/issues/5)).
 - Implementation of `camera`, containing cameras, rays and tracer ([PR#4](https://github.com/teozec/image-renderer/pull/4)).
