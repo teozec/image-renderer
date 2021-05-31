@@ -1,4 +1,4 @@
-# HEAD
+# Version 0.2.0
 
 - Implement triangles, boxes and constructive solid geometry ([PR#8](https://github.com/teozec/image-renderer/pull/8)).
 - Bug fix: aspect ratio ([PR#14](https://github.com/teozec/image-renderer/pull/14), [#13](https://github.com/teozec/image-renderer/issues/13)).
