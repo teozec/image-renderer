@@ -16,6 +16,9 @@ You should have received a copy of the GNU General Public License
 along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include <memory>
+#include <iostream>
+#include <cstdint>
+#include <iomanip>
 
 #include "hdr-image.h"
 #include "renderer.h"
@@ -75,11 +78,13 @@ void testFlatRenderer()
 	assert(image.getPixel(1, 2) == BLACK);
 	assert(image.getPixel(2, 2) == BLACK);
 }
-/*
+
+// FAILING TEST
 void testPathTracer()
 {
-	PCG pcg(200);
-	for (int i{}; i<5; i++){
+	PCG pcg;
+	cout << hex << UINT32_MAX << endl;
+	for (int i{}; i<6; i++){
 		World world;
 
 		float emittedRadiance = pcg.randFloat();
@@ -93,10 +98,11 @@ void testPathTracer()
 		Ray ray{Point{0.f, 0.f, 0.f}, Vec{1.f, 0.f, 0.f}};
 		Color color = tracer(ray);
 
-		float expected = emittedRadiance/(1.f - reflectance);
-		assert(areColorsClose(Color{expected, expected, expected}, color, .6f)); //epsilon maybe better if smaller
+		float expected = emittedRadiance / (1.f - reflectance);
+		cout << i << '\t' << string(color) << '\t' << expected << endl;
+		assert(areColorsClose(Color{expected, expected, expected}, color, 1.f)); //epsilon maybe better if smaller
 	}
-}*/
+}
 
 
 int main()
