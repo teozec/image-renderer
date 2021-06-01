@@ -21,6 +21,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <limits>
 #include "geometry.h"
 #include "hdr-image.h"
+#include "color.h"
+#include "random.h"
 
 struct Ray {
 	Point origin;
@@ -148,11 +150,23 @@ struct PerspectiveCamera : Camera {
 	}
 };
 
+/**
+ * @brief Tracer of the scene. 
+ * Given the image and the camera it fires rays through each pixel.
+ * If `samplesPerSide` is given (not zero) stratified sampling is applied.
+ * 
+ */
 struct ImageTracer {
 	HdrImage &image;
 	Camera &camera;
+	int samplesPerSide;
+	PCG pcg{};
 
-	ImageTracer(HdrImage &image, Camera &camera): image{image}, camera{camera} {}
+	ImageTracer(HdrImage &image, Camera &camera): 
+		image{image}, camera{camera}, samplesPerSide{} {}
+
+	ImageTracer(HdrImage &image, Camera &camera, int samples): 
+		image{image}, camera{camera}, samplesPerSide{samples} {}
 
 	/**
 	 * @brief Return a Ray starting from the observer and passing through the screen at (col, row)
@@ -178,9 +192,22 @@ struct ImageTracer {
 	template <typename T> void fireAllRays(T colorFunc) {
 		for (int row{}; row < image.height; row++) {
 			for (int col{}; col < image.width; col++) {
-				Ray ray = fireRay(col, row);
-				Color color = colorFunc(ray);
-				image.setPixel(col, row, color);
+				Color cumColor{0.f, 0.f, 0.f};
+				if (samplesPerSide > 0) {
+					for (int rowPixel{}; rowPixel<samplesPerSide; rowPixel++) {
+						for (int colPixel{}; colPixel<samplesPerSide; colPixel++) {
+							float uPixel = (colPixel+pcg.randFloat())/samplesPerSide;
+							float vPixel = (rowPixel+pcg.randFloat())/samplesPerSide;
+							Ray ray = fireRay(col, row, uPixel, vPixel);
+							cumColor += colorFunc(ray);
+						}
+					}
+					image.setPixel(col, row, cumColor);
+				} else {
+					Ray ray = fireRay(col, row);
+					Color color = colorFunc(ray);
+					image.setPixel(col, row, color);
+				}
 			}
 		}
 	}
