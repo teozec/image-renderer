@@ -74,7 +74,7 @@ enum class ImageFormat { png, webp, jpeg, tiff, bmp, gif };
 
 int demo(argh::parser cmdl);
 int pfm2ldr(argh::parser cmdl);
-int stack(argh::parser cmdl);
+int stackPfm(argh::parser cmdl);
 
 int main(int argc, char *argv[])
 {
@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
 			 "-p", "--projection",
 			 "--angleDeg",
 			 "-o", "--outfile",
+			 "-s", "--seed",
 			 "-m", "--method"});
 	cmdl.parse(argc, argv);
 
@@ -101,7 +102,7 @@ int main(int argc, char *argv[])
 	} else if (actionName == "pfm2ldr") {
 		return pfm2ldr(cmdl);
 	} else if (actionName == "stack") {
-		return stack(cmdl);
+		return stackPfm(cmdl);
 	} else if (cmdl[{"-h", "--help"}]) {
 		cout << USAGE;
 		return 0;
@@ -228,6 +229,8 @@ int demo(argh::parser cmdl) {
 	string projString;
 	int angle;
 	cmdl({"-p", "--projection"}, "perspective") >> projString;
+	int seed;
+	cmdl({"-s", "--seed"}, 42) >> seed;
 	cmdl({"--angleDeg"}, 0) >> angle;
 	Transformation camTransformation{rotationZ((angle + .25f)*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
 	shared_ptr<Camera> cam;
@@ -252,9 +255,9 @@ int demo(argh::parser cmdl) {
 	world.add(Plane{translation(Vec{0.f, 0.f, -1.f}), materialGround});
 	
 	ImageTracer tracer{image, *cam};
-	PCG pcg{(uint64_t)200};
+	PCG pcg{(uint64_t)seed};
 
-	tracer.fireAllRays(PathTracer{world, pcg, 5, 5});
+	tracer.fireAllRays(PathTracer{world, pcg, 3, 3});
 
 	ofstream outPfm;
 	outPfm.open(ofilename);
@@ -265,7 +268,7 @@ int demo(argh::parser cmdl) {
 
 }
 
-int stack(argh::parser cmdl)
+int stackPfm(argh::parser cmdl)
 {
 	const string programName = cmdl[0];
 	const string actionName = cmdl[1];
