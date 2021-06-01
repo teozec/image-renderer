@@ -23,6 +23,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cstring>
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 #define USAGE \
 	"Usage: " << endl << \
@@ -297,10 +298,11 @@ int stackPfm(argh::parser cmdl)
 	}
 
 	int width = firstImg.width, height = firstImg.height;
+	int size = cmdl.size() - 2;
 	HdrImage stackedImage{width, height};
 
 	if (method == "mean") {
-		for (int i = 2; i < cmdl.size(); i++) {
+		for (int i{2}; i < cmdl.size(); i++) {
 			HdrImage img;
 			string imageName = cmdl[i];
 			try {
@@ -317,7 +319,41 @@ int stackPfm(argh::parser cmdl)
 
 			stackedImage += img;
 		}
-		stackedImage /= (float) (cmdl.size() - 2);
+		stackedImage /= (float) size;
+	} else if (method == "median") {
+		vector<vector<vector<float>>> imgVector{height * width}; // A Vector whose element i is the Vector of the pixel i of each image
+		for (int pixel{}; pixel < height * width; pixel++)
+			imgVector[pixel].resize(3);
+		for (int i{2}; i < cmdl.size(); i++) {
+			HdrImage img;
+			string imageName = cmdl[i];
+			try {
+				img.readPfm(imageName);
+			} catch (exception e) {
+				cerr << "Error: " <<  e.what() << endl;
+				return 1;
+			}
+
+			if (img.width != width or img.height != height) {
+				cerr << "Error: " << imageName << " has the wrong size" << endl;
+				return 1;
+			}
+
+			for (int pixel{}; pixel < height * width; pixel++) {
+				for (int color{}; color < 3; color++) {
+					imgVector[pixel][color].push_back(img.pixels[pixel][color]);
+					inplace_merge(imgVector[pixel][color].begin(), imgVector[pixel][color].end() - 1, imgVector[pixel][color].end());
+				}
+			}
+		}
+		for (int i{}; i < height * width; i++) {
+			for (int color{}; color < 3; color++) {
+				if (size % 2 == 0)
+					stackedImage.pixels[i][color] = (imgVector[i][color][size / 2 - 1] + imgVector[i][color][size / 2]) / 2.f;
+				else
+					stackedImage.pixels[i][color] = imgVector[i][color][size / 2];
+			}
+		}
 	}
 
 	ofstream outPfm;

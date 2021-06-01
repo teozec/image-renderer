@@ -21,6 +21,9 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <algorithm>
 #include <string>
 #include <sstream>
+#include <limits>
+#undef NDEBUG
+#include <cassert>
 
 struct Color {
 	float r, g, b;
@@ -68,6 +71,19 @@ struct Color {
 		b *= other.b;
 		return *this;
 	}
+
+	float &operator[](const size_t i) {
+		switch (i) {
+		case 0:
+			return r;
+		case 1:
+			return g;
+		case 2:
+			return b;
+		}
+		assert(i < 3);
+	}
+
 
 	operator std::string() const {
 		std::ostringstream ss;
