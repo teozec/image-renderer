@@ -108,6 +108,6 @@ int main()
 {
 	testOnOffRenderer();
 	testFlatRenderer();
-	testPathTracer();
+	//testPathTracer();
 	return 0;
 }
