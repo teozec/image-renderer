@@ -219,7 +219,7 @@ int demo(argh::parser cmdl) {
 	int angle;
 	cmdl({"-p", "--projection"}, "perspective") >> projString;
 	cmdl({"--angleDeg"}, 0) >> angle;
-	Transformation camTransformation{rotationZ(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
+	Transformation camTransformation{rotationZ((angle + .25f)*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
 	shared_ptr<Camera> cam;
 	if (projString == "orthogonal")
 		cam = make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, camTransformation});
@@ -240,7 +240,7 @@ int demo(argh::parser cmdl) {
 
 	world.add(Sphere{scaling(5.f), materialSky});
 	world.add(Plane{translation(Vec{0.f, 0.f, -1.f}), materialGround});
-
+	
 	ImageTracer tracer{image, *cam};
 	PCG pcg{(uint64_t)200};
 
