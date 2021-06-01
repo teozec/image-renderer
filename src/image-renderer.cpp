@@ -321,7 +321,7 @@ int stackPfm(argh::parser cmdl)
 		}
 		stackedImage /= (float) size;
 	} else if (method == "median") {
-		vector<vector<vector<float>>> imgVector{height * width}; // A Vector whose element i is the Vector of the pixel i of each image
+		vector<vector<vector<float>>> imgVector{static_cast<size_t>(height * width)}; // A Vector whose element i is the Vector of the pixel i of each image
 		for (int pixel{}; pixel < height * width; pixel++)
 			imgVector[pixel].resize(3);
 		for (int i{2}; i < cmdl.size(); i++) {
