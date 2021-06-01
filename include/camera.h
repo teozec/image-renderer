@@ -196,13 +196,13 @@ struct ImageTracer {
 				if (samplesPerSide > 0) {
 					for (int rowPixel{}; rowPixel<samplesPerSide; rowPixel++) {
 						for (int colPixel{}; colPixel<samplesPerSide; colPixel++) {
-							uPixel = (colPixel+pcg.randFloat())/samplesPerSide;
-							vPixel = (rowPixel+pcg.randFloat())/samplesPerSide;
+							float uPixel = (colPixel+pcg.randFloat())/samplesPerSide;
+							float vPixel = (rowPixel+pcg.randFloat())/samplesPerSide;
 							Ray ray = fireRay(col, row, uPixel, vPixel);
-							cumColor += colorFunc(ray)
+							cumColor += colorFunc(ray);
 						}
 					}
-					image.setPixel(col, row, color);
+					image.setPixel(col, row, cumColor);
 				} else {
 					Ray ray = fireRay(col, row);
 					Color color = colorFunc(ray);
