@@ -28,11 +28,12 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"Usage: " << endl << \
 	programName << " -h|--help" << endl << \
 	programName << " demo [options]" << endl << \
-	programName << " pfm2ldr [options] <format>" \
+	programName << " pfm2ldr [options] <format> <inputfile> <outputfile>" << \
+	programName << " stack [options] <inputfiles>" \
 	" <input-pfm-file> <output-file> " << endl
 
 #define RUN_HELP \
-	"Run '" << programName << " " << actionName << " -h' for all supported options." << endl
+	"Run '" << programName << " <action-name> -h' for all supported options." << endl
 
 #define HELP_PFM2LDR \
 	"Available actions:" << endl << \
@@ -61,13 +62,19 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"		--angleDeg=<value>				Angle of rotation (on z axis) of the camera." <<endl << \
 	"		-o <string>, --outfile=<string>			Filename of the output image." << endl
 
+#define HELP_STACK \
+	"stack: stack more pfm images representing the same scene." << endl << endl << \
+	"Available options:" << endl << \
+	"	-h, --help: print this message." << endl << \
+	"	-m <string>, --method=<string>			The stacking method (can be 'mean' or 'median'." << endl
+
 using namespace std;
 
-enum class ImageFormat { png, webp, jpeg , tiff, bmp, gif };
+enum class ImageFormat { png, webp, jpeg, tiff, bmp, gif };
 
 int demo(argh::parser cmdl);
 int pfm2ldr(argh::parser cmdl);
-void animation(int width, int height); //additional argument CameraProjection camProj
+int stack(argh::parser cmdl);
 
 int main(int argc, char *argv[])
 {
@@ -81,7 +88,8 @@ int main(int argc, char *argv[])
 			 "-h", "--height",
 			 "-p", "--projection",
 			 "--angleDeg",
-			 "-o", "--outfile"});
+			 "-o", "--outfile",
+			 "-m", "--method"});
 	cmdl.parse(argc, argv);
 
 	const string programName = cmdl[0];
@@ -92,6 +100,8 @@ int main(int argc, char *argv[])
 		return demo(cmdl);
 	} else if (actionName == "pfm2ldr") {
 		return pfm2ldr(cmdl);
+	} else if (actionName == "stack") {
+		return stack(cmdl);
 	} else if (cmdl[{"-h", "--help"}]) {
 		cout << USAGE;
 		return 0;
@@ -164,7 +174,7 @@ int pfm2ldr(argh::parser cmdl)
 	}
 
 	// Convert HDR to LDR
-	img.normalizeImage(aFactor, 0.25f); //
+	img.normalizeImage(aFactor, 0.25f);
 	img.clampImage();
 
 	// Write to output file
@@ -249,6 +259,67 @@ int demo(argh::parser cmdl) {
 	ofstream outPfm;
 	outPfm.open(ofilename);
 	image.writePfm(outPfm);
+	outPfm.close();
+
+	return 0;
+
+}
+
+int stack(argh::parser cmdl)
+{
+	const string programName = cmdl[0];
+	const string actionName = cmdl[1];
+	if (cmdl[{"-h", "--help"}]) {
+		cerr << HELP_STACK << endl;
+		return 0;
+	}
+
+	if (cmdl.size() < 3) {
+		cerr << USAGE << endl << HELP_STACK;
+		return 1;
+	}
+
+	string method;
+	cmdl({"-m", "--method"}, "mean") >> method;
+	string ofilename;
+	cmdl({"-o", "--output"}, "stack.pfm") >> ofilename;
+
+
+	HdrImage firstImg;
+	try {
+		firstImg.readPfm(cmdl[2]);
+	} catch (exception e) {
+		cerr << "Error: " <<  e.what() << endl;
+		return 1;
+	}
+
+	int width = firstImg.width, height = firstImg.height;
+	HdrImage stackedImage{width, height};
+
+	if (method == "mean") {
+		for (int i = 2; i < cmdl.size(); i++) {
+			HdrImage img;
+			string imageName = cmdl[i];
+			try {
+				img.readPfm(imageName);
+			} catch (exception e) {
+				cerr << "Error: " <<  e.what() << endl;
+				return 1;
+			}
+
+			if (img.width != width or img.height != height) {
+				cerr << "Error: " << imageName << " has the wrong size" << endl;
+				return 1;
+			}
+
+			stackedImage += img;
+		}
+		stackedImage /= (float) (cmdl.size() - 2);
+	}
+
+	ofstream outPfm;
+	outPfm.open(ofilename);
+	stackedImage.writePfm(outPfm);
 	outPfm.close();
 
 	return 0;
