@@ -1,3 +1,6 @@
+# HEAD
+- Implementation of anti-aliasing algorithm ([PR#16](https://github.com/teozec/image-renderer/pull/16)).
+
 # Version 0.2.0
 
 - Implement triangles, boxes and constructive solid geometry ([PR#8](https://github.com/teozec/image-renderer/pull/8)).
