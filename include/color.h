@@ -19,6 +19,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #define COLOR_H
 
 #include <algorithm>
+#include <string>
+#include <sstream>
 
 struct Color {
 	float r, g, b;
@@ -65,6 +67,12 @@ struct Color {
 		g *= other.g;
 		b *= other.b;
 		return *this;
+	}
+
+	operator std::string() const {
+		std::ostringstream ss;
+		ss << "Color(r=" << r << ", g=" << g << ", b=" << b << ")";
+		return ss.str();
 	}
 
 	float luminosity() {
