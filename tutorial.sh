@@ -15,7 +15,7 @@ declare -i min=0
 declare -i max=359
 for angle in $(seq $min $max); do
     angleNNN=$(printf "%03d" $angle)
-    .././image-renderer demo -w 30 -h 20 -p perspective --angleDeg=$angle -o "img$angleNNN.pfm"
+    .././image-renderer demo -w 500 -h 500 -p perspective --angleDeg=$angle -o "img$angleNNN.pfm"
     c=c+1
     (( p=(c+$max-1)*100/$max-100 ))
     echo -ne "[$p%] Raytracing...\r"
@@ -29,7 +29,7 @@ for f in *.pfm; do
     (( p=(c+$max-1)*100/$max-100 ))
     echo -ne "[$p%] Converting to png...\r"
 done
-ffmpeg -r 60 -f image2 -s 300x200 -i img%03d.png -vcodec libx264 -pix_fmt yuv420p animation-perspective2.mp4
+ffmpeg -r 60 -f image2 -s 500x500 -i img%03d.png -vcodec libx264 -pix_fmt yuv420p animation-perspective2.mp4
 rm -r *.pfm
 rm -r *.png
 echo -ne '\n'
