@@ -73,7 +73,10 @@ _complete_image_renderer()
 			case $cur in
 			--*)	# Double dash
 				COMPREPLY=($(compgen -W "${double_dash}" -- $cur))
-				compopt -o nospace
+				# Remove space if there is a '=' in completion
+				if [[ "${COMPREPLY[@]}" =~ "=" ]]; then
+					compopt -o nospace
+				fi
 				;;
 			-*)	# Single dash
 				COMPREPLY=($(compgen -W "${single_dash}" -- $cur))
@@ -115,7 +118,10 @@ _complete_image_renderer()
 			# Complete double dash arguments
 			elif [[ "${cur}" == --* ]]; then
 				COMPREPLY=($(compgen -W '"--help " --width= --height= --projection= --angleDeg= --outfile=' -- $cur))
-				compopt -o nospace
+				# Remove space if there is a '=' in completion
+				if [[ "${COMPREPLY[@]}" =~ "=" ]]; then
+					compopt -o nospace
+				fi
 
 			# Complete single dash arguments
 			elif [[ "${cur}" == -* ]]; then
