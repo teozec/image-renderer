@@ -25,13 +25,21 @@ _complete_image_renderer()
 
 	# Otherwise, the completion depends on the action
 	else
-		local action
+		local action prevprev
 		action=${COMP_WORDS[1]}
+		prevprev=${COMP_WORDS[COMP_CWORD-2]}
 		case "$action" in
 		"pfm2ldr")
 			# The argument after afactor, gamma, quality or compression does not require autocompletion because it is a number specified by the user
 			if [[ "${prev}" == "-a" || "${prev}" == "-g" || "${prev}" == "-q" || "${prev}" == "-c" || \
-				"${cur}" == "--afactor=*" || "${cur}" == "--gamma=*" || "${cur}" == "--quality=*" || "${cur}" == "--compression=*" ]]; then
+				("${prev}" == "--afactor" && "${cur}" == "=") || \
+				("${prevprev}" == "--afactor" && "${prev}" == "=") || \
+				("${prev}" == "--gamma" && "${cur}" == "=") || \
+				("${prevprev}" == "--gamma" && "${prev}" == "=") || \
+				("${prev}" == "--quality" && "${cur}" == "=") || \
+				("${prevprev}" == "--quality" && "${prev}" == "=") || \
+				("${prev}" == "--compression" && "${cur}" == "=") || \
+				("${prevprev}" == "--compression" && "${prev}" == "=") ]]; then
 				return 0
 			fi
 
@@ -82,23 +90,39 @@ _complete_image_renderer()
 
 		"demo")
 			# The argument after width, height or angleDeg does not require autocompletion because it is a number specified by the user
-			if [[ "${prev}" == "-w" || "${cur}" == "--width=*" || \
-				"${cur}" == "--height=*" || "${cur}" == "--angleDeg=*" ]]; then
+			if [[ "${prev}" == "-w" || \
+				("${prev}" == "--width" && "${cur}" == "=") || \
+				("${prevprev}" == "--width" && "${prev}" == "=") || \
+				("${prev}" == "--height" && "${cur}" == "=") || \
+				("${prevprev}" == "--height" && "${prev}" == "=") || \
+				("${prev}" == "--angleDeg" && "${cur}" == "=") || \
+				("${prevprev}" == "--angleDeg" && "${prev}" == "=") ]]; then
 				return 0
 			fi
 
-			if [[ $prev == "-o" || $cur == "--outfile=*" ]]; then	# Complete filenames
+			# Complete filenames
+			if [[ $prev == "-o" || ("${prevprev}" == "--outfile" && "${prev}" == "=") ]]; then
 				COMPREPLY=($(compgen -A file -- $cur))
-			elif [[ $prev == "-p" ]]; then	# Complete projections (-p)
+			elif [[ "${prev}" == "--outfile" && "${cur}" == "=" ]]; then
+				COMPREPLY=($(compgen -A file))
+
+			# Complete projections
+			elif [[ $prev == "-p" || ("${prevprev}" == "--projection" && "${prev}" == "=") ]]; then
 				COMPREPLY=($(compgen -W "perspective orthogonal" -- $cur))
-			elif [[ "${cur}" == --projection=* ]]; then	# Complete projections (--projection)
-				COMPREPLY=($(compgen -W "--projection=perspective --projection=orthogonal" -- $cur))
-			elif [[ "${cur}" == --* ]]; then	# Complete double dash arguments
+			elif [[ "${prev}" == "--projection" && "${cur}" == "=" ]]; then
+				COMPREPLY=($(compgen -W "perspective orthogonal"))
+
+			# Complete double dash arguments
+			elif [[ "${cur}" == --* ]]; then
 				COMPREPLY=($(compgen -W '"--help " --width= --height= --projection= --angleDeg= --outfile=' -- $cur))
 				compopt -o nospace
-			elif [[ "${cur}" == -* ]]; then	# Complete single dash arguments
+
+			# Complete single dash arguments
+			elif [[ "${cur}" == -* ]]; then
 				COMPREPLY=($(compgen -W "-w -h -p -o" -- $cur))
-			fi	# Demo does not have positional arguments to autocomplete
+			fi
+
+			# Demo does not have positional arguments to autocomplete
 			;;
 		esac
 	fi
