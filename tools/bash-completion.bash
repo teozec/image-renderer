@@ -103,7 +103,5 @@ _complete_image_renderer()
 		esac
 	fi
 	return 0
-}
-
-# Use the function _complete_image_renderer to provide autocompletion for iamge-renderer
+} &&
 complete -F _complete_image_renderer image-renderer
