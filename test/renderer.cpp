@@ -17,7 +17,6 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include <memory>
 #include <iostream>
-#include <cstdint>
 #include <iomanip>
 
 #include "hdr-image.h"
@@ -83,7 +82,6 @@ void testFlatRenderer()
 void testPathTracer()
 {
 	PCG pcg;
-	cout << hex << UINT32_MAX << endl;
 	for (int i{}; i<6; i++){
 		World world;
 
@@ -100,7 +98,7 @@ void testPathTracer()
 
 		float expected = emittedRadiance / (1.f - reflectance);
 		cout << i << '\t' << string(color) << '\t' << expected << endl;
-		assert(areColorsClose(Color{expected, expected, expected}, color, 1.f)); //epsilon maybe better if smaller
+		assert(areColorsClose(Color{expected, expected, expected}, color, 2.f)); //epsilon maybe better if smaller
 	}
 }
 
@@ -109,6 +107,6 @@ int main()
 {
 	testOnOffRenderer();
 	testFlatRenderer();
-	//testPathTracer();
+	testPathTracer();
 	return 0;
 }
