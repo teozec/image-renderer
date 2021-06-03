@@ -47,25 +47,25 @@ _complete_image_renderer()
 			local single_dash double_dash no_format
 			if [[ " ${COMP_WORDS[@]} " =~ " bmp " ]]; then
 				single_dash="-h -a -g"
-				double_dash="'--help ' '--afactor=' '--gamma='"
+				double_dash="--help --afactor= --gamma="
 			elif [[ " ${COMP_WORDS[@]} " =~ " gif " ]]; then
 				single_dash="-h -a -g"
-				double_dash="'--help ' '--afactor=' '--gamma='"
+				double_dash="--help --afactor= --gamma="
 			elif [[ " ${COMP_WORDS[@]} " =~ " jpeg " ]]; then
 				single_dash="-h -a -g -q"
-				double_dash="'--help ' '--afactor=' '--gamma=' '--quality='"
+				double_dash="--help --afactor= --gamma= --quality="
 			elif [[ " ${COMP_WORDS[@]} " =~ " png " ]]; then
 				single_dash="-h -a -g -p -c"
-				double_dash="'--help ' '--afactor=' '--gamma=' '--palette ' '--compression='"
+				double_dash="--help --afactor= --gamma= --palette --compression="
 			elif [[ " ${COMP_WORDS[@]} " =~ " tiff " ]]; then
 				single_dash="-h -a -g"
-				double_dash="'--help ' '--afactor=' '--gamma='"
+				double_dash="--help --afactor= --gamma="
 			elif [[ " ${COMP_WORDS[@]} " =~ " webp " ]]; then
 				single_dash="-h -a -g -q"
-				double_dash="'--help ' '--afactor=' '--gamma=' '--quality='"
+				double_dash="--help --afactor= --gamma= --quality="
 			else
 				single_dash="-h -a -g"
-				double_dash="'--help ' '--afactor=' '--gamma='"
+				double_dash="--help --afactor= --gamma="
 				no_format=1
 			fi
 
@@ -73,7 +73,7 @@ _complete_image_renderer()
 			case $cur in
 			--*)	# Double dash
 				COMPREPLY=($(compgen -W "${double_dash}" -- $cur))
-				# Remove space if there is a '=' in completion
+				# Remove space if there is a "=" in completion
 				if [[ "${COMPREPLY[@]}" =~ "=" ]]; then
 					compopt -o nospace
 				fi
@@ -117,8 +117,8 @@ _complete_image_renderer()
 
 			# Complete double dash arguments
 			elif [[ "${cur}" == --* ]]; then
-				COMPREPLY=($(compgen -W '"--help " --width= --height= --projection= --angleDeg= --outfile=' -- $cur))
-				# Remove space if there is a '=' in completion
+				COMPREPLY=($(compgen -W "--help --width= --height= --projection= --angleDeg= --outfile=" -- $cur))
+				# Remove space if there is a "=" in completion
 				if [[ "${COMPREPLY[@]}" =~ "=" ]]; then
 					compopt -o nospace
 				fi
