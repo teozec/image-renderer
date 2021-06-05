@@ -824,4 +824,24 @@ struct World {
 	}
 };
 
-#endif // SHAPE_H
+// Some predefinite shapes!
+/**
+ * @brief This is a predefinite chair that lays on the floor (plane xy).
+ * 
+ * @return CSGUnion 
+ */
+CSGUnion Chair(){
+	Box legFrontLeft{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}};
+	Box legFrontRight{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(1.f, -1.f, 1.f)};
+	CSGUnion frontLegs{legFrontLeft, legFrontRight};
+	Box legBackLeft{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(-1.f, 1.f, 1.f)};
+	Box legBackRight{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(-1.f, -1.f, 1.f)};
+	CSGUnion backLegs{legBackLeft, legBackRight};
+	CSGUnion legs{frontLegs, backLegs};
+	Box bottom{Point{-.5f, -.5f, -.5f}, Point{.5f, .5f, -.3f}};
+	CSGIntersection back{Box{Point{.3f, -.5f, -.3f}, Point{.5f, .5f, 1.f}}, Sphere{translation(Vec{.4f, 0.f, 0.f})}};
+	CSGUnion top{bottom, back};
+	return CSGUnion{legs, top, translation(Vec{0.f, 0.f, 1.5f})};
+};
+
+#endif // #SHAPE_H
