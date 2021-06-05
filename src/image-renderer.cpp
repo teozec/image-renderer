@@ -15,9 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
-#include "hdr-image.h"
-#include "color.h"
-#include "shape.h"
+#include "renderer.h"
 #include "argh.h"
 #undef NDEBUG
 #include <cassert>
@@ -61,6 +59,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"		-h <value>, --height=<value>			Height of the final image." << endl << \
 	"		-p <string>, --projection=<string>		Projection used (default 'perspective')." <<endl << \
 	"		--angleDeg=<value>				Angle of rotation (on z axis) of the camera." <<endl << \
+	"		--antialiasing=<value>				Number of samples per single pixel (must be a perfect square, e.g. 4)." <<endl << \
 	"		-o <string>, --outfile=<string>			Filename of the output image." << endl
 
 using namespace std;
@@ -83,6 +82,7 @@ int main(int argc, char *argv[])
 			 "-h", "--height",
 			 "-p", "--projection",
 			 "--angleDeg",
+			 "--antialiasing"
 			 "-o", "--outfile"});
 	cmdl.parse(argc, argv);
 
@@ -143,10 +143,10 @@ int pfm2ldr(argh::parser cmdl)
 
 	// Parse parameters (also specifying default values).
 	float aFactor;
-	cmdl({"-a", "--afactor"}, 0.18f) >> aFactor;
+	cmdl({"-a", "--afactor"}, 0.3f) >> aFactor;
 
-	float gamma = 1.f;
-	cmdl({"-g", "--gamma"}, 1.f) >> gamma;
+	float gamma;
+	cmdl({"-g", "--gamma"}, .7f) >> gamma;
 
 	bool palette = cmdl[{"-p", "--palette"}];
 
@@ -206,9 +206,16 @@ int demo(argh::parser cmdl) {
 		return 0;
 	}
 	int width, height;
-	cmdl({"-w", "--width"}, 300) >> width;
-	cmdl({"-h", "--height"}, 200) >> height;
+	cmdl({"-w", "--width"}, 1000) >> width;
+	cmdl({"-h", "--height"}, 1000) >> height;
 	float aspectRatio = (float) width / height;
+
+	Material material1{SpecularBRDF(UniformPigment(Color{.7f, .3f, .2f}))};
+
+	Material material2{DiffusiveBRDF(CheckeredPigment(Color{.7f, .8f, .5f}, Color{.7f, .2f, .3f}, 4))};
+
+	Material materialSky{DiffusiveBRDF{UniformPigment(Color{.5f, .8f, 1.f})}, UniformPigment{Color{.5f, .9f, 1.f}}};
+	Material materialGround{DiffusiveBRDF(CheckeredPigment(Color{.3f, .5f, .1f}, Color{.8f, .8f, .8f}, 2))};
 
 	string projString;
 	int angle;
@@ -221,26 +228,33 @@ int demo(argh::parser cmdl) {
 	else if (projString == "perspective")
 		cam = make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, camTransformation});
 	else {
-		cout << "Projection unrecognized. Try \"orthogonal\" or \"perspective\"." <<endl;
+		cerr << "Projection unrecognized. Try 'orthogonal' or 'perspective'." <<endl;
 		return 1;
 	}
-	string ofilename;
-	cmdl({"-o", "--output"}, "demo.pfm") >> ofilename;
 
 	HdrImage image{width, height};
 	World world;
-	CSGUnion chair = Chair();
-	world.add(chair);
-	
-	ImageTracer tracer{image, *cam};
-	tracer.fireAllRays([&world](Ray ray) {
-		HitRecord record = world.rayIntersection(ray);
-		if (record.hit)
-			return Color{5.f, 2.f, 0.f};
-		else
-			return Color{0.01, 0.03, 0.1};
-	});
 
+	world.add(Sphere{translation(Vec{1.2f, -1.1f, 0.f}), material1});
+	world.add(Sphere{translation(Vec{0.f, .6f, 0.f}), material2});
+
+	world.add(Sphere{scaling(5.f), materialSky});
+	world.add(Plane{translation(Vec{0.f, 0.f, 1.f}), material1});
+	world.add(Plane{translation(Vec{0.f, 0.f, -1.f}), materialGround});
+	int samplesPerPixel;
+	cmdl({"--antialiasing"}, 0) >> samplesPerPixel;
+	int samplesPerSide = sqrt(samplesPerPixel);
+	if (samplesPerPixel != samplesPerSide*samplesPerSide){
+		cerr << "Not a perfect square given as --antialiasing parameter."  <<endl;
+		return 1;
+	} 
+	ImageTracer tracer{image, *cam, samplesPerSide};
+	PCG pcg{(uint64_t)200};
+
+	tracer.fireAllRays(PathTracer{world, pcg, 50, 3, 3});
+
+	string ofilename;
+	cmdl({"-o", "--output"}, "demo.pfm") >> ofilename;
 	ofstream outPfm;
 	outPfm.open(ofilename);
 	image.writePfm(outPfm);

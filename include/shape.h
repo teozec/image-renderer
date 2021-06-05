@@ -26,30 +26,9 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cfloat>
 #include "geometry.h"
 #include "camera.h"
+#include "material.h"
 
-struct Vec2D {
-	float u, v;
-	Vec2D() {}
-	Vec2D(float u, float v): u{u}, v{v} {}
-
-	Vec2D operator=(const Vec2D &other) {
-		u = other.u;
-		v = other.v;
-		return *this;
-	}
-
-	bool operator==(const Vec2D &other) const {
-		const float epsilon = 1e-5;
-		return (std::abs(u - other.u) < epsilon and std::abs(v - other.v) < epsilon);
-	}
-
-	// Convert Vec2D to a human readable string with the values of its elements
-	operator std::string() const {
-		std::ostringstream ss;
-		ss << "Vec2D(u=" << u << ", v=" << v << ")";
-		return ss.str();
-	}
-};
+struct Shape;
 
 struct HitRecord {
 	bool hit = false;
@@ -58,11 +37,12 @@ struct HitRecord {
 	Vec2D surfacePoint;
 	float t;
 	Ray ray;
+	std::shared_ptr<Shape> shape = nullptr;
 
 	HitRecord() {}
 	HitRecord(const HitRecord &other) :	//
 		hit{other.hit}, worldPoint{other.worldPoint}, normal{other.normal}, //
-		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray} {}
+		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, shape{other.shape} {}
 	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray):
 		hit{true}, worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint},
 		t{t}, ray{ray} {}
@@ -75,6 +55,7 @@ struct HitRecord {
 			surfacePoint = other.surfacePoint;
 			t = other.t;
 			ray = other.ray;
+			shape = other.shape;
 		}
 		return *this;
 	}	
@@ -95,7 +76,11 @@ struct HitRecord {
  */
 struct Shape {
 	Transformation transformation;
-	Shape(Transformation transformation = Transformation()): transformation{transformation} {}
+	Material material;
+	Shape(): Shape{Transformation{}, Material{}} {}
+	Shape(Material material): Shape{Transformation{}, material} {}
+	Shape(Transformation transformation): Shape{transformation, Material{}} {}
+	Shape(Transformation transformation, Material material): transformation{transformation}, material{material} {}
 
 	/**
 	 * @brief Return a HitRecord corresponding to the first intersection between the shape and the ray.
@@ -119,6 +104,8 @@ struct Shape {
 struct Sphere : public Shape {
 	Sphere(): Shape() {}
 	Sphere(Transformation transformation): Shape(transformation) {}
+	Sphere(Material material): Shape(material) {}
+	Sphere(Transformation transformation, Material material): Shape(transformation, material) {}
 
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
@@ -185,7 +172,8 @@ private:
 	}
 
 	Vec2D spherePointToUV(Point p) {
-		return Vec2D{std::acos(p.z) / (float) M_PI, std::atan2(p.y, p.x) / (float) (2. * M_PI)};
+		float v = std::atan2(p.y, p.x) / (float) (2 * M_PI);
+		return Vec2D{std::acos(p.z) / (float) M_PI, v>=0 ? v : v+1};
 	}
 };
 
@@ -198,6 +186,8 @@ private:
 struct Plane : public Shape {
 	Plane(): Shape() {}
 	Plane(Transformation transformation): Shape(transformation) {}
+	Plane(Material material): Shape(material) {}
+	Plane(Transformation transformation, Material material): Shape(transformation, material) {}
 
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
@@ -825,8 +815,10 @@ struct World {
 			HitRecord intersection = shapes[i]->rayIntersection(ray);
 			if(!intersection.hit)
 				continue;
-			if((!closest.hit) or (intersection.t < closest.t))
+			if((!closest.hit) or (intersection.t < closest.t)) {
 				closest = intersection;
+				closest.shape = shapes[i];
+			}
 		}
 		return closest;
 	}

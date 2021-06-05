@@ -99,4 +99,34 @@ add_test(NAME shape-test
 	COMMAND shape-test
 	)
 
+# material-test
+add_executable(material-test
+	test/material.cpp
+	)
+
+target_link_libraries(material-test PUBLIC trace)
+add_test(NAME material-test
+	COMMAND material-test
+	)
+
+# random-test
+add_executable(random-test
+	test/random.cpp
+	)
+
+target_link_libraries(random-test PUBLIC trace)
+add_test(NAME random-test
+	COMMAND random-test
+	)
+
+# renderer-test
+add_executable(renderer-test
+	test/renderer.cpp
+	)
+
+target_link_libraries(renderer-test PUBLIC trace)
+add_test(NAME renderer-test
+	COMMAND renderer-test
+	)
+
 target_compile_features(image-renderer PUBLIC cxx_std_17)

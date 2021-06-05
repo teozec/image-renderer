@@ -19,6 +19,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #define COLOR_H
 
 #include <algorithm>
+#include <string>
+#include <sstream>
 
 struct Color {
 	float r, g, b;
@@ -27,12 +29,50 @@ struct Color {
 		return Color{r+other.r, g+other.g, b+other.b};
 	}
 
+	Color operator+=(const Color other) {
+		r += other.r;
+		g += other.g;
+		b += other.b;
+		return *this;
+	}
+
 	Color operator*(const float c) {
 		return Color{c*r, c*g, c*b};
 	}
 
+	Color operator*=(const float c) {
+		r *= c;
+		g *= c;
+		b *= c;
+		return *this;
+	}
+
+	Color operator/(const float c) {
+		return Color{r/c, g/c, b/c};
+	}
+
+	Color operator/=(const float c) {
+		r /= c;
+		g /= c;
+		b /= c;
+		return *this;
+	}
+
 	Color operator*(const Color other) {
 		return Color{other.r*r, other.g*g, other.b*b};
+	}
+
+	Color operator*=(const Color other) {
+		r *= other.r;
+		g *= other.g;
+		b *= other.b;
+		return *this;
+	}
+
+	operator std::string() const {
+		std::ostringstream ss;
+		ss << "Color(r=" << r << ", g=" << g << ", b=" << b << ")";
+		return ss.str();
 	}
 
 	float luminosity() {
@@ -47,5 +87,8 @@ struct Color {
 };
 
 bool areColorsClose(Color a, Color b, float epsilon);
+
+const Color WHITE{1.f, 1.f, 1.f};
+const Color BLACK{0.f, 0.f, 0.f};
 
 #endif // COLOR_H

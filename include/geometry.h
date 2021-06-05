@@ -75,7 +75,7 @@ struct Vec {
 
 	// Basic vector operations
 	bool operator==(const Vec &other) {
-		const float epsilon = 1e-10f;
+		const float epsilon = 1e-5f;
 		return areClose<Vec>(*this, other, epsilon);
 	}
 
@@ -249,6 +249,10 @@ struct Normal {
 		y = other.y;
 		z = other.z;
 		return *this;
+	}
+
+	Vec toVec() {
+		return Vec{x, y, z};
 	}
 
 	// Convert Vec to a human readable string with the values of its elements
@@ -481,5 +485,45 @@ Transformation rotationZ(const float theta) {
 						{0.f, 0.f, 0.f, 1.f}};
 	return Transformation{m, mInv};
 }
+
+struct Vec2D {
+	float u, v;
+	Vec2D() {}
+	Vec2D(float u, float v): u{u}, v{v} {}
+
+	Vec2D operator=(const Vec2D &other) {
+		u = other.u;
+		v = other.v;
+		return *this;
+	}
+
+	bool operator==(const Vec2D &other) const {
+		const float epsilon = 1e-5;
+		return (std::abs(u - other.u) < epsilon and std::abs(v - other.v) < epsilon);
+	}
+
+	// Convert Vec2D to a human readable string with the values of its elements
+	operator std::string() const {
+		std::ostringstream ss;
+		ss << "Vec2D(u=" << u << ", v=" << v << ")";
+		return ss.str();
+	}
+};
+
+struct ONB {
+	Vec e1, e2, e3;
+	
+	ONB(Normal normal): ONB(normal.toVec()) {}
+	ONB(Vec normal) {
+		normal.normalize();
+		float sign = std::copysign(1.f, normal.z);
+		float a = -1.f / (sign + normal.z);
+		float b = normal.x * normal.y * a;
+
+		e1 = Vec{1.f + sign * normal.x * normal.x * a, sign * b, -sign * normal.x};
+		e2 = Vec{b, sign + normal.y * normal.y * a, -normal.y};
+		e3 = normal;
+	}
+};
 
 #endif //GEOMETRY_H
