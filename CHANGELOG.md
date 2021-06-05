@@ -1,5 +1,8 @@
 # HEAD
-- Implementation of anti-aliasing algorithm ([PR#16](https://github.com/teozec/image-renderer/pull/16)).
+
+- Add a chair shape
+- Implement path-tracing algorithm ([PR#10](https://github.com/teozec/image-renderer/pull/10), [#18](https://github.com/teozec/image-renderer/issues/18), [PR#19](https://github.com/teozec/image-renderer/pull/19)).
+- Implement anti-aliasing algorithm ([PR#16](https://github.com/teozec/image-renderer/pull/16)).
 
 # Version 0.2.0
 
