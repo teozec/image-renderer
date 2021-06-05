@@ -235,10 +235,10 @@ int demo(argh::parser cmdl) {
 	HdrImage image{width, height};
 	World world;
 
-	//world.add(Sphere{translation(Vec{1.2f, -1.1f, 0.f}), material1});
-	//world.add(Sphere{translation(Vec{0.f, .6f, 0.f}), material2});
+	world.add(Sphere{translation(Vec{1.2f, -1.1f, 0.f}), material1});
+	world.add(Sphere{translation(Vec{0.f, .6f, 0.f}), material2});
 
-	//world.add(Sphere{scaling(5.f), materialSky});
+	world.add(Sphere{scaling(5.f), materialSky});
 	world.add(Plane{translation(Vec{0.f, 0.f, 1.f}), material1});
 	world.add(Plane{translation(Vec{0.f, 0.f, -1.f}), materialGround});
 	int samplesPerPixel;
@@ -251,7 +251,7 @@ int demo(argh::parser cmdl) {
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t)200};
 
-	tracer.fireAllRays(FlatRenderer{world});
+	tracer.fireAllRays(PathTracer{world, pcg, 50, 3, 3});
 
 
 	string ofilename;
