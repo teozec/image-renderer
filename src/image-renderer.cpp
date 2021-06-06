@@ -265,7 +265,7 @@ int demo(argh::parser cmdl) {
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t)200};
 
-	tracer.fireAllRays(PathTracer{world, pcg, 20, 3, 3});
+	tracer.fireAllRays(PathTracer{world, pcg, 5, 3, 5});
 
 	string ofilename;
 	cmdl({"-o", "--output"}, "demo.pfm") >> ofilename;
@@ -297,7 +297,6 @@ int stackPfm(argh::parser cmdl)
 	string ofilename;
 	cmdl({"-o", "--output"}, "stack.pfm") >> ofilename;
 
-
 	HdrImage firstImg;
 	try {
 		firstImg.readPfm(cmdl[2]);
@@ -306,61 +305,63 @@ int stackPfm(argh::parser cmdl)
 		return 1;
 	}
 
-	int width = firstImg.width, height = firstImg.height;
-	int size = cmdl.size() - 2;
+	const int width = firstImg.width, height = firstImg.height;
 	HdrImage stackedImage{width, height};
 
-	if (method == "mean") {
-		for (int i{2}; i < cmdl.size(); i++) {
-			HdrImage img;
-			string imageName = cmdl[i];
-			try {
-				img.readPfm(imageName);
-			} catch (exception e) {
-				cerr << "Error: " <<  e.what() << endl;
-				return 1;
-			}
+	// Make a vector for the pixels, each element of which contains a vector for the 3 colors, each element of which contains a vector for the images.
+	// i.e.: imgVector[pixel][color][image] is the value of the color "color" at pixel "pixel" for the image "image".
+	// We don't use the Color struct because we need to treat each color for each pixel for each image independently, to sort and remove them.
+	vector<vector<vector<float>>> imgVector{static_cast<size_t>(height * width)};
 
-			if (img.width != width or img.height != height) {
-				cerr << "Error: " << imageName << " has the wrong size" << endl;
-				return 1;
-			}
+	// Each pixel is a vector of three colors.
+	for (int pixel{}; pixel < height * width; pixel++)
+		imgVector[pixel].resize(3);
 
-			stackedImage += img;
+	// Process each image in sequence.
+	for (int i{2}; i < cmdl.size(); i++) {
+		HdrImage img;
+		string imageName = cmdl[i];
+
+		try {
+			img.readPfm(imageName);
+		} catch (exception e) {
+			cerr << "Error: " <<  e.what() << endl;
+			return 1;
 		}
-		stackedImage /= (float) size;
-	} else if (method == "median") {
-		vector<vector<vector<float>>> imgVector{static_cast<size_t>(height * width)}; // A Vector whose element i is the Vector of the pixel i of each image
-		for (int pixel{}; pixel < height * width; pixel++)
-			imgVector[pixel].resize(3);
-		for (int i{2}; i < cmdl.size(); i++) {
-			HdrImage img;
-			string imageName = cmdl[i];
-			try {
-				img.readPfm(imageName);
-			} catch (exception e) {
-				cerr << "Error: " <<  e.what() << endl;
-				return 1;
-			}
 
-			if (img.width != width or img.height != height) {
-				cerr << "Error: " << imageName << " has the wrong size" << endl;
-				return 1;
-			}
-
-			for (int pixel{}; pixel < height * width; pixel++) {
-				for (int color{}; color < 3; color++) {
-					imgVector[pixel][color].push_back(img.pixels[pixel][color]);
-					inplace_merge(imgVector[pixel][color].begin(), imgVector[pixel][color].end() - 1, imgVector[pixel][color].end());
-				}
-			}
+		// All the images to stack must have the same height and width.
+		if (img.width != width or img.height != height) {
+			cerr << "Error: " << imageName << " has not the same size as " << cmdl[2] << endl;
+			return 1;
 		}
-		for (int i{}; i < height * width; i++) {
+
+		// Add the 3 colors of all the pixels of the image to imgVector, keeping each [pixel][color] vector (containing all the images) sorted.
+		for (int pixel{}; pixel < height * width; pixel++) {
 			for (int color{}; color < 3; color++) {
+				imgVector[pixel][color].push_back(img.pixels[pixel][color]);
+				inplace_merge(imgVector[pixel][color].begin(), imgVector[pixel][color].end() - 1, imgVector[pixel][color].end());
+			}
+		}
+	}
+
+
+	if (method == "mean") {
+		for (int pixel{}; pixel < height * width; pixel++) {
+			for (int color{}; color < 3; color++) {
+				size_t size = imgVector[pixel][color].size();
+				for (int img{}; img < size; img++)
+					stackedImage.pixels[pixel][color] += imgVector[pixel][color][img];
+				stackedImage.pixels[pixel][color] /= (float) size;
+			}
+		}
+	} else if (method == "median") {
+		for (int pixel{}; pixel < height * width; pixel++) {
+			for (int color{}; color < 3; color++) {
+				size_t size = imgVector[pixel][color].size();
 				if (size % 2 == 0)
-					stackedImage.pixels[i][color] = (imgVector[i][color][size / 2 - 1] + imgVector[i][color][size / 2]) / 2.f;
+					stackedImage.pixels[pixel][color] = (imgVector[pixel][color][size / 2 - 1] + imgVector[pixel][color][size / 2]) / 2.f;
 				else
-					stackedImage.pixels[i][color] = imgVector[i][color][size / 2];
+					stackedImage.pixels[pixel][color] = imgVector[pixel][color][size / 2];
 			}
 		}
 	}
