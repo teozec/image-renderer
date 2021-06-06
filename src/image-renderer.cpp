@@ -61,6 +61,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"		-h <value>, --height=<value>			Height of the final image." << endl << \
 	"		-p <string>, --projection=<string>		Projection used (default 'perspective')." <<endl << \
 	"		--angleDeg=<value>				Angle of rotation (on z axis) of the camera." <<endl << \
+	"		--antialiasing=<value>				Number of samples per single pixel (must be a perfect square, e.g. 4)." <<endl << \
 	"		-o <string>, --outfile=<string>			Filename of the output image." << endl
 
 #define HELP_STACK \
@@ -89,6 +90,7 @@ int main(int argc, char *argv[])
 			 "-h", "--height",
 			 "-p", "--projection",
 			 "--angleDeg",
+			 "--antialiasing"
 			 "-o", "--outfile",
 			 "-s", "--seed",
 			 "-m", "--method"});
@@ -240,11 +242,9 @@ int demo(argh::parser cmdl) {
 	else if (projString == "perspective")
 		cam = make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, camTransformation});
 	else {
-		cout << "Projection unrecognized. Try 'orthogonal' or 'perspective'." <<endl;
+		cerr << "Projection unrecognized. Try 'orthogonal' or 'perspective'." <<endl;
 		return 1;
 	}
-	string ofilename;
-	cmdl({"-o", "--output"}, "demo.pfm") >> ofilename;
 
 	HdrImage image{width, height};
 	World world;
@@ -254,12 +254,21 @@ int demo(argh::parser cmdl) {
 
 	world.add(Sphere{scaling(5.f), materialSky});
 	world.add(Plane{translation(Vec{0.f, 0.f, -1.f}), materialGround});
-	
-	ImageTracer tracer{image, *cam};
-	PCG pcg{(uint64_t)seed};
 
-	tracer.fireAllRays(PathTracer{world, pcg, 3, 3});
+	int samplesPerPixel;
+	cmdl({"--antialiasing"}, 0) >> samplesPerPixel;
+	int samplesPerSide = sqrt(samplesPerPixel);
+	if (samplesPerPixel != samplesPerSide*samplesPerSide){
+		cerr << "Not a perfect square given as --antialiasing parameter."  <<endl;
+		return 1;
+	} 
+	ImageTracer tracer{image, *cam, samplesPerSide};
+	PCG pcg{(uint64_t)200};
 
+	tracer.fireAllRays(PathTracer{world, pcg, 20, 3, 3});
+
+	string ofilename;
+	cmdl({"-o", "--output"}, "demo.pfm") >> ofilename;
 	ofstream outPfm;
 	outPfm.open(ofilename);
 	image.writePfm(outPfm);

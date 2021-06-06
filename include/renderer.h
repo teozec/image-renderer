@@ -97,7 +97,7 @@ struct PathTracer : public Renderer {
 		if (ray.depth >= minDepth) {
 			float q = std::max(0.05f, 1 - hitColorLum);
 			if (pcg.randFloat() > q)
-				hitColor *= 1.f / (1.f - q);
+				hitColor /= (1.f - q);
 			else
 				return emittedRadiance;
 		}

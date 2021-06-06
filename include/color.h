@@ -51,7 +51,7 @@ struct Color {
 	}
 
 	Color operator/(const float c) {
-		return Color{c/r, c/g, c/b};
+		return Color{r/c, g/c, b/c};
 	}
 
 	Color operator/=(const float c) {

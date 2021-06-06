@@ -150,8 +150,8 @@ struct DiffusiveBRDF : BRDF {
 	virtual Ray scatterRay(PCG pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) override {
 		ONB onb{normal};
 		float cosThetaSq = pcg.randFloat();
-		float cosTheta = sqrt(cosThetaSq);
-		float sinTheta = sqrt(1-cosThetaSq);
+		float cosTheta = std::sqrt(cosThetaSq);
+		float sinTheta = std::sqrt(1.f-cosThetaSq);
 		float phi = 2.f * M_PI * pcg.randFloat();
 
 		return Ray{interactionPoint,
