@@ -352,7 +352,7 @@ int stackPfm(argh::parser cmdl)
 	for (int i{}; i < nSigmaIterations; i++) {
 		for (int pixel{}; pixel < height * width; pixel++) {
 			for (int color{}; color < 3; color++) {
-				auto images = imgVector[pixel][color];
+				auto &images = imgVector[pixel][color];
 				size_t size = images.size();
 
 				// Compute sigma
@@ -375,7 +375,7 @@ int stackPfm(argh::parser cmdl)
 				// Remove all the outliers x for which |median - x| > alpha * sigma
 				for (auto it{images.begin()}; it != images.end(); ) {
 					if (abs(*it - median) > alpha * sigma)
-						images.erase(it);
+						it = images.erase(it);
 					else
 						it++;
 				}
