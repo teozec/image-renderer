@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 {
 	argh::parser cmdl;
 
-	cmdl.add_params({"-a", "--afactor",
+	cmdl.add_params({"-a", "--afactor", "--alpha",
 			 "-g", "--gamma",
 			 "-c", "--compression",
 			 "-q", "--quality",
@@ -93,6 +93,7 @@ int main(int argc, char *argv[])
 			 "--antialiasing"
 			 "-o", "--outfile",
 			 "-s", "--seed",
+			 "-S", "--nSigma",
 			 "-m", "--method"});
 	cmdl.parse(argc, argv);
 
@@ -296,6 +297,10 @@ int stackPfm(argh::parser cmdl)
 	cmdl({"-m", "--method"}, "mean") >> method;
 	string ofilename;
 	cmdl({"-o", "--output"}, "stack.pfm") >> ofilename;
+	int nSigmaIterations;
+	cmdl({"-S", "--nSigma"}, 0) >> nSigmaIterations;
+	float alpha;
+	cmdl({"-a", "--alpha"}, 2.) >> alpha;
 
 	HdrImage firstImg;
 	try {
@@ -344,6 +349,39 @@ int stackPfm(argh::parser cmdl)
 		}
 	}
 
+	for (int i{}; i < nSigmaIterations; i++) {
+		for (int pixel{}; pixel < height * width; pixel++) {
+			for (int color{}; color < 3; color++) {
+				auto images = imgVector[pixel][color];
+				size_t size = images.size();
+
+				// Compute sigma
+				float mean{}, mean2{};
+				for (int img{}; img < size; img++) {
+					mean += images[img];
+					mean2 += images[img] * images[img];
+				}
+				mean /= (float) size;
+				mean2 /= (float) size;
+				float sigma = sqrt(mean2 - mean * mean);
+
+				// Compute median
+				float median;
+				if (size % 2 == 0)
+					median = (images[size / 2 - 1] + images[size / 2]) / 2.f;
+				else
+					median = images[size / 2];
+
+				// Remove all the outliers x for which |median - x| > alpha * sigma
+				for (auto it{images.begin()}; it != images.end(); ) {
+					if (abs(*it - median) > alpha * sigma)
+						images.erase(it);
+					else
+						it++;
+				}
+			}
+		}
+	}
 
 	if (method == "mean") {
 		for (int pixel{}; pixel < height * width; pixel++) {
