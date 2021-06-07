@@ -62,13 +62,16 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"		-p <string>, --projection=<string>		Projection used (default 'perspective')." <<endl << \
 	"		--angleDeg=<value>				Angle of rotation (on z axis) of the camera." <<endl << \
 	"		--antialiasing=<value>				Number of samples per single pixel (must be a perfect square, e.g. 4)." <<endl << \
+	"		-s <value>, --seed=<value>			Random number generator seed." << endl << \
 	"		-o <string>, --outfile=<string>			Filename of the output image." << endl
 
 #define HELP_STACK \
 	"stack: stack more pfm images representing the same scene." << endl << endl << \
 	"Available options:" << endl << \
 	"	-h, --help: print this message." << endl << \
-	"	-m <string>, --method=<string>			The stacking method (can be 'mean' or 'median'." << endl
+	"	-m <string>, --method=<string>			The stacking method (can be 'mean' or 'median', default 'mean')." << endl << \
+	"	-S <value>, --nSigma=<value>			Number of sigma clipping iterations (default 0)." << endl << \
+	"	-a <value>, --alpha=<value>			Sigma clipping alpha factor (consider outliers values farther than alpha*sigma from the median, default 2)." << endl
 
 using namespace std;
 
@@ -264,7 +267,7 @@ int demo(argh::parser cmdl) {
 		return 1;
 	} 
 	ImageTracer tracer{image, *cam, samplesPerSide};
-	PCG pcg{(uint64_t)200};
+	PCG pcg{(uint64_t) seed};
 
 	tracer.fireAllRays(PathTracer{world, pcg, 5, 3, 5});
 
