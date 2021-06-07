@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 			 "-h", "--height",
 			 "-p", "--projection",
 			 "--angleDeg",
-			 "--antialiasing"
+			 "--antialiasing",
 			 "-o", "--outfile",
 			 "-s", "--seed",
 			 "-S", "--nSigma",
@@ -272,7 +272,7 @@ int demo(argh::parser cmdl) {
 	tracer.fireAllRays(PathTracer{world, pcg, 5, 3, 5});
 
 	string ofilename;
-	cmdl({"-o", "--output"}, "demo.pfm") >> ofilename;
+	cmdl({"-o", "--outfile"}, "demo.pfm") >> ofilename;
 	ofstream outPfm;
 	outPfm.open(ofilename);
 	image.writePfm(outPfm);
@@ -299,7 +299,7 @@ int stackPfm(argh::parser cmdl)
 	string method;
 	cmdl({"-m", "--method"}, "mean") >> method;
 	string ofilename;
-	cmdl({"-o", "--output"}, "stack.pfm") >> ofilename;
+	cmdl({"-o", "--outfile"}, "stack.pfm") >> ofilename;
 	int nSigmaIterations;
 	cmdl({"-S", "--nSigma"}, 0) >> nSigmaIterations;
 	float alpha;
