@@ -82,6 +82,37 @@ struct HdrImage {
 		return pow(10, s / pixels.size());
 	}
 
+	HdrImage operator+(HdrImage &other) {
+		assert(other.height == height);
+		assert(other.width == width);
+		HdrImage sum{width, height};
+		for (int i{}; i < height * width; i++)
+			sum.pixels[i] = pixels[i] + other.pixels[i];
+		return sum;
+	}
+
+	HdrImage operator+=(HdrImage &other) {
+		assert(other.height == height);
+		assert(other.width == width);
+		for (int i{}; i < height * width; i++)
+			pixels[i] += other.pixels[i];
+		return *this;
+	}
+
+	HdrImage operator/(const float x) {
+		HdrImage sum{width, height};
+		for (int i{}; i < height * width; i++)
+			sum.pixels[i] = pixels[i] / x;
+		return sum;
+	}
+
+	HdrImage operator/=(const float x) {
+		for (int i{}; i < height * width; i++)
+			pixels[i] /= x;
+		return *this;
+	}
+
+
 	// write&read pfm file image
 	void writePfm(std::ostream &stream, Endianness endianness=Endianness::littleEndian);
 	void readPfm(std::istream &stream);

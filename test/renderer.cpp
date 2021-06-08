@@ -103,5 +103,6 @@ int main()
 	testOnOffRenderer();
 	testFlatRenderer();
 	testPathTracer();
+
 	return 0;
 }
