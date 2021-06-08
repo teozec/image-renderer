@@ -269,7 +269,7 @@ int demo(argh::parser cmdl) {
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t) seed};
 
-	tracer.fireAllRays(PathTracer{world, pcg, 5, 3, 5});
+	tracer.fireAllRays(PathTracer{world, pcg, 5, 4, 4});
 
 	string ofilename;
 	cmdl({"-o", "--outfile"}, "demo.pfm") >> ofilename;
@@ -298,6 +298,10 @@ int stackPfm(argh::parser cmdl)
 
 	string method;
 	cmdl({"-m", "--method"}, "mean") >> method;
+	if (method != "mean" and method != "median") {
+		cerr << "Error: method " << method << " not supported." << endl;
+		return 1;
+	}
 	string ofilename;
 	cmdl({"-o", "--outfile"}, "stack.pfm") >> ofilename;
 	int nSigmaIterations;
