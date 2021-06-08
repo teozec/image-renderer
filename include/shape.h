@@ -1,19 +1,21 @@
-/* Copyright (C) 2021 Luca Nigro and Matteo Zeccoli Marazzini
-
-This file is part of image-renderer.
-
-image-renderer is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-image-renderer is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
+/**
+ *  Copyright (C) 2021 Luca Nigro and Matteo Zeccoli Marazzini
+ * 
+ * This file is part of image-renderer.
+ * 
+ * image-renderer is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * image-renderer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. 
+ */
 
 #ifndef SHAPE_H
 #define SHAPE_H
@@ -26,31 +28,24 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cfloat>
 #include "geometry.h"
 #include "camera.h"
+#include "material.h"
 
-struct Vec2D {
-	float u, v;
-	Vec2D() {}
-	Vec2D(float u, float v): u{u}, v{v} {}
+struct Shape;
 
-	Vec2D operator=(const Vec2D &other) {
-		u = other.u;
-		v = other.v;
-		return *this;
-	}
-
-	bool operator==(const Vec2D &other) const {
-		const float epsilon = 1e-5;
-		return (std::abs(u - other.u) < epsilon and std::abs(v - other.v) < epsilon);
-	}
-
-	// Convert Vec2D to a human readable string with the values of its elements
-	operator std::string() const {
-		std::ostringstream ss;
-		ss << "Vec2D(u=" << u << ", v=" << v << ")";
-		return ss.str();
-	}
-};
-
+/** 
+ * @brief A record of all the informations related to a ray hitting the shape surface.
+ * 
+ * @param hit			It's true if the ray actually hits the shape, otherwise is set to false.
+ * @param worldPoint	Point of the scene in which the ray intersects the shape.
+ * @param normal		Normal to the shape where the ray intersects the shape.
+ * @param surfacePoint	Point of the surface where the ray intersects the shape.
+ * @param t				Distance from the origin of the ray to the intersection point.
+ * @param ray			Ray that hits the shape.
+ * @param shape			The @a shared_ptr<Shape> corresponding to the shape hit by the ray.
+ * 
+ * @see Ray
+ * @see Shape
+ */
 struct HitRecord {
 	bool hit = false;
 	Point worldPoint;
@@ -58,13 +53,14 @@ struct HitRecord {
 	Vec2D surfacePoint;
 	float t;
 	Ray ray;
+	std::shared_ptr<Shape> shape = nullptr;
 
 	HitRecord() {}
 	HitRecord(const HitRecord &other) :	//
 		hit{other.hit}, worldPoint{other.worldPoint}, normal{other.normal}, //
-		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray} {}
-	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray):
-		hit{true}, worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint},
+		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, shape{other.shape} {}
+	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray) : //
+		hit{true}, worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint}, //
 		t{t}, ray{ray} {}
 
 	HitRecord operator=(const HitRecord &other) {
@@ -75,6 +71,7 @@ struct HitRecord {
 			surfacePoint = other.surfacePoint;
 			t = other.t;
 			ray = other.ray;
+			shape = other.shape;
 		}
 		return *this;
 	}	
@@ -92,10 +89,24 @@ struct HitRecord {
  * @brief A Shape abstract struct.
  *
  * @param transformation	The transformation to be applied to the shape.
+ * @param material			The material of the shape.
+ * 
+ * @see Sphere
+ * @see Plane
+ * @see Triangle
+ * @see CSGUnion
+ * @see CSGDifference
+ * @see CSGIntersection
+ * @see Box
  */
 struct Shape {
 	Transformation transformation;
-	Shape(Transformation transformation = Transformation()): transformation{transformation} {}
+	Material material;
+
+	Shape(): Shape{Transformation{}, Material{}} {}
+	Shape(Material material): Shape{Transformation{}, material} {}
+	Shape(Transformation transformation): Shape{transformation, Material{}} {}
+	Shape(Transformation transformation, Material material): transformation{transformation}, material{material} {}
 
 	/**
 	 * @brief Return a HitRecord corresponding to the first intersection between the shape and the ray.
@@ -111,15 +122,26 @@ struct Shape {
 };
 
 /**
- * @brief A Sphere object derived from Shape.
+ * @brief A unit Sphere object derived from Shape.
  * 
  * @param transformation	The transformation to be applied to the unit sphere centered at the origin.
- * @see Shape.
+ * @param material			The material of the sphere.
+ * 
+ * @see Shape
  */
 struct Sphere : public Shape {
 	Sphere(): Shape() {}
 	Sphere(Transformation transformation): Shape(transformation) {}
+	Sphere(Material material): Shape(material) {}
+	Sphere(Transformation transformation, Material material): Shape(transformation, material) {}
 
+	/**
+	 * @brief 	Return a HitRecord corresponding to the first intersection between the sphere and the ray.
+	 * @details It must be inside the range ['tmin', 'tmax'].
+	 * 
+	 * @param ray 
+	 * @return HitRecord 
+	 */
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
 		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
@@ -141,6 +163,13 @@ struct Sphere : public Shape {
 			return HitRecord{};
 	}
 
+	/**
+	 * @brief 	Return a vector of HitRecords of all the intersections.
+	 * @details The records are ordered by increasing t. 
+	 * 
+	 * @param ray 
+	 * @return std::vector<HitRecord> 
+	 */
 	virtual std::vector<HitRecord> allIntersections(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
 		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
@@ -163,12 +192,27 @@ struct Sphere : public Shape {
 		return intersections;
 	}
 
+	/**
+	 * @brief Check if a point is inside the sphere.
+	 * 
+	 * @param p 
+	 * @return true 
+	 * @return false 
+	 */
 	virtual bool isInner(Point p) override {
 		p = transformation.inverse() * p;
 		return p.x * p.x + p.y * p.y + p.z * p.z < 1.f;
 	}
 
 private:
+	/**
+	 * @brief Wrapper of intersection info.
+	 * 
+	 * @param t 
+	 * @param ray 
+	 * @param invRay 
+	 * @return HitRecord 
+	 */
 	HitRecord intersection(float t, Ray ray, Ray invRay) {
 		Point hitPoint{invRay(t)};
 		return HitRecord{
@@ -179,26 +223,51 @@ private:
 			ray};
 	}
 
+	/**
+	 * @brief Return the normal at a given point coming from a specific direction.
+	 * 
+	 * @param p 		Point.
+	 * @param dir 		Direction of the incoming ray.
+	 * @return Normal 
+	 */
 	Normal sphereNormal(Point p, Vec dir) {
 		Normal result{p.x, p.y, p.z};
 		return p.toVec().dot(dir) < 0. ? result : -result;
 	}
 
+	/**
+	 * @brief 2D sphere surface coordinate system converter (from 3D world point).
+	 * 
+	 * @param p		3D world point.
+	 * @return Vec2D 
+	 */
 	Vec2D spherePointToUV(Point p) {
-		return Vec2D{std::acos(p.z) / (float) M_PI, std::atan2(p.y, p.x) / (float) (2. * M_PI)};
+		float v = std::atan2(p.y, p.x) / (float) (2 * M_PI);
+		return Vec2D{std::acos(p.z) / (float) M_PI, v>=0 ? v : v+1};
 	}
 };
 
 /**
- * @brief A Plane object derived from Shape.
+ * @brief An ininite xy-plane object derived from Shape.
  * 
- * @param transformation	The transformation to the xy plane.
- * @see Shape.
+ * @param transformation	The transformation to be applied to the infinite xy-plane passing through the origin.
+ * @param material			The material of the plane.
+ * 
+ * @see Shape
  */
 struct Plane : public Shape {
 	Plane(): Shape() {}
 	Plane(Transformation transformation): Shape(transformation) {}
+	Plane(Material material): Shape(material) {}
+	Plane(Transformation transformation, Material material): Shape(transformation, material) {}
 
+	/**
+	 * @brief 	Return a HitRecord corresponding to the intersection between the ray and the plane.
+	 * @details It must be inside the range ['tmin', 'tmax'].
+	 * 
+	 * @param ray 
+	 * @return HitRecord 
+	 */
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
 		Vec origin{invRay.origin.toVec()}, dir{invRay.dir};
@@ -220,6 +289,13 @@ struct Plane : public Shape {
 			ray};
 	}
 
+	/**
+	 * @brief 	Return a vector of HitRecords of all the intersections.
+	 * @details The records are ordered by increasing t. 
+	 * 
+	 * @param ray 
+	 * @return std::vector<HitRecord> 
+	 */
 	virtual std::vector<HitRecord> allIntersections(Ray ray) override {
 		HitRecord hit = rayIntersection(ray);
 		if (hit.hit)
@@ -228,23 +304,54 @@ struct Plane : public Shape {
 			return std::vector<HitRecord>{};
 	}
 
-	// By convention, the plane inner part is the z<0 half space
+	/**
+	 * @brief By convention, the plane inner part is the z<0 half space
+	 * 
+	 * @param p 
+	 * @return true 
+	 * @return false 
+	 */
 	virtual bool isInner(Point p) override {
 		p = transformation.inverse() * p;
 		return p.z < 0;
 	}
 
 private:
+
+	/**
+	 * @brief Return the normal of the plane at a given point, with a ray coming at a given direction.
+	 * 
+	 * @param p 
+	 * @param dir 
+	 * @return Normal 
+	 */
 	Normal planeNormal(Point p, Vec dir) {
 		Normal result{0.f, 0.f, 1.f};
 		return dir.z < 0. ? result : -result;
 	}
 
+	/**
+	 * @brief 2D plane surface coordinate system converter (from 3D world point).
+	 * 
+	 * @param p 
+	 * @return Vec2D 
+	 */
 	Vec2D planePointToUV(Point p) {
 		return Vec2D{p.x - std::floor(p.x), p.y - std::floor(p.y)};
 	}
 };
 
+/**
+ * @brief A triangle object derived from Shape.
+ * 
+ * @param A					A vertex.
+ * @param B					A vertex.
+ * @param C					A vertex.
+ * @param transformation	The transformation to be applied to the triangle.
+ * @param material			The material of the triangle.
+ * 
+ * @see Shape
+ */
 struct Triangle : public Shape {
 
 	Triangle(): Shape() {}
@@ -252,13 +359,30 @@ struct Triangle : public Shape {
 		A = transform*(this->A);
 		B = transform*(this->B);
 		C = transform*(this->C);
-		} 
+	}
+	Triangle(Transformation transform, Material material): Shape(transform, material) {
+		A = transform*(this->A);
+		B = transform*(this->B);
+		C = transform*(this->C);
+	} 
 	Triangle(Point a, Point b, Point c, Transformation transform = Transformation{}) : Shape(transform) {
 		A = transform*a;
 		B = transform*b;
 		C = transform*c;
 	}
+	Triangle(Point a, Point b, Point c, Transformation transform, Material material) : Shape(transform, material) {
+		A = transform*a;
+		B = transform*b;
+		C = transform*c;
+	}
 
+	/**
+	 * @brief 	Return a HitRecord corresponding to the intersection between the ray and the triangle.
+	 * @details It must be inside the range ['tmin', 'tmax'].
+	 * 
+	 * @param ray 
+	 * @return HitRecord 
+	 */
 	virtual HitRecord rayIntersection(Ray ray) override {
 		float s[3][3] = {{(B-A).x, (C-A).x, ray.dir.x},
 						{(B-A).y, (C-A).y, ray.dir.y},
@@ -270,14 +394,14 @@ struct Triangle : public Shape {
 			return HitRecord{};
 
 		std::vector<float> solution = findSolution(s, b);
-		if (!(ray.tmin < solution[2] && solution[2] < ray.tmax) 
+		if (!(ray.tmin < -solution[2] && -solution[2] < ray.tmax)
 			|| !(0 < solution[1] && solution[1] < 1)
 			|| !(0 < solution[0] && solution[0] < 1)
 			|| !(0 < 1-solution[0]-solution[1] && 1-solution[0]-solution[1] < 1)) {
 			return HitRecord{};
 		}
 
-		t = solution[2];
+		t = -solution[2];
 		gamma = solution[1];
 		beta = solution[0];
 		Point hitPoint = ray(t);
@@ -291,6 +415,13 @@ struct Triangle : public Shape {
 			ray};
 	}
 
+	/**
+	 * @brief 	Return a vector of HitRecords of all the intersections.
+	 * @details The records are ordered by increasing t. 
+	 * 
+	 * @param ray 
+	 * @return std::vector<HitRecord> 
+	 */
 	virtual std::vector<HitRecord> allIntersections(Ray ray) override {
 		HitRecord hit = rayIntersection(ray);
 		if (hit.hit)
@@ -299,7 +430,9 @@ struct Triangle : public Shape {
 			return std::vector<HitRecord>{};
 	}
 
-	// Not implemented
+	/**
+	 * @deprecated Not implemented
+	 */
 	virtual bool isInner(Point p) override {
 		return false;
 	}
@@ -308,12 +441,26 @@ private:
 
 	Point A{0.f, 0.f, 0.f}, B{0.f, 1.f, 0.f}, C{0.f, 0.f, 1.f};
 
+	/**
+	 * @brief Return the normal to the triangle at a given point, with a ray coming at a given direction.
+	 * 
+	 * @param p 
+	 * @param dir 
+	 * @return Normal 
+	 */
   	Normal triangleNormal(Vec p, Vec dir) {
 		p.normalize();
 		Normal result{p.x, p.y, p.z};
 		return dir.dot(p) < 0. ? result : -result;
 	}
 
+	/**
+	 * @brief 2D plane surface coordinate system converter (from barycentric coordinates).
+	 * 
+	 * @param beta 
+	 * @param gamma 
+	 * @return Vec2D 
+	 */
 	Vec2D trianglePointToUV(float beta, float gamma) {
 		return Vec2D{beta, gamma};
 	}
@@ -326,7 +473,14 @@ private:
 		return ans;
 	}
 
-	// Cramer method
+	/**
+	 * @brief Cramer method.
+	 * 
+	 * 
+	 * @param a 
+	 * @param b 
+	 * @return std::vector<float> 
+	 */
 	std::vector<float> findSolution(float a[3][3], Vec b) {
 		float coeff[3][4] = {
 			{a[0][0], a[0][1], a[0][2], b.x},
@@ -354,7 +508,7 @@ private:
 		float D2 = determinantOfMatrix(m2);
 		float D3 = determinantOfMatrix(m3);
 	
-		return std::vector<float> {D1/D, D2/D, -D3/D};
+		return std::vector<float> {D1/D, D2/D, D3/D};
 		
 	}
 };
@@ -362,15 +516,28 @@ private:
 /**
  * @brief A CSGUnion object derived from Shape.
  *
+ * @tparam A	First shape type.
+ * @tparam B 	Second shape type.
+ * @param a		First shape.
+ * @param b		Second shape.
  * @param transformation	The transformation to the shape.
+ * @param material			The material of the shape.
  * @see Shape.
  */
 struct CSGUnion : public Shape {
 	std::shared_ptr<Shape> a, b;
 	template <class A, class B> CSGUnion(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
+	template <class A, class B> CSGUnion(const A &a, const B &b, Material material): Shape(material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGUnion(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
+	template <class A, class B> CSGUnion(const A &a, const B &b, Transformation transformation, Material material): Shape(transformation, material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 
-	// The first intersection is the one with lower t between the first intersections of a and b
+	/**
+	 * @brief	Return a HitRecord corresponding to the intersection between the ray and the CSGUnion.
+	 * @details The first intersection is the one with lower t between the first intersections of a and b. It must be inside the range ['tmin', 'tmax'].
+	 * 
+	 * @param ray 
+	 * @return HitRecord 
+	 */
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
 
@@ -397,6 +564,13 @@ struct CSGUnion : public Shape {
 			ray};
 	}
 
+	/**
+	 * @brief 	Return a vector of HitRecords of all the intersections.
+	 * @details The records are ordered by increasing t. 
+	 * 
+	 * @param ray 
+	 * @return std::vector<HitRecord> 
+	 */
 	virtual std::vector<HitRecord> allIntersections(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
 		std::vector<HitRecord> hitA{a->allIntersections(invRay)};
@@ -421,22 +595,36 @@ struct CSGUnion : public Shape {
 
 /**
  * @brief A CSGDifference object derived from Shape.
- *
+ * 
+ * @tparam A	First shape type.
+ * @tparam B 	Second shape type.
+ * @param a		First shape.
+ * @param b		Second shape.
  * @param transformation	The transformation to the shape.
+ * @param material			The material of the shape.
  * @see Shape.
  */
 struct CSGDifference : public Shape {
 	std::shared_ptr<Shape> a, b;
 	template <class A, class B> CSGDifference(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
+	template <class A, class B> CSGDifference(const A &a, const B &b, Material material): Shape(material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGDifference(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
+	template <class A, class B> CSGDifference(const A &a, const B &b, Transformation transformation, Material material): Shape(transformation, material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 
+	/**
+	 * @brief 	Return a HitRecord corresponding to the intersection between the ray and the CSGDifference.
+	 * @details It must be inside the range ['tmin', 'tmax'].
+	 * 
+	 * @param ray 
+	 * @return HitRecord 
+	 */
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
 		std::vector<HitRecord> hitListA = a->allIntersections(invRay);
 		std::vector<HitRecord> hitListB = b->allIntersections(invRay);
 		HitRecord hitA{}, hitB{};
 
-		// An intersection with a is also an intersection with a-b iff it is not inside b
+		// An intersection with 'a' is also an intersection with 'a - b' iff it is not inside 'b'
 		for (auto h : hitListA) {
 			if (!b->isInner(h.worldPoint)) {
 				hitA = h;
@@ -444,7 +632,7 @@ struct CSGDifference : public Shape {
 			}
 		}
 
-		// An intersection with b is also an intersection with a-b iff it is inside a
+		// An intersection with 'b' is also an intersection with 'a - b' iff it is inside 'a'
 		for (auto h : hitListB) {
 			if (a->isInner(h.worldPoint)) {
 				hitB = h;
@@ -472,6 +660,13 @@ struct CSGDifference : public Shape {
 			ray};
 	}
 
+	/**
+	 * @brief 	Return a vector of HitRecords of all the intersections.
+	 * @details The records are ordered by increasing t. 
+	 * 
+	 * @param ray 
+	 * @return std::vector<HitRecord> 
+	 */
 	virtual std::vector<HitRecord> allIntersections(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
 		std::vector<HitRecord> hitListA = a->allIntersections(invRay);
@@ -480,13 +675,13 @@ struct CSGDifference : public Shape {
 		std::vector<HitRecord> validB;
 
 
-		// An intersection with a is also an intersection with a-b iff it is not inside b
+		// An intersection with 'a' is also an intersection with 'a - b' iff it is not inside 'b'
 		for (auto h : hitListA) {
 			if (!b->isInner(h.worldPoint))
 				validA.push_back(h);
 		}
 
-		// An intersection with b is also an intersection with a-b iff it is inside a
+		// An intersection with 'b' is also an intersection with 'a - b' iff it is inside 'a'
 		for (auto h : hitListB) {
 			if (a->isInner(h.worldPoint))
 				validB.push_back(h);
@@ -510,22 +705,36 @@ struct CSGDifference : public Shape {
 
 /**
  * @brief A CSGIntersection object derived from Shape.
- *
+ * 
+ * @tparam A	First shape type.
+ * @tparam B 	Second shape type.
+ * @param a		First shape.
+ * @param b		Second shape.
  * @param transformation	The transformation to the shape.
+ * @param material			The material of the shape.
  * @see Shape.
  */
 struct CSGIntersection : public Shape {
 	std::shared_ptr<Shape> a, b;
 	template <class A, class B> CSGIntersection(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
+	template <class A, class B> CSGIntersection(const A &a, const B &b, Material material): Shape(material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGIntersection(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
+	template <class A, class B> CSGIntersection(const A &a, const B &b, Transformation transformation, Material material): Shape(transformation, material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 
+	/**
+	 * @brief 	Return a HitRecord corresponding to the intersection between the ray and the CSGIntersection.
+	 * @details It must be inside the range ['tmin', 'tmax'].
+	 * 
+	 * @param ray 
+	 * @return HitRecord 
+	 */
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
 		std::vector<HitRecord> hitListA = a->allIntersections(invRay);
 		std::vector<HitRecord> hitListB = b->allIntersections(invRay);
 		HitRecord hitA{}, hitB{};
 
-		// An intersection with a is also an intersection with a-b iff it is inside b
+		// An intersection with 'a' is also an intersection with 'a - b' iff it is inside 'b'
 		for (auto h : hitListA) {
 			if (b->isInner(h.worldPoint)) {
 				hitA = h;
@@ -533,7 +742,7 @@ struct CSGIntersection : public Shape {
 			}
 		}
 
-		// An intersection with b is also an intersection with a-b iff it is inside a
+		// An intersection with 'b' is also an intersection with 'a - b' iff it is inside 'a'
 		for (auto h : hitListB) {
 			if (a->isInner(h.worldPoint)) {
 				hitB = h;
@@ -561,6 +770,13 @@ struct CSGIntersection : public Shape {
 			ray};
 	}
 
+	/**
+	 * @brief 	Return a vector of HitRecords of all the intersections.
+	 * @details The records are ordered by increasing t. 
+	 * 
+	 * @param ray 
+	 * @return std::vector<HitRecord> 
+	 */
 	virtual std::vector<HitRecord> allIntersections(Ray ray) override {
 		Ray invRay{transformation.inverse() * ray};
 		std::vector<HitRecord> hitListA = a->allIntersections(invRay);
@@ -568,14 +784,13 @@ struct CSGIntersection : public Shape {
 		std::vector<HitRecord> validA;
 		std::vector<HitRecord> validB;
 
-
-		// An intersection with a is also an intersection with a-b iff it is inside b
+		// An intersection with 'a' is also an intersection with 'a - b' iff it is inside 'b'
 		for (auto h : hitListA) {
 			if (b->isInner(h.worldPoint))
 				validA.push_back(h);
 		}
 
-		// An intersection with b is also an intersection with a-b iff it is inside a
+		// An intersection with 'b' is also an intersection with 'a - b' iff it is inside 'a'
 		for (auto h : hitListB) {
 			if (a->isInner(h.worldPoint))
 				validB.push_back(h);
@@ -599,20 +814,37 @@ struct CSGIntersection : public Shape {
 
 /**
  * @brief An axis aligned box object derived from Shape.
- *
+ * 
+ * @param pMin		First end of the cube diagonal.
+ * @param pMax		Second end of the cube diagonal.
  * @param transformation	The transformation to the shape.
+ * @param material			The material of the shape.
  * @see Shape.
  */
 struct Box : Shape {
 	Point pMin, pMax;
+	Box(Point pMin, Point pMax, Material material): pMin{pMin}, pMax{pMax}, Shape(material) {
+		assert(pMin.x < pMax.x);
+		assert(pMin.y < pMax.y);
+		assert(pMin.z < pMax.z);
+	}
 	Box(Point pMin, Point pMax, Transformation transformation = Transformation()): pMin{pMin}, pMax{pMax}, Shape(transformation) {
+		assert(pMin.x < pMax.x);
+		assert(pMin.y < pMax.y);
+		assert(pMin.z < pMax.z);
+	}
+	Box(Point pMin, Point pMax, Transformation transformation, Material material): pMin{pMin}, pMax{pMax}, Shape(transformation, material) {
 		assert(pMin.x < pMax.x);
 		assert(pMin.y < pMax.y);
 		assert(pMin.z < pMax.z);
 	}
 
 	/**
-	 * @brief Return a HitRecord corresponding to the first intersection between the shape and the ray.
+	 * @brief 	Return a HitRecord corresponding to the intersection between the ray and the box.
+	 * @details It must be inside the range ['tmin', 'tmax'].
+	 * 
+	 * @param ray 
+	 * @return HitRecord 
 	 */
 	virtual HitRecord rayIntersection(Ray ray) override {
 		Ray invRay = transformation.inverse() * ray;
@@ -644,7 +876,11 @@ struct Box : Shape {
 	}
 
 	/**
-	 * @brief Return a vector of HitRecord corresponding to all the intersections, ordered by increasing t.
+	 * @brief 	Return a vector of HitRecords of all the intersections.
+	 * @details The records are ordered by increasing t.
+	 * 
+	 * @param ray 
+	 * @return std::vector<HitRecord> 
 	 */
 	virtual std::vector<HitRecord> allIntersections(Ray ray) override {
 		Ray invRay = transformation.inverse() * ray;
@@ -702,8 +938,11 @@ private:
 
 	/**
 	 * @brief Returns true if the ray intersects the box, false otherwise.
-	 * It also sets the private members tMin, tMax, faceMin, faceMax corresponding
-	 * to the first and second hit t and face, respectively.
+	 * @details It also sets the private members tMin, tMax, faceMin, faceMax corresponding to the first and second hit t and face, respectively.
+	 * 
+	 * @param invRay 
+	 * @return true 
+	 * @return false 
 	 */
 	bool intersection(Ray invRay) {
 		float t1, t2;
@@ -756,7 +995,10 @@ private:
 	}
 
 	/**
-	 * @brief Returns the outer-pointing Normal to the requested face.
+	 * @brief Return the normal to the box at a given face.
+	 * 
+	 * @param face 
+	 * @return Normal 
 	 */
 	Normal boxNormal(int face) {
 		switch (face) {
@@ -778,8 +1020,12 @@ private:
 	}
 
 	/**
-	 * @brief Return the UV coordinates on the plane of the hitPoint, knowing the intersection happened on face.
-	 * The [0, 1] interval is divided in 6 equal subintervals [i/6, (i+1)/6], where i is the number of the face (0-5).
+	 * @brief 	2D box surface coordinate system converter (from 3D world point).
+	 * @details The [0, 1] interval is divided in 6 equal subintervals [i/6, (i+1)/6], where i is the number of the face (0-5).
+	 * 
+	 * @param hitPoint 	3D point of intersection.
+	 * @param face 		Face hitted.
+	 * @return Vec2D 
 	 */
 	Vec2D boxPointToUV(Point hitPoint, int face) {
 		float u, v;
@@ -807,10 +1053,12 @@ private:
 	}
 };
 
-/** World class
+/**
  * @brief This is the class containing all the shapes of the scene.
  * 
  * @param shapes	List of shapes.
+ * 
+ * @see Shape
  */
 struct World {
 	std::vector<std::shared_ptr<Shape>> shapes;
@@ -825,14 +1073,17 @@ struct World {
 			HitRecord intersection = shapes[i]->rayIntersection(ray);
 			if(!intersection.hit)
 				continue;
-			if((!closest.hit) or (intersection.t < closest.t))
+			if((!closest.hit) or (intersection.t < closest.t)) {
 				closest = intersection;
+				closest.shape = shapes[i];
+			}
 		}
 		return closest;
 	}
 };
 
-// Some predefinite shapes!
+// ASSETS
+	
 /**
  * @brief This is a predefinite chair that lays on the floor (plane xy).
  * 
