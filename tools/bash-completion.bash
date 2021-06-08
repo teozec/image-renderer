@@ -92,12 +92,16 @@ _complete_image_renderer()
 			;;
 
 		"demo")
-			# The argument after width, height or angleDeg does not require autocompletion because it is a number specified by the user
+			# The argument after width, height, angleDeg, seed and antialiasing does not require autocompletion because it is a number specified by the user
 			if [[ "${prev}" == "-w" || \
 				("${prev}" == "--width" && "${cur}" == "=") || \
 				("${prevprev}" == "--width" && "${prev}" == "=") || \
 				("${prev}" == "--height" && "${cur}" == "=") || \
 				("${prevprev}" == "--height" && "${prev}" == "=") || \
+				("${prev}" == "--antialiasing" && "${cur}" == "=") || \
+				("${prevprev}" == "--antialiasing" && "${prev}" == "=") || \
+				("${prev}" == "--seed" && "${cur}" == "=") || \
+				("${prevprev}" == "--seed" && "${prev}" == "=") || \
 				("${prev}" == "--angleDeg" && "${cur}" == "=") || \
 				("${prevprev}" == "--angleDeg" && "${prev}" == "=") ]]; then
 				return 0
@@ -117,7 +121,7 @@ _complete_image_renderer()
 
 			# Complete double dash arguments
 			elif [[ "${cur}" == --* ]]; then
-				COMPREPLY=($(compgen -W "--help --width= --height= --projection= --angleDeg= --outfile=" -- $cur))
+				COMPREPLY=($(compgen -W "--help --width= --height= --projection= --angleDeg= --seed= --antialiasing= --outfile=" -- $cur))
 				# Remove space if there is a "=" in completion
 				if [[ "${COMPREPLY[@]}" =~ "=" ]]; then
 					compopt -o nospace
@@ -125,7 +129,7 @@ _complete_image_renderer()
 
 			# Complete single dash arguments
 			elif [[ "${cur}" == -* ]]; then
-				COMPREPLY=($(compgen -W "-w -h -p -o" -- $cur))
+				COMPREPLY=($(compgen -W "-w -h -p -s -o" -- $cur))
 			fi
 
 			# Demo does not have positional arguments to autocomplete
