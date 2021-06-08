@@ -19,7 +19,7 @@ _complete_image_renderer()
 			COMPREPLY=($(compgen -W "-h" -- $cur))
 			;;
 		*)	# Action
-			COMPREPLY=($(compgen -W "demo pfm2ldr" -- $cur))
+			COMPREPLY=($(compgen -W "demo pfm2ldr stack" -- $cur))
 			;;
 		esac
 
@@ -92,7 +92,7 @@ _complete_image_renderer()
 			;;
 
 		"demo")
-			# The argument after width, height, angleDeg, seed and antialiasing does not require autocompletion because it is a number specified by the user
+			# The argument after width, height, angleDeg, seed or antialiasing does not require autocompletion because it is a number specified by the user
 			if [[ "${prev}" == "-w" || \
 				("${prev}" == "--width" && "${cur}" == "=") || \
 				("${prevprev}" == "--width" && "${prev}" == "=") || \
@@ -133,6 +133,46 @@ _complete_image_renderer()
 			fi
 
 			# Demo does not have positional arguments to autocomplete
+			;;
+
+		"stack")
+			# The argument after nSigma or alpha does not require autocompletion because it is a number specified by the user
+			if [[ "${prev}" == "-S" || "${prev}" == "-a" || \
+				("${prev}" == "--nSigma" && "${cur}" == "=") || \
+				("${prevprev}" == "--nSigma" && "${prev}" == "=") || \
+				("${prev}" == "--alpha" && "${cur}" == "=") || \
+				("${prevprev}" == "--alpha" && "${prev}" == "=") ]]; then
+				return 0
+			fi
+
+			# Complete filenames
+			if [[ $prev == "-o" || ("${prevprev}" == "--outfile" && "${prev}" == "=") ]]; then
+				COMPREPLY=($(compgen -A file -- $cur))
+			elif [[ "${prev}" == "--outfile" && "${cur}" == "=" ]]; then
+				COMPREPLY=($(compgen -A file))
+
+			# Complete methods
+			elif [[ $prev == "-m" || ("${prevprev}" == "--method" && "${prev}" == "=") ]]; then
+				COMPREPLY=($(compgen -W "mean median" -- $cur))
+			elif [[ "${prev}" == "--method" && "${cur}" == "=" ]]; then
+				COMPREPLY=($(compgen -W "mean median"))
+
+			# Complete double dash arguments
+			elif [[ "${cur}" == --* ]]; then
+				COMPREPLY=($(compgen -W "--help --method= --nSigma= --alpha= --outfile=" -- $cur))
+				# Remove space if there is a "=" in completion
+				if [[ "${COMPREPLY[@]}" =~ "=" ]]; then
+					compopt -o nospace
+				fi
+
+			# Complete single dash arguments
+			elif [[ "${cur}" == -* ]]; then
+				COMPREPLY=($(compgen -W "-h -m -S -a -o" -- $cur))
+
+			# Complete generic argument
+			else
+				COMPREPLY=($(compgen -A file -- $cur))
+			fi
 			;;
 		esac
 	fi

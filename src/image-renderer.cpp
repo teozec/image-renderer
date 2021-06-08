@@ -71,7 +71,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"	-h, --help: print this message." << endl << \
 	"	-m <string>, --method=<string>			The stacking method (can be 'mean' or 'median', default 'mean')." << endl << \
 	"	-S <value>, --nSigma=<value>			Number of sigma clipping iterations (default 0)." << endl << \
-	"	-a <value>, --alpha=<value>			Sigma clipping alpha factor (consider outliers values farther than alpha*sigma from the median, default 2)." << endl
+	"	-a <value>, --alpha=<value>			Sigma clipping alpha factor (consider outliers values farther than alpha*sigma from the median, default 2)." << \
+	"	-o <string>, --outfile=<string>			Filename of the output image." << endl
 
 using namespace std;
 
