@@ -21,4 +21,15 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <string>
 #include <sstream>
 
+/**
+ * @brief Location of the token.
+ * @details Filename is given as well as line number and column namber.
+ * 
+ */
+struct SourceLocation{
+    string filename{""};
+    int line{};
+    int col{};
+};
+
 #endif // PARSER_H
