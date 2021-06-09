@@ -22,21 +22,21 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <sstream>
 
 /**
- * @brief	An exception thrown when a grammar error in the input scenefiles
- */
-class GrammarError : std::runtime_error {
-	SourceLocation location;
-	std::string message;
-}
- 
-/**
  * @brief Location of the token.
  * @details Filename is given as well as line number and column namber.
  */
 struct SourceLocation{
-    string filename{""};
+    std::string filename{""};
     int line{};
     int col{};
 };
 
+/**
+ * @brief An exception thrown when a grammar error in the input scenefiles
+ */
+struct GrammarError : std::runtime_error {
+	SourceLocation location;
+	std::string message;
+};
+ 
 #endif // PARSER_H
