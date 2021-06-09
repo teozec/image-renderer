@@ -22,6 +22,9 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <fstream>
 #include <sstream>
 
+#define WHITESPACE " #\t\n\r"
+#define SYMBOLS "()<>[],*"
+
 /**
  * @brief   Location of the token.
  * @details Filename is given as well as line number and column namber.
@@ -37,7 +40,7 @@ struct SourceLocation {
  */
 struct GrammarError : std::runtime_error {
 	SourceLocation location;
-	std::string message;
+	GrammarError(SourceLocation location, std::string message) : location{location}, std::runtime_error(message) {}
 };
 
 /**
@@ -77,6 +80,7 @@ struct Token {
 	TokenUnion value;
 
 	Token(SourceLocation location) : location{location} {}
+	Token(const Token &token) : location{token.location}, type{token.type}, value{token.value} {}
 
 	void assignKeyword(Keyword k) {
 		type = TokenType::KEYWORD;
@@ -116,6 +120,7 @@ struct Token {
 struct InputStream {
 	std::istream &stream;
 	SourceLocation location;
+	SourceLocation savedLocation;
 	int tabulations;
 
 	InputStream(std::istream &stream, SourceLocation location, int tabulations=8) : 
@@ -127,19 +132,19 @@ struct InputStream {
 		for (;;) {
 			switch (int ch = readChar()) {
 			case EOF:
-				throw GrammarError(location, "unterminated string");
+				throw GrammarError(location, std::string{"unterminated string"});
 				break;
 			case '"':
 				goto loopEnd;
 				break;
 			default:
 				s += ch;
-				break
+				break;
 			}
 		}
 	loopEnd:
 		token.assignString(s);
-		return token
+		return token;
 	}
 
 	Token parseFloatToken(char firstChar) {
@@ -184,7 +189,43 @@ struct InputStream {
 		return token;
 	}
 
+	void updatePosition(char ch) {
+		if (ch == '\n'){
+			location.line += 1;
+			location.col = 1;
+		} else if (ch == '\t') {
+			location.col += tabulations;
+		} else 
+			location.col += 1;
+	}
 
+	int readChar() {
+		int ch;
+		ch = stream.get();
+		if (ch != EOF) {
+			savedLocation = location;
+			updatePosition(ch);
+		}
+		return ch;
+	}
+
+	void unreadChar(int ch) {
+		stream.putback(ch);
+		location = savedLocation;
+	}
+
+	void skipWhitespacesAndComments() {
+		char ch = readChar();
+		while (std::string{WHITESPACE}.find(ch)){
+			if (ch == '#') {
+				while (readChar()!='\r' and readChar()!='\n')
+				continue;
+			} else {
+				ch = readChar();
+			}
+		}
+		unreadChar(ch);
+	}
 };
 
 #endif // PARSER_H
