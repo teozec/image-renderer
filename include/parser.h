@@ -27,9 +27,9 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
  * @details Filename is given as well as line number and column namber.
  */
 struct SourceLocation {
-    std::string filename;
-    int line{};
-    int col{};
+	std::string filename;
+	int line{};
+	int col{};
 };
 
 /**
@@ -39,21 +39,7 @@ struct GrammarError : std::runtime_error {
 	SourceLocation location;
 	std::string message;
 };
-/**
- * @brief   Wrapper used to parse the scene file.
- * @details It keeps updated the line number and the column number.
- *          It lets look-ahead tokens and un-read characters.
- */
-struct InputStream {
-    std::istream &stream;
-    SourceLocation location;
-    int tabulations;
 
-    InputStream(std::istream &stream, SourceLocation location, int tabulations=8) : 
-    stream{stream}, location{location}, tabulations{tabulations} {}
-
-};
- 
 /**
  * @brief An enum to identify the available keywords
  */
@@ -79,7 +65,7 @@ union TokenUnion {
 	Keyword k;
 	std::string s;
 	float f;
-	char c;
+	char ch;
 };
 
 /**
@@ -114,12 +100,91 @@ struct Token {
 
 	void assignSymbol(char c) {
 		type = TokenType::SYMBOL;
-		value.c = c;
+		value.ch = c;
 	}
 
 	void assignStop() {
 		type = TokenType::STOP;
 	}
+};
+
+/**
+ * @brief   Wrapper used to parse the scene file.
+ * @details It keeps updated the line number and the column number.
+ *          It lets look-ahead tokens and un-read characters.
+ */
+struct InputStream {
+	std::istream &stream;
+	SourceLocation location;
+	int tabulations;
+
+	InputStream(std::istream &stream, SourceLocation location, int tabulations=8) : 
+		stream{stream}, location{location}, tabulations{tabulations} {}
+
+	Token parseStringToken() {
+		std::string s{};
+		Token token{location};
+		for (;;) {
+			switch (int ch = readChar()) {
+			case EOF:
+				throw GrammarError(location, "unterminated string");
+				break;
+			case '"':
+				goto loopEnd;
+				break;
+			default:
+				s += ch;
+				break
+			}
+		}
+	loopEnd:
+		token.assignString(s);
+		return token
+	}
+
+	Token parseFloatToken(char firstChar) {
+		std::string s{firstChar};
+		Token token{location}
+		float f;
+		for (;;) {
+			int ch = readChar();
+			if (std::isdigit(c) or ch == '.' or ch == 'e' or ch == 'E' or ch == '+' or ch == '-') {
+				s += ch;
+			} else if (ch == EOF) {
+				break;
+			} else {
+				unreadChar(ch);
+				break;
+			}
+		}
+		try {
+			f = std::stof(s);
+		} catch (std::exception e) {
+			throw GrammarError(location, std::string{s} + "is an invalid floating point number");
+		}
+		token.assignFloat(f);
+		return token;
+	}
+
+	Token parseKeywordOrIdentifierToken(char firstChar) {
+		std::string s{firstChar};
+		Token token{location}
+		for (;;) {
+			int ch = readChar();
+			if (std::isalnum(ch) or ch == '_') {
+				s += ch;
+			} else if (ch == EOF) {
+				break;
+			} else {
+				unreadChar(ch);
+				break;
+			}
+		}
+		// TODO: distinguish keywords and identifiers
+		return token;
+	}
+
+
 };
 
 #endif // PARSER_H
