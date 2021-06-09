@@ -21,4 +21,12 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <string>
 #include <sstream>
 
+/**
+ * @brief	An exception thrown when a grammar error in the input scenefiles
+ */
+class GrammarError : std::runtime_error {
+	SourceLocation location;
+	std::string message;
+}
+
 #endif // PARSER_H
