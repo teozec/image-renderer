@@ -19,14 +19,15 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #define PARSER_H
 
 #include <string>
+#include <fstream>
 #include <sstream>
 
 /**
- * @brief Location of the token.
+ * @brief   Location of the token.
  * @details Filename is given as well as line number and column namber.
  */
-struct SourceLocation{
-    std::string filename{""};
+struct SourceLocation {
+    std::string filename;
     int line{};
     int col{};
 };
@@ -37,6 +38,20 @@ struct SourceLocation{
 struct GrammarError : std::runtime_error {
 	SourceLocation location;
 	std::string message;
+};
+/**
+ * @brief   Wrapper used to parse the scene file.
+ * @details It keeps updated the line number and the column number.
+ *          It lets look-ahead tokens and un-read characters.
+ */
+struct InputStream {
+    std::istream &stream;
+    SourceLocation location;
+    int tabulations;
+
+    InputStream(std::istream &stream, SourceLocation location, int tabulations=8) : 
+    stream{stream}, location{location}, tabulations{tabulations} {}
+
 };
  
 /**
