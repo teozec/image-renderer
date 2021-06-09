@@ -39,4 +39,72 @@ struct GrammarError : std::runtime_error {
 	std::string message;
 };
  
+/**
+ * @brief An enum to identify the available keywords
+ */
+enum class Keyword {
+	NEW, MATERIAL, PLANE, SPHERE, DIFFUSE, SPECULAR, UNIFORM, CHECKERED,
+	IMAGE, IDENTITY, TRANSLATION, ROTATION_X, ROTATION_Y, ROTATION_Z,
+	SCALING, CAMERA, ORTHOGONAL, PERSPECTIVE, FLOAT
+};
+
+/**
+ * @brief An enum to identify the available tokens
+ */
+enum class TokenType {
+	KEYWORD, IDENTIFIER, STRING, FLOAT, SYMBOL, STOP
+};
+
+/**
+ * @brief A union to store the value of a token
+ */
+union TokenUnion {
+	TokenUnion() {}
+	~TokenUnion() {}
+	Keyword k;
+	std::string s;
+	float f;
+	char c;
+};
+
+/**
+ * @brief A struct to store tokens
+ */
+struct Token {
+	SourceLocation location;
+	TokenType type;
+	TokenUnion value;
+
+	Token(SourceLocation location) : location{location} {}
+
+	void assignKeyword(Keyword k) {
+		type = TokenType::KEYWORD;
+		value.k = k;
+	}
+
+	void assignIdentifier(std::string s) {
+		type = TokenType::IDENTIFIER;
+		value.s = s;
+	}
+
+	void assignString(std::string s) {
+		type = TokenType::STRING;
+		value.s = s;
+	}
+
+	void assignFloat(float f) {
+		type = TokenType::FLOAT;
+		value.f = f;
+	}
+
+	void assignSymbol(char c) {
+		type = TokenType::SYMBOL;
+		value.c = c;
+	}
+
+	void assignStop() {
+		type = TokenType::STOP;
+	}
+};
+
 #endif // PARSER_H
