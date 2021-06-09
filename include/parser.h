@@ -28,5 +28,15 @@ class GrammarError : std::runtime_error {
 	SourceLocation location;
 	std::string message;
 }
+ 
+/**
+ * @brief Location of the token.
+ * @details Filename is given as well as line number and column namber.
+ */
+struct SourceLocation{
+    string filename{""};
+    int line{};
+    int col{};
+};
 
 #endif // PARSER_H
