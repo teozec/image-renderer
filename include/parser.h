@@ -22,6 +22,9 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <fstream>
 #include <sstream>
 
+#define WHITESPACE " #\t\n\r"
+#define SYMBOLS "()<>[],*"
+
 /**
  * @brief   Location of the token.
  * @details Filename is given as well as line number and column namber.
@@ -38,20 +41,6 @@ struct SourceLocation {
 struct GrammarError : std::runtime_error {
 	SourceLocation location;
 	std::string message;
-};
-/**
- * @brief   Wrapper used to parse the scene file.
- * @details It keeps updated the line number and the column number.
- *          It lets look-ahead tokens and un-read characters.
- */
-struct InputStream {
-    std::istream &stream;
-    SourceLocation location;
-    int tabulations;
-
-    InputStream(std::istream &stream, SourceLocation location, int tabulations=8) : 
-    stream{stream}, location{location}, tabulations{tabulations} {}
-
 };
  
 /**
@@ -120,6 +109,60 @@ struct Token {
 	void assignStop() {
 		type = TokenType::STOP;
 	}
+};
+
+/**
+ * @brief   Wrapper used to parse the scene file.
+ * @details It keeps updated the line number and the column number.
+ *          It lets look-ahead tokens and un-read characters.
+ */
+struct InputStream {
+    std::istream &stream;
+    SourceLocation location;
+    int tabulations;
+    SourceLocation savedLocation;
+
+    InputStream(std::istream &stream, SourceLocation location, int tabulations=4) : 
+    stream{stream}, location{location}, tabulations{tabulations} {}
+
+    void updatePosition(char ch) {
+        if (ch == '\n'){
+            location.line += 1;
+            location.col = 1;
+        } else if (ch == '\t') {
+            location.col += tabulations;
+        } else 
+            location.col += 1;
+    }
+
+    int readChar() {
+        int ch;
+        ch = stream.get();
+        if (ch != EOF){
+            savedLocation = location;
+            updatePosition(ch);
+        }
+        return ch;
+    }
+
+    void unreadChar(int ch) {
+        stream.putback(ch);
+        location = savedLocation;
+    }
+
+    void skipWhitespacesAndComments() {
+        char ch = readChar();
+        while (std::string{WHITESPACE}.find(ch)){
+            if (ch == '#'){
+                while (readChar()!='\r' and readChar()!='\n')
+                    continue;
+            } else
+                ch = readChar();
+        }
+        unreadChar(ch);
+        
+        
+    }
 };
 
 #endif // PARSER_H
