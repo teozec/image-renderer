@@ -129,4 +129,14 @@ add_test(NAME renderer-test
 	COMMAND renderer-test
 	)
 
+# parser-test
+add_executable(parser-test
+	test/parser.cpp
+	)
+
+target_link_libraries(parser-test PUBLIC trace)
+add_test(NAME parser-test
+	COMMAND parser-test
+	)
+
 target_compile_features(image-renderer PUBLIC cxx_std_17)

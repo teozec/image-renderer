@@ -31,8 +31,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
  */
 struct SourceLocation {
 	std::string filename;
-	int line{};
-	int col{};
+	int line{1};
+	int col{1};
 };
 
 /**
@@ -120,10 +120,12 @@ struct Token {
 struct InputStream {
 	std::istream &stream;
 	SourceLocation location;
+
 	SourceLocation savedLocation;
 	int tabulations;
 
-	InputStream(std::istream &stream, SourceLocation location, int tabulations=8) : 
+	InputStream(std::istream &stream, int tabulations=4) : stream{stream} {}
+	InputStream(std::istream &stream, SourceLocation location, int tabulations=4) : 
 		stream{stream}, location{location}, tabulations{tabulations} {}
 
 	Token parseStringToken() {
@@ -149,7 +151,7 @@ struct InputStream {
 
 	Token parseFloatToken(char firstChar) {
 		std::string s{firstChar};
-		Token token{location}
+		Token token{location};
 		float f;
 		for (;;) {
 			int ch = readChar();
@@ -173,7 +175,7 @@ struct InputStream {
 
 	Token parseKeywordOrIdentifierToken(char firstChar) {
 		std::string s{firstChar};
-		Token token{location}
+		Token token{location};
 		for (;;) {
 			int ch = readChar();
 			if (std::isalnum(ch) or ch == '_') {
@@ -216,13 +218,12 @@ struct InputStream {
 
 	void skipWhitespacesAndComments() {
 		char ch = readChar();
-		while (std::string{WHITESPACE}.find(ch)){
-			if (ch == '#') {
+		while (std::string{WHITESPACE}.find(ch) != -1){
+			if (ch == '#'){
 				while (readChar()!='\r' and readChar()!='\n')
-				continue;
-			} else {
+					continue;
+			} else
 				ch = readChar();
-			}
 		}
 		unreadChar(ch);
 	}
