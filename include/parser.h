@@ -21,9 +21,11 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <cctype>
+#include <unordered_map>
 
-#define WHITESPACE " #\t\n\r"
-#define SYMBOLS "()<>[],*"
+#define WHITESPACE std::string{" #\t\n\r"}
+#define SYMBOLS std::string{"()<>[],*"}
 
 /**
  * @brief   Location of the token.
@@ -136,7 +138,6 @@ struct Token {
 struct InputStream {
 	std::istream &stream;
 	SourceLocation location;
-
 	SourceLocation savedLocation;
 	int tabulations;
 
@@ -149,7 +150,7 @@ struct InputStream {
 		Token token{location};
 		for (;;) {
 			switch (int ch = readChar()) {
-			case EOF:
+			case std::char_traits<int>::eof():
 				throw GrammarError(location, std::string{"unterminated string"});
 				break;
 			case '"':
@@ -171,9 +172,9 @@ struct InputStream {
 		float f;
 		for (;;) {
 			int ch = readChar();
-			if (std::isdigit(ch) or ch == '.' or ch == 'e' or ch == 'E' or ch == '+' or ch == '-') {
+			if (std::isdigit(ch) or std::string{".eE+-"}.find(ch) != std::string::npos) {
 				s += ch;
-			} else if (ch == EOF) {
+			} else if (ch == std::char_traits<int>::eof()) {
 				break;
 			} else {
 				unreadChar(ch);
@@ -192,18 +193,35 @@ struct InputStream {
 	Token parseKeywordOrIdentifierToken(char firstChar) {
 		std::string s{firstChar};
 		Token token{location};
+		// Associate each keyword woth the Keyword enum value
+		std::unordered_map<std::string, Keyword> const keywordTable = {
+			{"new", Keyword::NEW}, {"material", Keyword::MATERIAL},
+			{"plane", Keyword::PLANE}, {"sphere", Keyword::SPHERE},
+			{"diffuse", Keyword::DIFFUSE}, {"specular", Keyword::SPECULAR},
+			{"uniform", Keyword::UNIFORM}, {"checkered", Keyword::CHECKERED},
+			{"image", Keyword::IMAGE}, {"identity", Keyword::IDENTITY},
+			{"translation", Keyword::TRANSLATION}, {"rotation_x", Keyword::ROTATION_X},
+			{"rotation_y", Keyword::ROTATION_Y}, {"rotation_z", Keyword::ROTATION_Z},
+			{"scaling", Keyword::SCALING}, {"camera", Keyword::CAMERA},
+			{"orthogonal", Keyword::ORTHOGONAL}, {"perspective", Keyword::PERSPECTIVE},
+			{"float", Keyword::FLOAT}
+		};
 		for (;;) {
 			int ch = readChar();
 			if (std::isalnum(ch) or ch == '_') {
 				s += ch;
-			} else if (ch == EOF) {
+			} else if (ch == std::char_traits<int>::eof()) {
 				break;
 			} else {
 				unreadChar(ch);
 				break;
 			}
 		}
-		// TODO: distinguish keywords and identifiers
+		auto it = keywordTable.find(s);
+		if (it != keywordTable.end())
+			token.assignKeyword(it->second);
+		else
+			token.assignIdentifier(s);
 		return token;
 	}
 
@@ -220,7 +238,7 @@ struct InputStream {
 	int readChar() {
 		int ch;
 		ch = stream.get();
-		if (ch != EOF) {
+		if (ch != std::char_traits<int>::eof()) {
 			savedLocation = location;
 			updatePosition(ch);
 		}
@@ -242,6 +260,28 @@ struct InputStream {
 				ch = readChar();
 		}
 		unreadChar(ch);
+	}
+
+	Token readToken() {
+		skipWhitespacesAndComments();
+		int ch = readChar();
+		if (ch == std::char_traits<int>::eof()) {	// End of input stream
+			Token stop{location};
+			stop.assignStop();
+			return stop;
+		} else if (SYMBOLS.find(ch) != std::string::npos) {	// Symbol
+			Token symbol{location};
+			symbol.assignSymbol(ch);
+			return symbol;
+		} else if (ch == '"') {		// String
+			return parseStringToken();
+		} else if (std::isdigit(ch) or std::string{"+-."}.find(ch) != std::string::npos) {	// Float
+			return parseFloatToken(ch);
+		} else if (std::isalpha(ch) or ch == '_') {	// Keyword or identifier
+			return parseKeywordOrIdentifierToken(ch);
+		} else {
+			throw GrammarError(location, "Invalid character " + std::string{ch});
+		}
 	}
 };
 
