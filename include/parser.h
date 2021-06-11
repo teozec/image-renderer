@@ -80,7 +80,23 @@ struct Token {
 	TokenUnion value;
 
 	Token(SourceLocation location) : location{location} {}
-	Token(const Token &token) : location{token.location}, type{token.type}, value{token.value} {}
+	Token(const Token &other) : location{other.location}, type{other.type} {
+		switch (type) {
+		case TokenType::KEYWORD:
+			value.k = other.value.k;
+			break;
+		case TokenType::IDENTIFIER:
+		case TokenType::STRING:
+			value.s = other.value.s;
+			break;
+		case TokenType::FLOAT:
+			value.f = other.value.f;
+			break;
+		case TokenType::SYMBOL:
+			value.ch = other.value.ch;
+			break;
+		}
+	}
 
 	void assignKeyword(Keyword k) {
 		type = TokenType::KEYWORD;
@@ -155,7 +171,7 @@ struct InputStream {
 		float f;
 		for (;;) {
 			int ch = readChar();
-			if (std::isdigit(c) or ch == '.' or ch == 'e' or ch == 'E' or ch == '+' or ch == '-') {
+			if (std::isdigit(ch) or ch == '.' or ch == 'e' or ch == 'E' or ch == '+' or ch == '-') {
 				s += ch;
 			} else if (ch == EOF) {
 				break;

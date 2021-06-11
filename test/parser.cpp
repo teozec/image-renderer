@@ -16,8 +16,10 @@ You should have received a copy of the GNU General Public License
 along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "parser.h"
+#undef NDEBUG
+#include <cassert>
 
-void testSceneFile(){
+void testSceneFile() {
 	std::stringstream sstream;
 	sstream << "abc   \nd\nef";
 	InputStream stream{sstream};
