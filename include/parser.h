@@ -89,7 +89,9 @@ struct Token {
 			break;
 		case TokenType::IDENTIFIER:
 		case TokenType::STRING:
-			value.s = other.value.s;
+			// The string value.s is not initialized, therefore we cannot use the assignement operator.
+			// We need to initialize it, calling the constructor.
+			new(&value.s) std::string{other.value.s};
 			break;
 		case TokenType::FLOAT:
 			value.f = other.value.f;
@@ -102,6 +104,29 @@ struct Token {
 		}
 	}
 
+	Token operator=(const Token &other) {
+		location = other.location;
+		type = other.type;
+		switch (type) {
+		case TokenType::KEYWORD:
+			value.k = other.value.k;
+			break;
+		case TokenType::IDENTIFIER:
+		case TokenType::STRING:
+			new(&value.s) std::string{other.value.s};
+			break;
+		case TokenType::FLOAT:
+			value.f = other.value.f;
+			break;
+		case TokenType::SYMBOL:
+			value.ch = other.value.ch;
+			break;
+		case TokenType::STOP:
+			break;
+		}
+		return *this;
+	}
+
 	void assignKeyword(Keyword k) {
 		type = TokenType::KEYWORD;
 		value.k = k;
@@ -109,12 +134,12 @@ struct Token {
 
 	void assignIdentifier(std::string s) {
 		type = TokenType::IDENTIFIER;
-		value.s = s;
+		new(&value.s) std::string{s};
 	}
 
 	void assignString(std::string s) {
 		type = TokenType::STRING;
-		value.s = s;
+		new(&value.s) std::string{s};
 	}
 
 	void assignFloat(float f) {
@@ -255,12 +280,14 @@ struct InputStream {
 
 	void skipWhitespacesAndComments() {
 		int ch = readChar();
-		while (std::string{WHITESPACE}.find(ch) != -1){
-			if (ch == '#'){
-				while (readChar()!='\r' and readChar()!='\n')
-					continue;
-			} else
+		while (std::string{WHITESPACE}.find(ch) != std::string::npos and ch != std::char_traits<char>::eof()) {
+			if (ch == '#') {
+				do
+					ch = readChar();
+				while (ch != '\r' and ch != '\n' and ch != std::char_traits<char>::eof());
+			} else {
 				ch = readChar();
+			}
 		}
 		unreadChar(ch);
 	}

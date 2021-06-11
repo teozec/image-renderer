@@ -19,6 +19,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #undef NDEBUG
 #include <cassert>
 
+using namespace std;
+
 void testSceneFile() {
 	std::stringstream sstream;
 	sstream << "abc   \nd\nef";
@@ -69,7 +71,104 @@ void testSceneFile() {
 
 }
 
+void testLexer() {
+	std::stringstream sstream;
+	sstream <<
+		"# This is a comment\n"
+		"# This is another comment\n"
+		"new material sky_material(\n"
+		"	diffuse(image(\"my file.pfm\")),\n"
+		"	<5.0, 500.0, 300.0>\n"
+		") # Comment at the end ot the line\n";
+	InputStream stream{sstream, SourceLocation{"file", 1, 1}};
+
+	Token token = stream.readToken();
+	assert(token.type == TokenType::KEYWORD);
+	assert(token.value.k == Keyword::NEW);
+
+	token = stream.readToken();
+	assert(token.type == TokenType::KEYWORD);
+	assert(token.value.k == Keyword::MATERIAL);
+
+	token = stream.readToken();
+	assert(token.type == TokenType::IDENTIFIER);
+	assert(token.value.s == "sky_material");
+
+	token = stream.readToken();
+	assert(token.type == TokenType::SYMBOL);
+	assert(token.value.ch == '(');
+
+	token = stream.readToken();
+	assert(token.type == TokenType::KEYWORD);
+	assert(token.value.k == Keyword::DIFFUSE);
+
+	token = stream.readToken();
+	assert(token.type == TokenType::SYMBOL);
+	assert(token.value.ch == '(');
+
+	token = stream.readToken();
+	assert(token.type == TokenType::KEYWORD);
+	assert(token.value.k == Keyword::IMAGE);
+
+	token = stream.readToken();
+	assert(token.type == TokenType::SYMBOL);
+	assert(token.value.ch == '(');
+
+	token = stream.readToken();
+	assert(token.type == TokenType::STRING);
+	assert(token.value.s == "my file.pfm");
+
+	token = stream.readToken();
+	assert(token.type == TokenType::SYMBOL);
+	assert(token.value.ch == ')');
+
+	token = stream.readToken();
+	assert(token.type == TokenType::SYMBOL);
+	assert(token.value.ch == ')');
+
+	token = stream.readToken();
+	assert(token.type == TokenType::SYMBOL);
+	assert(token.value.ch == ',');
+
+	token = stream.readToken();
+	assert(token.type == TokenType::SYMBOL);
+	assert(token.value.ch == '<');
+
+	token = stream.readToken();
+	assert(token.type == TokenType::FLOAT);
+	assert(abs(token.value.f - 5.f) < 1e-5f);
+
+	token = stream.readToken();
+	assert(token.type == TokenType::SYMBOL);
+	assert(token.value.ch == ',');
+
+	token = stream.readToken();
+	assert(token.type == TokenType::FLOAT);
+	assert(abs(token.value.f - 500.f) < 1e-5f);
+
+	token = stream.readToken();
+	assert(token.type == TokenType::SYMBOL);
+	assert(token.value.ch == ',');
+
+	token = stream.readToken();
+	assert(token.type == TokenType::FLOAT);
+	assert(abs(token.value.f - 300.f) < 1e-5f);
+
+	token = stream.readToken();
+	assert(token.type == TokenType::SYMBOL);
+	assert(token.value.ch == '>');
+
+	token = stream.readToken();
+	assert(token.type == TokenType::SYMBOL);
+	assert(token.value.ch == ')');
+
+	token = stream.readToken();
+	assert(token.type == TokenType::STOP);
+	assert(token.value.ch == ')');
+}
+
 int main() {
 	testSceneFile();
+	testLexer();
 	return 0;
 }
