@@ -280,7 +280,7 @@ struct InputStream {
 		} else if (std::isalpha(ch) or ch == '_') {	// Keyword or identifier
 			return parseKeywordOrIdentifierToken(ch);
 		} else {
-			throw GrammarError(location, "Invalid character " + std::string{ch});
+			throw GrammarError(location, "Invalid character " + std::string{static_cast<char>(ch)});
 		}
 	}
 };
