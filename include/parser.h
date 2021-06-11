@@ -97,6 +97,8 @@ struct Token {
 		case TokenType::SYMBOL:
 			value.ch = other.value.ch;
 			break;
+		case TokenType::STOP:
+			break;
 		}
 	}
 
@@ -150,7 +152,7 @@ struct InputStream {
 		Token token{location};
 		for (;;) {
 			switch (int ch = readChar()) {
-			case std::char_traits<int>::eof():
+			case std::char_traits<char>::eof():
 				throw GrammarError(location, std::string{"unterminated string"});
 				break;
 			case '"':
@@ -174,7 +176,7 @@ struct InputStream {
 			int ch = readChar();
 			if (std::isdigit(ch) or std::string{".eE+-"}.find(ch) != std::string::npos) {
 				s += ch;
-			} else if (ch == std::char_traits<int>::eof()) {
+			} else if (ch == std::char_traits<char>::eof()) {
 				break;
 			} else {
 				unreadChar(ch);
@@ -210,7 +212,7 @@ struct InputStream {
 			int ch = readChar();
 			if (std::isalnum(ch) or ch == '_') {
 				s += ch;
-			} else if (ch == std::char_traits<int>::eof()) {
+			} else if (ch == std::char_traits<char>::eof()) {
 				break;
 			} else {
 				unreadChar(ch);
@@ -226,19 +228,20 @@ struct InputStream {
 	}
 
 	void updatePosition(char ch) {
-		if (ch == '\n'){
+		if (ch == '\n') {
 			location.line += 1;
 			location.col = 1;
 		} else if (ch == '\t') {
 			location.col += tabulations;
-		} else 
+		} else {
 			location.col += 1;
+		}
 	}
 
 	int readChar() {
 		int ch;
 		ch = stream.get();
-		if (ch != std::char_traits<int>::eof()) {
+		if (ch != std::char_traits<char>::eof()) {
 			savedLocation = location;
 			updatePosition(ch);
 		}
@@ -251,7 +254,7 @@ struct InputStream {
 	}
 
 	void skipWhitespacesAndComments() {
-		char ch = readChar();
+		int ch = readChar();
 		while (std::string{WHITESPACE}.find(ch) != -1){
 			if (ch == '#'){
 				while (readChar()!='\r' and readChar()!='\n')
@@ -265,7 +268,7 @@ struct InputStream {
 	Token readToken() {
 		skipWhitespacesAndComments();
 		int ch = readChar();
-		if (ch == std::char_traits<int>::eof()) {	// End of input stream
+		if (ch == std::char_traits<char>::eof()) {	// End of input stream
 			Token stop{location};
 			stop.assignStop();
 			return stop;
