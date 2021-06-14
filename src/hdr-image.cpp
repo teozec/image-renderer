@@ -86,7 +86,7 @@ Endianness parseEndianness(const string line) {
 	float endiannessFloat;
 	try {
 		endiannessFloat = stof(line);
-	} catch (exception e) {
+	} catch (exception &e) {
 		throw InvalidPfmFileFormat("Invalid endianness specification");
 	}
 	if (endiannessFloat == 1.0f)

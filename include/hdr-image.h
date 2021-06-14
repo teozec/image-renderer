@@ -118,8 +118,9 @@ struct HdrImage {
 	void readPfm(std::istream &stream);
 	void readPfm(std::string fileName) {
 		std::ifstream stream;
-		stream.exceptions(std::ios::failbit | std::ios::badbit);
 		stream.open(fileName);
+		if (!stream.is_open())
+			throw std::runtime_error(fileName + ": no such file or directory");
 		readPfm(stream);
 	}
 

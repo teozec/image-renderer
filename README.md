@@ -19,6 +19,7 @@ It is based on the lectures of the _Numerical tecniques for photorealistic image
 - [Usage examples](#usage-examples)
 	- [Run a demo of our program with `demo`](#Run-a-demo-of-our-program-with-demo)
     - [Converting a PFM file to a LDR image with `pfm2ldr`](#Converting-a-PFM-file-to-a-LDR-image-with-pfm2ldr)
+	- [Image stacking with `stack`](#Image-stacking-with-stack)
 - [Contributing](#contributing)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
@@ -80,8 +81,9 @@ To make it permanent, you can add it to your `~/.bashrc` file.
 ## Basic Tutorial
 We prepared a fun animation for you to start off: from the `image-renderer/` repo run the following
 ```bash
-chmod +rx tutorial.sh
-./tutorial.sh
+chmod +rx generate-image.sh
+chmod +rx animation.sh
+./animation.sh
 ```
 and enjoy the animation saved in the `build/animation_demo/` folder.
 
@@ -107,6 +109,12 @@ To get a list of all options available run
 ```bash
 image-renderer demo --help
 ```
+
+#### Remarks about `demo`
+If necessary, `--antialiasing=<value>` is available. It lets you sample each pixel properly avoiding aliasing in the image. Here an example
+
+![antialiasing](rsc/antialiasing.gif)
+
 
 ### Converting a PFM file to a LDR image with `pfm2ldr`
 
@@ -149,6 +157,33 @@ To get a list of supported options for each format, please run
 ```bash
 image-renderer pfm2ldr --help
 ```
+### Image stacking with `stack`
+Another useful action is `stack`, which lets you stack many noisy images to get a better looking one by increasing the signal to noise ratio.
+
+![stack](rsc/stack.png)
+
+Usage:
+```bash
+image-renderer stack [options] <input1> <input2> ... -o <output>
+```
+
+For example, if you want to stack 10 images saved as "image00.pfm", "image01.pfm" and so on, you can simply run:
+```bash
+image-renderer stack image*.pfm
+```
+This way you will get a "stack.pfm" image in current directory.
+
+You can choose between `mean`and `median` stacking and you can also choose to use sigma-clipping providing a `alpha` factor.
+
+For more info please run
+```bash
+image-renderer stack --help
+```
+
+#### Remarks about `stack`
+This action is very powerful. As a matter of fact it is not only used to get a better signal to noise ratio, but also for rendering blurry images. Here an example:
+
+![blurry](rsc/blurry.png)
 
 ## Contributing
 

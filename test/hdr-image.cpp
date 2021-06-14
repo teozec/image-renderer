@@ -75,7 +75,7 @@ int main() {
 		parseImageSize("-1 3", width, height);
 		assert(false);
 	} catch (InvalidPfmFileFormat e) {
-	} catch (exception e) {
+	} catch (exception &e) {
 		assert(false);
 	}
 
@@ -83,7 +83,7 @@ int main() {
 		parseImageSize("ciao", width, height);
 		assert(false);
 	} catch (InvalidPfmFileFormat e) {
-	} catch (exception e) {
+	} catch (exception &e) {
 		assert(false);
 	}
 
@@ -91,7 +91,7 @@ int main() {
 		parseImageSize("1 3 4", width, height);
 		assert(false);
 	} catch (InvalidPfmFileFormat e) {
-	} catch (exception e) {
+	} catch (exception &e) {
 		assert(false);
 	}
 
@@ -99,7 +99,7 @@ int main() {
 		parseImageSize(" 3 4", width, height);
 		assert(false);
 	} catch (InvalidPfmFileFormat e) {
-	} catch (exception e) {
+	} catch (exception &e) {
 		assert(false);
 	}
 
@@ -107,7 +107,7 @@ int main() {
 		parseImageSize("3 4 ", width, height);
 		assert(false);
 	} catch (InvalidPfmFileFormat e) {
-	} catch (exception e) {
+	} catch (exception &e) {
 		assert(false);
 	}
 
@@ -186,7 +186,7 @@ int main() {
 		HdrImage badImg{badPfm};
 		assert(false);
 	} catch (InvalidPfmFileFormat e) {
-	} catch (exception e) {
+	} catch (exception &e) {
 		assert(false);
 	}
 
