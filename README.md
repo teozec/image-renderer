@@ -152,7 +152,7 @@ Another useful action is `stack`, which lets you stack many noisy images to get 
 
 Usage:
 ```bash
-image-renderer stack [options] <input1> <input2> ... <output>
+image-renderer stack [options] <input1> <input2> ... -o <output>
 ```
 
 For example, if you want to stack 10 images saved as "image00.pfm", "image01.pfm" and so on, you can simply run:
