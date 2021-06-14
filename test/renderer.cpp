@@ -93,7 +93,7 @@ void testPathTracer()
 		Color color = tracer(ray);
 
 		float expected = emittedRadiance / (1.f - reflectance);
-		assert(areColorsClose(Color{expected, expected, expected}, color, 1e-3f)); //epsilon maybe better if smaller
+		assert((Color{expected, expected, expected}.isClose(color, 1e-3f))); //epsilon maybe better if smaller
 	}
 }
 
