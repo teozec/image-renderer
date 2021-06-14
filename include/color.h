@@ -95,14 +95,23 @@ struct Color {
 		return (std::max({r, g, b}) + std::min({r, g, b})) / 2;
 	}
 
-	bool operator==(Color other);
+	bool operator==(Color other) {
+		const float epsilon = 1e-10f;
+		return isClose(other, epsilon);
+	}
 
 	bool operator!=(const Color other) {
 		return !(*this == other);
 	}
-};
 
-bool areColorsClose(Color a, Color b, float epsilon);
+
+	bool isClose(Color other, float epsilon) {
+		return std::abs(this->r - other.r) < epsilon and
+			std::abs(this->g - other.g) < epsilon and
+			std::abs(this->b - other.b) < epsilon;
+	}
+
+};
 
 const Color WHITE{1.f, 1.f, 1.f};
 const Color BLACK{0.f, 0.f, 0.f};

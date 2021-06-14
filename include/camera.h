@@ -154,7 +154,6 @@ struct PerspectiveCamera : Camera {
  * @brief Tracer of the scene. 
  * Given the image and the camera it fires rays through each pixel.
  * If `samplesPerSide` is given (not zero) stratified sampling is applied.
- * 
  */
 struct ImageTracer {
 	HdrImage &image;
