@@ -32,7 +32,6 @@ enable_testing()
 
 # Library
 add_library(trace
-	src/color.cpp
 	src/hdr-image.cpp
 	)
 

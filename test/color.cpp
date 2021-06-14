@@ -56,7 +56,7 @@ int main()
 
 	assert(c3==c4);
 	assert(!(c3!=c4));
-	assert(!areColorsClose(c1, c3, 1e-12f));
+	assert(!c1.isClose(c3, 1e-12f));
 
 	Color c5{1.f, 2.f, 3.f};
 	Color c6{9.f, 5.f, 7.f};
