@@ -177,7 +177,7 @@ int pfm2ldr(argh::parser cmdl)
 	HdrImage img;
 	try {
 		img.readPfm(infile);
-	} catch (exception e) {
+	} catch (exception &e) {
 		cerr << "Error: " <<  e.what() << endl;
 		return 1;
 	}
@@ -313,7 +313,7 @@ int stackPfm(argh::parser cmdl)
 	HdrImage firstImg;
 	try {
 		firstImg.readPfm(cmdl[2]);
-	} catch (exception e) {
+	} catch (exception &e) {
 		cerr << "Error: " <<  e.what() << endl;
 		return 1;
 	}
@@ -337,7 +337,7 @@ int stackPfm(argh::parser cmdl)
 
 		try {
 			img.readPfm(imageName);
-		} catch (exception e) {
+		} catch (exception &e) {
 			cerr << "Error: " <<  e.what() << endl;
 			return 1;
 		}
