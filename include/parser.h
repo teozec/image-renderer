@@ -24,9 +24,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cctype>
 #include <vector>
 #include <unordered_map>
-#include "material.h"
-#include "camera.h"
-#include "shape.h"
+#include <tuple>
 
 #include "color.h"
 #include "geometry.h"
@@ -492,6 +490,17 @@ struct InputStream {
 		case Keyword::SPECULAR:
 			return std::make_shared<SpecularBRDF>(SpecularBRDF{pigment});
 		}
+	}
+
+	std::tuple<std::string, Material> parseMaterial(Scene scene) {
+		std::string name{expectIdentifier()};
+		expectSymbol('(');
+		std::shared_ptr<BRDF> brdf{parseBRDF(scene)};
+		expectSymbol(',');
+		std::shared_ptr<Pigment> emittedRadiance{parsePigment(scene)};
+		expectSymbol(')');
+
+		return std::tuple<std::string, Material>{name, Material{brdf, emittedRadiance}};
 	}
 };
 
