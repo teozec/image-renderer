@@ -323,6 +323,11 @@ struct Transformation {
 		return Transformation{m, mInv};
 	}
 
+	Transformation operator*=(Transformation t) {
+		*this = *this * t;
+		return *this;
+	}
+
 	// Check whether mInv is the inverse of m
 	bool isConsistent(const float epsilon=1e-5) {
 		Transformation I;

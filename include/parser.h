@@ -502,6 +502,65 @@ struct InputStream {
 
 		return std::tuple<std::string, Material>{name, Material{brdf, emittedRadiance}};
 	}
+
+	Transformation parseTransformation(Scene scene) {
+		Transformation result{};
+		
+		for (;;) {
+			Token token{readToken()};
+			expectKeywords(std::vector{
+				Keyword::IDENTITY, Keyword::TRANSLATION,
+				Keyword::ROTATION_X, Keyword::ROTATION_Y,
+				Keyword::ROTATION_Z, Keyword::SCALING});
+
+			switch (token.value.k) {
+			case Keyword::IDENTITY:
+				break;	// Identity doesn't change the matrix value
+			case Keyword::TRANSLATION: {
+				expectSymbol('(');
+				Vec v{parseVec(scene)};
+				expectSymbol(')');
+				result *= translation(v);
+				break;
+			}
+			case Keyword::ROTATION_X: {
+				expectSymbol('(');
+				float theta{expectNumber(scene)};
+				expectSymbol(')');
+				result *= rotationX(theta);
+				break;
+			}
+			case Keyword::ROTATION_Y: {
+				expectSymbol('(');
+				float theta{expectNumber(scene)};
+				expectSymbol(')');
+				result *= rotationY(theta);
+				break;
+			}
+			case Keyword::ROTATION_Z: {
+				expectSymbol('(');
+				float theta{expectNumber(scene)};
+				expectSymbol(')');
+				result *= rotationZ(theta);
+				break;
+			}
+			case Keyword::SCALING: {
+				expectSymbol('(');
+				Vec v{parseVec(scene)};
+				expectSymbol(')');
+				result *= scaling(v.x, v.y, v.z);
+				break;
+			}
+			}
+			token = readToken();
+			if (token.type != TokenType::SYMBOL or token.value.ch != '*') {
+				unreadToken(token);
+				break;
+			}
+		}	
+
+		return result;
+	}
 };
 
 #endif // PARSER_H
