@@ -24,6 +24,9 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <cctype>
 #include <vector>
 #include <unordered_map>
+#include "material.h"
+#include "camera.h"
+#include "shape.h"
 
 #define WHITESPACE std::string{" #\t\n\r"}
 #define SYMBOLS std::string{"()<>[],*"}
@@ -209,6 +212,18 @@ private:
 	};
 };
 
+struct FloatVariables {
+	float value;
+	bool isOverriden;
+};
+
+struct Scene {
+	std::unordered_map<std::string, Material> materials;
+	World world;
+	std::shared_ptr<Camera> camera;
+	std::unordered_map<std::string, FloatVariables> floatVariables;
+};
+
 /**
  * @brief   Wrapper used to parse the scene file.
  * @details It keeps updated the line number and the column number.
@@ -374,6 +389,34 @@ struct InputStream {
 			if (*it == token.value.k)
 				return *it;
 		throw GrammarError(token.location, "Got unexpected " + std::string{token});
+	}
+
+	float expectNumber(Scene scene){
+		Token token = readToken();
+		if (token.type == TokenType::FLOAT)
+			return token.value.f;
+		else if (token.type == TokenType::IDENTIFIER){
+			std::string varName = token.value.s;
+			if (!(scene.floatVariables.find(varName) == scene.floatVariables.end()))
+				throw GrammarError(location, "Unknow variable "+varName);
+			return scene.floatVariables[varName].value;
+		}
+		throw GrammarError(token.location, "Got "+std::string(token)+ ", expected an string");
+	}
+
+
+	std::string expectString(){
+		Token token = readToken();
+		if (!(token.type==TokenType::STRING))
+			throw GrammarError(token.location, "Got "+std::string(token)+ ", expected an string");
+		return token.value.s;
+	}
+
+	std::string expectIdentifier(){
+		Token token = readToken();
+		if (!(token.type==TokenType::IDENTIFIER))
+			throw GrammarError(token.location, "Got "+std::string(token)+ ", expected an identifier");
+		return token.value.s;
 	}
 };
 
