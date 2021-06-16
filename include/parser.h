@@ -22,6 +22,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <fstream>
 #include <sstream>
 #include <cctype>
+#include <vector>
 #include <unordered_map>
 
 #define WHITESPACE std::string{" #\t\n\r"}
@@ -363,6 +364,16 @@ struct InputStream {
 		Token token{readToken()};
 		if (token.type != TokenType::SYMBOL or token.value.ch != ch)
 			throw GrammarError(token.location, "Got " + std::string{token} + " instead of " + ch);
+	}
+
+	Keyword expectKeywors(std::vector<Keyword> ks) {
+		Token token{readToken()};
+		if (token.type != TokenType::KEYWORD)
+			throw GrammarError(token.location, "Expected keyword, got " + std::string{token});
+		for (auto it = ks.begin(); it != ks.end(); it++)
+			if (*it == token.value.k)
+				return *it;
+		throw GrammarError(token.location, "Got unexpected " + std::string{token});
 	}
 };
 
