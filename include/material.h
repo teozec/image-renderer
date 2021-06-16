@@ -129,6 +129,7 @@ struct BRDF {
 	std::shared_ptr<Pigment> pigment;
 	BRDF(): BRDF{UniformPigment{}} {}
 	template <class T> BRDF(const T &pigment): pigment{std::make_shared<T>(pigment)} {}
+	BRDF(const std::shared_ptr<Pigment> pigment): pigment{pigment} {}
 	
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) = 0;
 	virtual Ray scatterRay(PCG pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) = 0;
@@ -204,6 +205,7 @@ struct Material {
 	template <class B> Material(const B &brdf) : Material{brdf, UniformPigment{BLACK}} {}
 	//template <class P> Material(const P &emittedRadiance) : Material{DiffusiveBRDF{}, emittedRadiance} {} // Cannot have both Material(brdf) and Material(emittedRadiance) using templates
 	template <class B, class P> Material(const B &brdf, const P &emittedRadiance) : brdf{std::make_shared<B>(brdf)}, emittedRadiance{std::make_shared<P>(emittedRadiance)} {}
+	Material(std::shared_ptr<BRDF> brdf, std::shared_ptr<Pigment> emittedRadiance) : brdf{brdf}, emittedRadiance{emittedRadiance} {}
 };
 
 #endif // MATERIAL_H

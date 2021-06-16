@@ -28,6 +28,12 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include "camera.h"
 #include "shape.h"
 
+#include "color.h"
+#include "geometry.h"
+#include "material.h"
+#include "camera.h"
+#include "shape.h"
+
 #define WHITESPACE std::string{" #\t\n\r"}
 #define SYMBOLS std::string{"()<>[],*"}
 
@@ -417,6 +423,75 @@ struct InputStream {
 		if (!(token.type==TokenType::IDENTIFIER))
 			throw GrammarError(token.location, "Got "+std::string(token)+ ", expected an identifier");
 		return token.value.s;
+	}
+
+	Vec parseVec(Scene scene) {
+		expectSymbol('[');
+		float x{expectNumber(scene)};
+		expectSymbol(',');
+		float y{expectNumber(scene)};
+		expectSymbol(',');
+		float z{expectNumber(scene)};
+		expectSymbol(']');
+
+		return Vec{x, y, z};
+	}
+
+	Color parseColor(Scene scene) {
+		expectSymbol('<');
+		float r{expectNumber(scene)};
+		expectSymbol(',');
+		float g{expectNumber(scene)};
+		expectSymbol(',');
+		float b{expectNumber(scene)};
+		expectSymbol('>');
+
+		return Color{r, g, b};
+	}
+
+	std::shared_ptr<Pigment> parsePigment(Scene scene) {
+		Keyword k{expectKeywords(std::vector{Keyword::UNIFORM, Keyword::CHECKERED, Keyword::IMAGE})};
+		std::shared_ptr<Pigment> result;
+
+		expectSymbol('(');
+		switch (k) {
+		case Keyword::UNIFORM: {
+			Color c{parseColor(scene)};
+			result = std::make_shared<UniformPigment>(UniformPigment{c});
+			break;
+		}
+		case Keyword::CHECKERED: {
+			Color c1{parseColor(scene)};
+			expectSymbol(',');
+			Color c2{parseColor(scene)};
+			expectSymbol(',');
+			int n{(int) expectNumber(scene)};
+			result = std::make_shared<CheckeredPigment>(CheckeredPigment{c1, c2, n});
+			break;
+		}
+		case Keyword::IMAGE: {
+			std::string file{expectString()};
+			HdrImage image{file};
+			result = std::make_shared<ImagePigment>(ImagePigment{image});
+			break;
+		}
+		}
+		expectSymbol(')');
+		return result;
+	}
+
+	std::shared_ptr<BRDF> parseBRDF(Scene scene) {
+		Keyword k{expectKeywords(std::vector{Keyword::DIFFUSE, Keyword::SPECULAR})};
+		expectSymbol('(');
+		std::shared_ptr<Pigment> pigment{parsePigment(scene)};
+		expectSymbol(')');
+
+		switch (k) {
+		case Keyword::DIFFUSE:
+			return std::make_shared<DiffusiveBRDF>(DiffusiveBRDF{pigment});
+		case Keyword::SPECULAR:
+			return std::make_shared<SpecularBRDF>(SpecularBRDF{pigment});
+		}
 	}
 };
 
