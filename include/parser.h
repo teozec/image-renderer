@@ -155,6 +155,57 @@ struct Token {
 	void assignStop() {
 		type = TokenType::STOP;
 	}
+
+	void assignKeywordOrIdentifier(std::string s) {
+		auto it = keywordTable.find(s);
+		if (it != keywordTable.end())
+			assignKeyword(it->second);
+		else
+			assignIdentifier(s);
+	}
+
+	operator std::string() {
+		switch (type) {
+		case TokenType::KEYWORD: {
+			auto it = keywordTable.begin();
+			for (; it == keywordTable.end(); it++)
+				if (it->second == value.k)
+					break;
+			return "Keyword{" + it->first + "}";
+		}
+		case TokenType::IDENTIFIER:
+			return "Identifier{" + value.s + "}";
+		case TokenType::STRING:
+			return "String{\"" + value.s + "\"}";
+		case TokenType::FLOAT: {
+			std::ostringstream ss;
+			ss << "Float{\"" << value.f << "\"}";
+			return ss.str();
+		}
+		case TokenType::SYMBOL: {
+			std::ostringstream ss;
+			ss << "Symbol{" << value.ch << "}";
+			return ss.str();
+		}
+		case TokenType::STOP:
+			return "Stop{}";
+		}
+	}
+	
+private:
+	// Associate each keyword woth the Keyword enum value
+	std::unordered_map<std::string, Keyword> const keywordTable = {
+		{"new", Keyword::NEW}, {"material", Keyword::MATERIAL},
+		{"plane", Keyword::PLANE}, {"sphere", Keyword::SPHERE},
+		{"diffuse", Keyword::DIFFUSE}, {"specular", Keyword::SPECULAR},
+		{"uniform", Keyword::UNIFORM}, {"checkered", Keyword::CHECKERED},
+		{"image", Keyword::IMAGE}, {"identity", Keyword::IDENTITY},
+		{"translation", Keyword::TRANSLATION}, {"rotation_x", Keyword::ROTATION_X},
+		{"rotation_y", Keyword::ROTATION_Y}, {"rotation_z", Keyword::ROTATION_Z},
+		{"scaling", Keyword::SCALING}, {"camera", Keyword::CAMERA},
+		{"orthogonal", Keyword::ORTHOGONAL}, {"perspective", Keyword::PERSPECTIVE},
+		{"float", Keyword::FLOAT}
+	};
 };
 
 /**
@@ -222,19 +273,6 @@ struct InputStream {
 	Token parseKeywordOrIdentifierToken(char firstChar) {
 		std::string s{firstChar};
 		Token token{location};
-		// Associate each keyword woth the Keyword enum value
-		static std::unordered_map<std::string, Keyword> const keywordTable = {
-			{"new", Keyword::NEW}, {"material", Keyword::MATERIAL},
-			{"plane", Keyword::PLANE}, {"sphere", Keyword::SPHERE},
-			{"diffuse", Keyword::DIFFUSE}, {"specular", Keyword::SPECULAR},
-			{"uniform", Keyword::UNIFORM}, {"checkered", Keyword::CHECKERED},
-			{"image", Keyword::IMAGE}, {"identity", Keyword::IDENTITY},
-			{"translation", Keyword::TRANSLATION}, {"rotation_x", Keyword::ROTATION_X},
-			{"rotation_y", Keyword::ROTATION_Y}, {"rotation_z", Keyword::ROTATION_Z},
-			{"scaling", Keyword::SCALING}, {"camera", Keyword::CAMERA},
-			{"orthogonal", Keyword::ORTHOGONAL}, {"perspective", Keyword::PERSPECTIVE},
-			{"float", Keyword::FLOAT}
-		};
 		for (;;) {
 			int ch = readChar();
 			if (std::isalnum(ch) or ch == '_') {
@@ -246,11 +284,7 @@ struct InputStream {
 				break;
 			}
 		}
-		auto it = keywordTable.find(s);
-		if (it != keywordTable.end())
-			token.assignKeyword(it->second);
-		else
-			token.assignIdentifier(s);
+		token.assignKeywordOrIdentifier(s);
 		return token;
 	}
 
@@ -323,6 +357,12 @@ struct InputStream {
 		} else {
 			throw GrammarError(location, "Invalid character " + std::string{static_cast<char>(ch)});
 		}
+	}
+
+	void expectSymbol(char ch) {
+		Token token{readToken()};
+		if (token.type != TokenType::SYMBOL or token.value.ch != ch)
+			throw GrammarError(token.location, "Got " + std::string{token} + " instead of " + ch);
 	}
 };
 
