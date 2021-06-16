@@ -81,7 +81,7 @@ struct Token {
 	TokenType type;
 	TokenUnion value;
 
-	Token(SourceLocation location) : location{location} {}
+	Token(SourceLocation location = SourceLocation{}) : location{location} {}
 	Token(const Token &other) : location{other.location}, type{other.type} {
 		switch (type) {
 		case TokenType::KEYWORD:
@@ -166,6 +166,8 @@ struct InputStream {
 	std::istream &stream;
 	SourceLocation location;
 	SourceLocation savedLocation;
+	Token savedToken{};
+	bool isSavedToken = false;
 	int tabulations;
 
 	InputStream(std::istream &stream, int tabulations=4) : stream{stream} {}
@@ -221,7 +223,7 @@ struct InputStream {
 		std::string s{firstChar};
 		Token token{location};
 		// Associate each keyword woth the Keyword enum value
-		std::unordered_map<std::string, Keyword> const keywordTable = {
+		static std::unordered_map<std::string, Keyword> const keywordTable = {
 			{"new", Keyword::NEW}, {"material", Keyword::MATERIAL},
 			{"plane", Keyword::PLANE}, {"sphere", Keyword::SPHERE},
 			{"diffuse", Keyword::DIFFUSE}, {"specular", Keyword::SPECULAR},
@@ -292,7 +294,16 @@ struct InputStream {
 		unreadChar(ch);
 	}
 
+	void unreadToken(Token token) {
+		savedToken = token;
+		isSavedToken = true;
+	}
+
 	Token readToken() {
+		if (isSavedToken) {
+			isSavedToken = false;
+			return savedToken;
+		}
 		skipWhitespacesAndComments();
 		int ch = readChar();
 		if (ch == std::char_traits<char>::eof()) {	// End of input stream
