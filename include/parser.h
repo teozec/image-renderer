@@ -401,18 +401,18 @@ struct InputStream {
 			return token.value.f;
 		else if (token.type == TokenType::IDENTIFIER){
 			std::string varName = token.value.s;
-			if (!(scene.floatVariables.find(varName) == scene.floatVariables.end()))
+			if (scene.floatVariables.find(varName) == scene.floatVariables.end())
 				throw GrammarError(location, "Unknow variable "+varName);
 			return scene.floatVariables[varName].value;
 		}
-		throw GrammarError(token.location, "Got "+std::string(token)+ ", expected an string");
+		throw GrammarError(token.location, "Got "+std::string(token)+ ", expected a float");
 	}
 
 
 	std::string expectString(){
 		Token token = readToken();
 		if (!(token.type==TokenType::STRING))
-			throw GrammarError(token.location, "Got "+std::string(token)+ ", expected an string");
+			throw GrammarError(token.location, "Got "+std::string(token)+ ", expected a string");
 		return token.value.s;
 	}
 
@@ -473,6 +473,8 @@ struct InputStream {
 			result = std::make_shared<ImagePigment>(ImagePigment{image});
 			break;
 		}
+		default:
+			break;
 		}
 		expectSymbol(')');
 		return result;
@@ -483,13 +485,17 @@ struct InputStream {
 		expectSymbol('(');
 		std::shared_ptr<Pigment> pigment{parsePigment(scene)};
 		expectSymbol(')');
+		std::shared_ptr<BRDF> brdf;
 
 		switch (k) {
 		case Keyword::DIFFUSE:
-			return std::make_shared<DiffusiveBRDF>(DiffusiveBRDF{pigment});
+			brdf = std::make_shared<DiffusiveBRDF>(DiffusiveBRDF{pigment});
 		case Keyword::SPECULAR:
-			return std::make_shared<SpecularBRDF>(SpecularBRDF{pigment});
+			brdf = std::make_shared<SpecularBRDF>(SpecularBRDF{pigment});
+		default:
+			break;
 		}
+		return brdf;
 	}
 
 	std::tuple<std::string, Material> parseMaterial(Scene scene) {
@@ -551,6 +557,8 @@ struct InputStream {
 				result *= scaling(v.x, v.y, v.z);
 				break;
 			}
+			default:
+				break;
 			}
 			token = readToken();
 			if (token.type != TokenType::SYMBOL or token.value.ch != '*') {
@@ -561,6 +569,50 @@ struct InputStream {
 
 		return result;
 	}
+
+	std::shared_ptr<Camera> parseCamera(Scene scene) {
+		expectSymbol('(');
+		Keyword typeKeyw = expectKeywords(std::vector{Keyword::PERSPECTIVE, Keyword::ORTHOGONAL});
+		expectSymbol(',');
+		Transformation transformation = parseTransformation(scene);
+		expectSymbol(',');
+		float aspectRatio = expectNumber(scene);
+		expectSymbol(',');
+		float distance = expectNumber(scene);
+		expectSymbol(')');
+
+		std::shared_ptr<Camera> result;
+		if (typeKeyw == Keyword::PERSPECTIVE)
+			result = std::make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, transformation, distance});
+		else if (typeKeyw == Keyword::ORTHOGONAL)
+			result = std::make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, transformation});
+		return result;
+	}
+
+	Plane parsePlane(Scene scene){
+		expectSymbol('(');
+		std::string materialName = expectIdentifier();
+		if (scene.materials.find(materialName) == scene.materials.end())
+			throw GrammarError(location, "Unknown material "+materialName);
+		expectSymbol(',');
+		Transformation transformation = parseTransformation(scene);
+		expectSymbol(')');
+
+		return Plane{transformation, scene.materials[materialName]};
+	}
+
+	Sphere parseSphere(Scene scene){
+		expectSymbol('(');
+		std::string materialName = expectIdentifier();
+		if (scene.materials.find(materialName) == scene.materials.end())
+			throw GrammarError(location, "Unknown material "+materialName);
+		expectSymbol(',');
+		Transformation transformation = parseTransformation(scene);
+		expectSymbol(')');
+
+		return Sphere{transformation, scene.materials[materialName]};
+	}
+	
 };
 
 #endif // PARSER_H
