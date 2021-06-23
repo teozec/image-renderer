@@ -1,6 +1,6 @@
 # HEAD
 
-- Implement a stacking feature, with mean, median and sigma clipping ([PR#22](https://github.com/teozec/image-renderer/pull/22)).
+- Implement a DebugRender for better debugging ([PR#22](https://github.com/teozec/image-renderer/pull/22)).
 
 # Version 0.3.0
 
