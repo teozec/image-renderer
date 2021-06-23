@@ -80,14 +80,14 @@ struct DebugRenderer : public Renderer {
 	DebugRenderer(World w) : Renderer(w, BLACK) {}
 
 	/**
-	* @brief Given a ray returns the proper shape pigment if it hits the surface, the background color otherwise.
+	* @brief Given a ray returns a normal-dependent color if it hits the surface, the background color otherwise.
 	* 
 	* @param ray 
 	* @return Color 
 	*/
 	virtual Color operator()(Ray ray) override {
 		HitRecord record = world.rayIntersection(ray);
-		return record.hit ? Color{abs(record.normal.x), abs(record.normal.y), abs(record.normal.z)} : BLACK;
+		return record.hit ? Color{abs(record.normal.x), abs(record.normal.y), abs(record.normal.z)} : backgroundColor;
 	}
 };
 
