@@ -20,6 +20,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include <algorithm>
 #include "shape.h"
+#include "color.h"
 
 struct Renderer {
 	World world;
@@ -27,7 +28,7 @@ struct Renderer {
 
 	Renderer() {}
 	Renderer(World w) : world{w} {}
-	Renderer(World w, Color bg = Color{0.f, 0.f, 0.f}) : world{w}, backgroundColor{bg} {}
+	Renderer(World w, Color bg = BLACK) : world{w}, backgroundColor{bg} {}
 
 	virtual Color operator()(Ray ray) = 0;
 };
@@ -39,7 +40,7 @@ struct Renderer {
 struct OnOffRenderer : public Renderer {
 	Color color;
 	OnOffRenderer() : Renderer() {}
-	OnOffRenderer(World w, Color c = Color{1.f, 1.f, 1.f}, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, bg), color{c} {}
+	OnOffRenderer(World w, Color c = WHITE, Color bg = BLACK) : Renderer(w, bg), color{c} {}
 
 	/**
 	* @brief Given a ray returns white if the ray hits the shape surface, the background color otherwise.
@@ -59,7 +60,7 @@ struct OnOffRenderer : public Renderer {
 struct FlatRenderer : public Renderer {
 
 	FlatRenderer() : Renderer() {}
-	FlatRenderer(World w, Color bg = Color{0.f, 0.f, 0.f}) : Renderer(w, bg) {}
+	FlatRenderer(World w, Color bg = BLACK) : Renderer(w, bg) {}
 
 	/**
 	* @brief Given a ray returns the proper shape pigment if it hits the surface, the background color otherwise.
@@ -70,6 +71,23 @@ struct FlatRenderer : public Renderer {
 	virtual Color operator()(Ray ray) override {
 		HitRecord record = world.rayIntersection(ray);
 		return record.hit ? (*record.shape->material.brdf->pigment)(record.surfacePoint) : backgroundColor;
+	}
+};
+
+struct DebugRenderer : public Renderer {
+
+	DebugRenderer() : Renderer() {}
+	DebugRenderer(World w) : Renderer(w, BLACK) {}
+
+	/**
+	* @brief Given a ray returns a normal-dependent color if it hits the surface, the background color otherwise.
+	* 
+	* @param ray 
+	* @return Color 
+	*/
+	virtual Color operator()(Ray ray) override {
+		HitRecord record = world.rayIntersection(ray);
+		return record.hit ? Color{abs(record.normal.x), abs(record.normal.y), abs(record.normal.z)} : backgroundColor;
 	}
 };
 
