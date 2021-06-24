@@ -25,14 +25,15 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <unordered_map>
 
 #define USAGE \
 	"Usage: " << endl << \
 	programName << " -h|--help" << endl << \
+	programName << " render [options] <inputfile>" << endl << \
 	programName << " demo [options]" << endl << \
 	programName << " pfm2ldr [options] <format> <inputfile> <outputfile>" << \
-	programName << " stack [options] <inputfiles>" \
-	" <input-pfm-file> <output-file> " << endl
+	programName << " stack [options] <inputfiles>" << endl
 
 #define RUN_HELP \
 	"Run '" << programName << " <action-name> -h' for all supported options." << endl
@@ -74,11 +75,18 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"	-S <value>, --nSigma=<value>			Number of sigma clipping iterations (default 0)." << endl << \
 	"	-a <value>, --alpha=<value>			Sigma clipping alpha factor (consider outliers values farther than alpha*sigma from the median, default 2)." << endl
 
+#define HELP_RENDER \
+	"render: render a scenefile to a pfm image." << endl << endl << \
+	"Available options:" << endl << \
+	"	-h, --help: print this message." << endl << \
+	"	-o <string>, --outfile=<string>			Filename of the output image." << endl
+
 using namespace std;
 
 enum class ImageFormat { png, webp, jpeg, tiff, bmp, gif };
 
 int demo(argh::parser cmdl);
+int render(argh::parser cmdl);
 int pfm2ldr(argh::parser cmdl);
 int stackPfm(argh::parser cmdl);
 
@@ -107,6 +115,8 @@ int main(int argc, char *argv[])
 	// Parse action
 	if (actionName == "demo") { 
 		return demo(cmdl);
+	} else if (actionName == "render") {
+		return render(cmdl);
 	} else if (actionName == "pfm2ldr") {
 		return pfm2ldr(cmdl);
 	} else if (actionName == "stack") {
@@ -223,8 +233,8 @@ int demo(argh::parser cmdl) {
 		return 0;
 	}
 	int width, height;
-	cmdl({"-w", "--width"}, 1000) >> width;
-	cmdl({"-h", "--height"}, 1000) >> height;
+	cmdl({"-w", "--width"}, 600) >> width;
+	cmdl({"-h", "--height"}, 400) >> height;
 	float aspectRatio = (float) width / height;
 
 /*
@@ -279,7 +289,7 @@ int demo(argh::parser cmdl) {
 	if (samplesPerPixel != samplesPerSide*samplesPerSide){
 		cerr << "Not a perfect square given as --antialiasing parameter."  <<endl;
 		return 1;
-	} 
+	}
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t) seed};
 
@@ -295,6 +305,60 @@ int demo(argh::parser cmdl) {
 
 	return 0;
 
+}
+
+int render(argh::parser cmdl)
+{
+	const string programName = cmdl[0];
+	const string actionName = cmdl[1];
+	if (cmdl[{"-h", "--help"}]) {
+		cerr << HELP_RENDER << endl;
+		return 0;
+	}
+
+	if (cmdl.size() != 3) {
+		cerr << USAGE << endl << HELP_RENDER;
+		return 1;
+	}
+
+	int width, height;
+	cmdl({"-w", "--width"}, 600) >> width;
+	cmdl({"-h", "--height"}, 400) >> height;
+
+	int seed;
+	cmdl({"-s", "--seed"}, 42) >> seed;
+
+	int samplesPerPixel;
+	cmdl({"--antialiasing"}, 0) >> samplesPerPixel;
+	int samplesPerSide = sqrt(samplesPerPixel);
+	if (samplesPerPixel != samplesPerSide*samplesPerSide){
+		cerr << "Not a perfect square given as --antialiasing parameter."  <<endl;
+		return 1;
+	} 
+
+	ifstream ifile{cmdl[2]};
+	if (!ifile.is_open()) {
+		cerr << "Cannot open file " + cmdl[2] << endl;
+		return 1;
+	}
+	InputStream input{ifile};
+	unordered_map<string, float> variables;
+	Scene scene{input.parseScene(variables)};
+
+	HdrImage image{width, height};
+	ImageTracer tracer{image, *scene.camera, samplesPerSide};
+	PCG pcg{(uint64_t) seed};
+
+	tracer.fireAllRays(PathTracer{scene.world, pcg, 2, 4, 5});
+
+	string ofilename;
+	cmdl({"-o", "--outfile"}, "render.pfm") >> ofilename;
+	ofstream outPfm;
+	outPfm.open(ofilename);
+	image.writePfm(outPfm);
+	outPfm.close();
+
+	return 0;
 }
 
 int stackPfm(argh::parser cmdl)
