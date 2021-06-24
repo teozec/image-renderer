@@ -216,16 +216,18 @@ private:
 	};
 };
 
-struct FloatVariables {
+struct FloatVariable {
 	float value;
 	bool isOverriden;
+	FloatVariable() {}
+	FloatVariable(float value, bool isOverriden = false): value{value}, isOverriden{isOverriden} {}
 };
 
 struct Scene {
 	std::unordered_map<std::string, Material> materials;
 	World world;
-	std::shared_ptr<Camera> camera;
-	std::unordered_map<std::string, FloatVariables> floatVariables;
+	std::shared_ptr<Camera> camera = nullptr;
+	std::unordered_map<std::string, FloatVariable> floatVariables;
 };
 
 /**
@@ -612,7 +614,64 @@ struct InputStream {
 
 		return Sphere{transformation, scene.materials[materialName]};
 	}
-	
+
+	Scene parseScene(std::unordered_map<std::string, float> variables) {
+		Scene scene;
+		// Insert the variables overriden from the function argument into the scene
+		for (auto it = variables.begin(); it == variables.end(); it++)
+			scene.floatVariables.insert({it->first, FloatVariable{it->second, true}});
+
+		for (;;) {
+			Token token{readToken()};
+
+			// End of input stream
+			if (token.type == TokenType::STOP)
+				break;
+
+			// We expect a keyword
+			if (token.type != TokenType::KEYWORD)
+				throw GrammarError{token.location, "Expected keyword, got " + std::string{token}};
+
+			switch (token.value.k) {
+			case Keyword::FLOAT: {
+				std::string name{expectIdentifier()};
+				SourceLocation loc{location};
+				expectSymbol('(');
+				float value{expectNumber(scene)};
+				expectSymbol(')');
+				auto v = scene.floatVariables.find(name);
+				if (v == scene.floatVariables.end())	// Variable not defined yet: add it to the list
+					scene.floatVariables[name] = value;
+				else if (!v->second.isOverriden)	// Variable defined two times in the file: error
+					throw GrammarError{loc, "variable " + name + " already defined"};
+				// The other possibility is that the variable is defined both in the file and in the variables function parameter.
+				// In that case, we do nothing: the stored value is the one in the parameter.
+				break;
+			}
+			case Keyword::SPHERE:
+				scene.world.add(parseSphere(scene));
+				break;
+			case Keyword::PLANE:
+				scene.world.add(parsePlane(scene));
+				break;
+			case Keyword::CAMERA:
+				if (scene.camera != nullptr)
+					throw GrammarError{location, "Camera already defined"};
+				scene.camera = parseCamera(scene);
+				break;
+			case Keyword::MATERIAL: {
+				auto material = parseMaterial(scene);
+				scene.materials.insert({std::get<0>(material), std::get<1>(material)});
+				break;
+			}
+			default:
+				throw GrammarError{location, "Unexpected keyword " + std::string{token}};
+				break;
+			}
+		}
+
+		return scene;
+	}
 };
 
 #endif // PARSER_H
