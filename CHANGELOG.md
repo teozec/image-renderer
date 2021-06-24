@@ -1,5 +1,6 @@
 # HEAD
 
+- Bug fix: make PathTracer work properly also without Russian roulette ([PR#22](https://github.com/teozec/image-renderer/pull/23), [#21](https://github.com/teozec/image-renderer/issues/21)).
 - Implement a DebugRender for better debugging ([PR#22](https://github.com/teozec/image-renderer/pull/22)).
 
 # Version 0.3.0
