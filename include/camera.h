@@ -19,6 +19,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #define CAMERA_H
 
 #include <limits>
+#include <iostream>
 #include "geometry.h"
 #include "hdr-image.h"
 #include "color.h"
@@ -191,6 +192,7 @@ struct ImageTracer {
 	template <typename T> void fireAllRays(T colorFunc) {
 		for (int row{}; row < image.height; row++) {
 			for (int col{}; col < image.width; col++) {
+				std::cout << "\rRendering: " << (int)((col+row*image.width)*100.f/(image.height*image.width)) << "% " << std::flush;
 				Color cumColor{0.f, 0.f, 0.f};
 				if (samplesPerSide > 0) {
 					for (int rowPixel{}; rowPixel<samplesPerSide; rowPixel++) {
@@ -209,6 +211,7 @@ struct ImageTracer {
 				}
 			}
 		}
+		std::cout << "\rRendering: 100% \nDone." << std::endl;
 	}
 };
 
