@@ -132,7 +132,7 @@ struct BRDF {
 	BRDF(const std::shared_ptr<Pigment> pigment): pigment{pigment} {}
 	
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) = 0;
-	virtual Ray scatterRay(PCG pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) = 0;
+	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) = 0;
 };
 
 struct DiffusiveBRDF : BRDF {
@@ -148,7 +148,7 @@ struct DiffusiveBRDF : BRDF {
 		return (*pigment)(uv) * (reflectance / M_PI);
 	}
 
-	virtual Ray scatterRay(PCG pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) override {
+	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) override {
 		ONB onb{normal};
 		float cosThetaSq = pcg.randFloat();
 		float cosTheta = std::sqrt(cosThetaSq);
@@ -181,7 +181,7 @@ struct SpecularBRDF : BRDF {
 			return Color{0.f, 0.f, 0.f};
 	}
 
-	virtual Ray scatterRay(PCG pcg, Vec incomingDir, Point interactionPoint, Normal n, int depth) override {
+	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal n, int depth) override {
 		
 		Vec dir{incomingDir.x, incomingDir.y, incomingDir.z};
 		dir.normalize();
