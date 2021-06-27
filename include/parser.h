@@ -575,19 +575,19 @@ struct InputStream {
 		expectSymbol('(');
 		Keyword typeKeyw = expectKeywords(std::vector{Keyword::PERSPECTIVE, Keyword::ORTHOGONAL});
 		expectSymbol(',');
-		Transformation transformation = parseTransformation(scene);
-		expectSymbol(',');
+		//Transformation transformation = parseTransformation(scene);
+		//expectSymbol(',');
 		float aspectRatio = expectNumber(scene);
 		expectSymbol(',');
 		float distance = expectNumber(scene);
 		expectSymbol(')');
 
-		std::shared_ptr<Camera> result;
+		std::shared_ptr<Camera> cam;
 		if (typeKeyw == Keyword::PERSPECTIVE)
-			result = std::make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, transformation, distance});
+			cam = std::make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, Transformation{}, distance});
 		else if (typeKeyw == Keyword::ORTHOGONAL)
-			result = std::make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, transformation});
-		return result;
+			cam = std::make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, Transformation{}});
+		return cam;
 	}
 
 	Plane parsePlane(Scene scene){
@@ -595,11 +595,11 @@ struct InputStream {
 		std::string materialName = expectIdentifier();
 		if (scene.materials.find(materialName) == scene.materials.end())
 			throw GrammarError(location, "Unknown material "+materialName);
-		expectSymbol(',');
-		Transformation transformation = parseTransformation(scene);
+		//expectSymbol(',');
+		//Transformation transformation = parseTransformation(scene);
 		expectSymbol(')');
 
-		return Plane{transformation, scene.materials[materialName]};
+		return Plane{Transformation{}, scene.materials[materialName]};
 	}
 
 	Sphere parseSphere(Scene scene){
@@ -607,11 +607,11 @@ struct InputStream {
 		std::string materialName = expectIdentifier();
 		if (scene.materials.find(materialName) == scene.materials.end())
 			throw GrammarError(location, "Unknown material "+materialName);
-		expectSymbol(',');
-		Transformation transformation = parseTransformation(scene);
+		//expectSymbol(',');
+		//Transformation transformation = parseTransformation(scene);
 		expectSymbol(')');
 
-		return Sphere{transformation, scene.materials[materialName]};
+		return Sphere{Transformation{}, scene.materials[materialName]};
 	}
 
 	Scene parseScene(std::unordered_map<std::string, float> variables) {

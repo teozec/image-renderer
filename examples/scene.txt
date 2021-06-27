@@ -1,0 +1,35 @@
+# Declare a floating-point variable named "clock"
+float clock(150)
+
+# Declare a few new materials. Each of them includes a BRDF and a pigment
+
+# We can split a definition over multiple lines and indent them as we like
+material sky_material(
+    diffuse(image("sky-dome.pfm")),
+    uniform(<0.7, 0.5, 1>)
+)
+
+material ground_material(
+    diffuse(checkered(<0.3, 0.5, 0.1>,
+                      <0.1, 0.2, 0.5>, 4)),
+    uniform(<0, 0, 0>)
+)
+
+material sphere_material(
+    specular(uniform(<0.5, 0.5, 0.5>)),
+    uniform(<0, 0, 0>)
+)
+
+# Define a few shapes
+sphere(sphere_material, translation([0, 0, 1]))
+
+# The language is flexible enough to permit spaces before "("
+plane (ground_material, identity)
+
+# Here we use the "clock" variable! Note that vectors are notated using
+# square brackets ([]) instead of angular brackets (<>) like colors, and
+# that we can compose transformations through the "*" operator
+plane(sky_material, translation([0, 0, 100]) * rotation_y(clock))
+
+# Define a camera
+camera(perspective, rotation_z(30) * translation([-4, 0, 1]), 1.0, 1.0)

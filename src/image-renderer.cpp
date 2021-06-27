@@ -322,8 +322,8 @@ int render(argh::parser cmdl)
 	}
 
 	int width, height;
-	cmdl({"-w", "--width"}, 600) >> width;
-	cmdl({"-h", "--height"}, 400) >> height;
+	cmdl({"-w", "--width"}, 500) >> width;
+	cmdl({"-h", "--height"}, 500) >> height;
 
 	int seed;
 	cmdl({"-s", "--seed"}, 42) >> seed;
@@ -348,8 +348,8 @@ int render(argh::parser cmdl)
 	HdrImage image{width, height};
 	ImageTracer tracer{image, *scene.camera, samplesPerSide};
 	PCG pcg{(uint64_t) seed};
-
-	tracer.fireAllRays(PathTracer{scene.world, pcg, 2, 4, 5});
+	//tracer.fireAllRays(PathTracer{scene.world, pcg, 2, 4, 5});
+	tracer.fireAllRays(DebugRenderer(scene.world));
 
 	string ofilename;
 	cmdl({"-o", "--outfile"}, "render.pfm") >> ofilename;
