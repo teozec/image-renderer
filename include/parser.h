@@ -201,7 +201,7 @@ struct Token {
 	}
 	
 private:
-	// Associate each keyword woth the Keyword enum value
+	// Associate each keyword with the Keyword enum value
 	std::unordered_map<std::string, Keyword> const keywordTable = {
 		{"new", Keyword::NEW}, {"material", Keyword::MATERIAL},
 		{"plane", Keyword::PLANE}, {"sphere", Keyword::SPHERE},
@@ -243,7 +243,7 @@ struct InputStream {
 	bool isSavedToken = false;
 	int tabulations;
 
-	InputStream(std::istream &stream, int tabulations=4) : stream{stream} {}
+	InputStream(std::istream &stream, int tabulations=4) : stream{stream}, tabulations{tabulations} {}
 	InputStream(std::istream &stream, SourceLocation location, int tabulations=4) : 
 		stream{stream}, location{location}, tabulations{tabulations} {}
 
@@ -409,7 +409,6 @@ struct InputStream {
 		}
 		throw GrammarError(token.location, "Got "+std::string(token)+ ", expected a float");
 	}
-
 
 	std::string expectString(){
 		Token token = readToken();
@@ -617,9 +616,12 @@ struct InputStream {
 
 	Scene parseScene(std::unordered_map<std::string, float> variables) {
 		Scene scene;
-		// Insert the variables overriden from the function argument into the scene
-		for (auto it = variables.begin(); it == variables.end(); it++)
-			scene.floatVariables.insert({it->first, FloatVariable{it->second, true}});
+
+		// Insert the variables overriden from the function argument into the scene (if there's any)
+		if (variables.size() != 0){
+			for (auto it = variables.begin(); it == variables.end(); it++)
+				scene.floatVariables.insert({it->first, FloatVariable{it->second, true}});
+		}
 
 		for (;;) {
 			Token token{readToken()};
@@ -669,7 +671,7 @@ struct InputStream {
 				break;
 			}
 		}
-
+		
 		return scene;
 	}
 };
