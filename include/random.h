@@ -19,6 +19,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #define RANDOM_H
 
 #include <cstdint>
+#include "geometry.h"
 
 /**
  * @brief A random number generator using the PCG algorithm.
@@ -45,6 +46,15 @@ struct PCG {
 	float randFloat(){
 		//Return a random float (uniform distribution) in [0,1]
 		return (float)(*this)() / UINT32_MAX;
+	}
+
+	Vec randDir(Normal normal) {
+		ONB onb{normal};
+		float cosThetaSq = randFloat();
+		float cosTheta = std::sqrt(cosThetaSq);
+		float sinTheta = std::sqrt(1.f - cosThetaSq);
+		float phi = 2.f * M_PI * randFloat();
+		return onb.e1*cos(phi)*cosTheta + onb.e2*sin(phi)*cosTheta + onb.e3*sinTheta;
 	}
 };
 

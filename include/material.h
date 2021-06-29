@@ -148,27 +148,19 @@ struct DiffusiveBRDF : BRDF {
 	}
 
 	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) override {
-		ONB onb{normal};
-		float cosThetaSq = pcg.randFloat();
-		float cosTheta = std::sqrt(cosThetaSq);
-		float sinTheta = std::sqrt(1.f-cosThetaSq);
-		float phi = 2.f * M_PI * pcg.randFloat();
-
-		return Ray{interactionPoint,
-			onb.e1*cos(phi)*cosTheta + onb.e2*sin(phi)*cosTheta + onb.e3*sinTheta,
-			depth,
-			1e-3f};
+		return Ray{interactionPoint, pcg.randDir(normal), depth, 1e-3f};
 	}
 };
 
 struct SpecularBRDF : BRDF {
 	float thresholdAngle = M_PI/1800.f; //radian
-	SpecularBRDF(float thresholdAngle):
-		thresholdAngle{thresholdAngle}, BRDF() {};
-	template <class T> SpecularBRDF(const T &pigment):
-		BRDF(pigment) {};
-	template <class T> SpecularBRDF(float thresholdAngle, const T &pigment):
-		thresholdAngle{thresholdAngle}, BRDF(pigment) {};
+	float roughness = 0.f;
+	SpecularBRDF(float roughness, float thresholdAngle):
+		thresholdAngle{thresholdAngle}, roughness{roughness}, BRDF() {};
+	template <class T> SpecularBRDF(float roughness, const T &pigment):
+		roughness{roughness}, BRDF(pigment) {};
+	template <class T> SpecularBRDF(float roughness, float thresholdAngle, const T &pigment):
+		thresholdAngle{thresholdAngle}, roughness{roughness}, BRDF(pigment) {};
 
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
 		//unused
@@ -189,7 +181,7 @@ struct SpecularBRDF : BRDF {
 		float dotProd = normal.dot(dir);
 
 		return Ray{interactionPoint,
-			dir - normal*2*dotProd,
+			dir - normal*2*dotProd + pcg.randDir(n)*roughness,
 			depth,
 			1e-5f};
 	}
