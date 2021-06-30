@@ -38,7 +38,7 @@ void testOnOffRenderer()
 	World world;
 	world.add(sphere);
 	OnOffRenderer renderer{world};
-	tracer.fireAllRays(renderer);
+	tracer.fireAllRays(renderer, false);
 
 	assert(image.getPixel(0, 0) == BLACK);
 	assert(image.getPixel(1, 0) == BLACK);
@@ -62,7 +62,7 @@ void testFlatRenderer()
 	World world;
 	world.add(sphere);
 	FlatRenderer renderer{world};
-	tracer.fireAllRays(renderer);
+	tracer.fireAllRays(renderer, false);
 
 	assert(image.getPixel(0, 0) == BLACK);
 	assert(image.getPixel(1, 0) == BLACK);

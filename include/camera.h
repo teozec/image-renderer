@@ -189,14 +189,21 @@ struct ImageTracer {
 	 * @tparam T	The signature of the color function
 	 * @param color The function to compute a Color given a Ray
 	 */
-	template <typename T> void fireAllRays(T colorFunc) {
-		for (int row{}; row < image.height; row++) {
-			for (int col{}; col < image.width; col++) {
-				std::cout << "\rRendering: " << (int)((col+row*image.width)*100.f/(image.height*image.width)) << "% " << std::flush;
+	template <typename T> void fireAllRays(T colorFunc, bool showProgress) {
+		int progress = 0;
+		#pragma omp parallel for num_threads(2) collapse(2) schedule(dynamic, 1000)
+		for (int row = 0; row < image.height; row++) {
+			for (int col = 0; col < image.width; col++) {
+				if (showProgress){
+					progress++;
+					#pragma omp critical
+					std::cout << "\rRendering: " << 100*progress/(image.width*image.height) << "% " << std::flush;
+				}
 				Color cumColor{0.f, 0.f, 0.f};
 				if (samplesPerSide > 0) {
-					for (int rowPixel{}; rowPixel<samplesPerSide; rowPixel++) {
-						for (int colPixel{}; colPixel<samplesPerSide; colPixel++) {
+					#pragma omp parallel for num_threads(2) collapse(2) schedule(dynamic, 4)
+					for (int rowPixel = 0; rowPixel<samplesPerSide; rowPixel++) {
+						for (int colPixel = 0; colPixel<samplesPerSide; colPixel++) {
 							float uPixel = (colPixel+pcg.randFloat())/samplesPerSide;
 							float vPixel = (rowPixel+pcg.randFloat())/samplesPerSide;
 							Ray ray = fireRay(col, row, uPixel, vPixel);
