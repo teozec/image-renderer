@@ -345,7 +345,6 @@ int render(argh::parser cmdl)
 	unordered_map<string, float> variables;
 	try {
 		Scene scene{input.parseScene(variables)};
-		cout << std::string{scene.world} << endl;
 		HdrImage image{width, height};
 		ImageTracer tracer{image, *scene.camera, samplesPerSide};
 		PCG pcg{(uint64_t) seed};

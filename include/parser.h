@@ -590,9 +590,9 @@ struct InputStream {
 
 		std::shared_ptr<Camera> cam;
 		if (typeKeyw == Keyword::PERSPECTIVE)
-			cam = std::make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, Transformation{}, distance});
+			cam = std::make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, transformation, distance});
 		else if (typeKeyw == Keyword::ORTHOGONAL)
-			cam = std::make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, Transformation{}});
+			cam = std::make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, transformation});
 		return cam;
 	}
 
@@ -605,7 +605,7 @@ struct InputStream {
 		Transformation transformation = parseTransformation(scene);
 		expectSymbol(')');
 
-		return Plane{Transformation{}, scene.materials[materialName]};
+		return Plane{transformation, scene.materials[materialName]};
 	}
 
 	Sphere parseSphere(Scene scene){
@@ -617,7 +617,7 @@ struct InputStream {
 		Transformation transformation = parseTransformation(scene);
 		expectSymbol(')');
 
-		return Sphere{Transformation{}, scene.materials[materialName]};
+		return Sphere{transformation, scene.materials[materialName]};
 	}
 
 	Scene parseScene(std::unordered_map<std::string, float> variables) {
