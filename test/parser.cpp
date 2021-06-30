@@ -24,7 +24,7 @@ using namespace std;
 void testSceneFile() {
 	std::stringstream sstream;
 	sstream << "abc   \nd\nef";
-	InputStream stream{sstream};
+	InputStream stream{sstream, std::string{}};
 	
 	assert(stream.location.line == 1);
 	assert(stream.location.col == 1);

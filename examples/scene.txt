@@ -5,7 +5,7 @@ float clock(150)
 
 # We can split a definition over multiple lines and indent them as we like
 material sky_material(
-    diffuse(image("sky-dome.pfm")),
+    diffuse(uniform(<1., 1., 1.>)),
     uniform(<0.7, 0.5, 1>)
 )
 

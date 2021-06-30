@@ -341,22 +341,27 @@ int render(argh::parser cmdl)
 		cerr << "Cannot open file " + cmdl[2] << endl;
 		return 1;
 	}
-	InputStream input{ifile};
+	InputStream input{ifile, cmdl[2]};
 	unordered_map<string, float> variables;
-	Scene scene{input.parseScene(variables)};
+	try {
+		Scene scene{input.parseScene(variables)};
+		cout << std::string{scene.world} << endl;
+		HdrImage image{width, height};
+		ImageTracer tracer{image, *scene.camera, samplesPerSide};
+		PCG pcg{(uint64_t) seed};
+		tracer.fireAllRays(PathTracer{scene.world, pcg, 2, 4, 5});
+		//tracer.fireAllRays(DebugRenderer(scene.world));
 
-	HdrImage image{width, height};
-	ImageTracer tracer{image, *scene.camera, samplesPerSide};
-	PCG pcg{(uint64_t) seed};
-	//tracer.fireAllRays(PathTracer{scene.world, pcg, 2, 4, 5});
-	tracer.fireAllRays(DebugRenderer(scene.world));
-
-	string ofilename;
-	cmdl({"-o", "--outfile"}, "render.pfm") >> ofilename;
-	ofstream outPfm;
-	outPfm.open(ofilename);
-	image.writePfm(outPfm);
-	outPfm.close();
+		string ofilename;
+		cmdl({"-o", "--outfile"}, "render.pfm") >> ofilename;
+		ofstream outPfm;
+		outPfm.open(ofilename);
+		image.writePfm(outPfm);
+		outPfm.close();
+	} catch (GrammarError &e) {
+		cerr << "Error: " << string{e.location} << ": " << e.what() << endl;
+		return 1;
+	}
 
 	return 0;
 }

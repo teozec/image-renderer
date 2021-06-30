@@ -119,6 +119,8 @@ struct Shape {
 	virtual std::vector<HitRecord> allIntersections(Ray ray) = 0;
 
 	virtual bool isInner(Point p) = 0;
+
+	virtual operator std::string() = 0;
 };
 
 /**
@@ -202,6 +204,12 @@ struct Sphere : public Shape {
 	virtual bool isInner(Point p) override {
 		p = transformation.inverse() * p;
 		return p.x * p.x + p.y * p.y + p.z * p.z < 1.f;
+	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "Sphere";
+		return ss.str();
 	}
 
 private:
@@ -314,6 +322,12 @@ struct Plane : public Shape {
 	virtual bool isInner(Point p) override {
 		p = transformation.inverse() * p;
 		return p.z < 0;
+	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "Plane";
+		return ss.str();
 	}
 
 private:
@@ -435,6 +449,12 @@ struct Triangle : public Shape {
 	 */
 	virtual bool isInner(Point p) override {
 		return false;
+	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "Triangle";
+		return ss.str();
 	}
 
 private:
@@ -591,6 +611,12 @@ struct CSGUnion : public Shape {
 		p = transformation.inverse() * p;
 		return a->isInner(p) or b->isInner(p);
 	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "CSGUnion";
+		return ss.str();
+	}
 };
 
 /**
@@ -701,6 +727,12 @@ struct CSGDifference : public Shape {
 		p = transformation.inverse() * p;
 		return a->isInner(p) and !b->isInner(p);
 	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "CSGDifference";
+		return ss.str();
+	}
 };
 
 /**
@@ -809,6 +841,12 @@ struct CSGIntersection : public Shape {
 	virtual bool isInner(Point p) override {
 		p = transformation.inverse() * p;
 		return a->isInner(p) and b->isInner(p);
+	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "CSGIntersection";
+		return ss.str();
 	}
 };
 
@@ -919,6 +957,12 @@ struct Box : Shape {
 		return pMin.x < p.x and p.x < pMax.x and
 			pMin.y < p.y and p.y < pMax.y and
 			pMin.z < p.z and p.z < pMax.z;
+	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "Box";
+		return ss.str();
 	}
 
 private:
@@ -1080,6 +1124,14 @@ struct World {
 		}
 		return closest;
 	}
+
+	operator std::string() {
+		std::ostringstream ss;
+		for (auto shape : shapes)
+			ss << std::string{*shape} << std::endl;
+		return ss.str();
+	}
+
 };
 
 // ASSETS

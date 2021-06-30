@@ -43,6 +43,11 @@ struct SourceLocation {
 	std::string filename;
 	int line{1};
 	int col{1};
+	operator std::string() {
+		std::ostringstream ss;
+		ss << filename << ":" << line << "," << col;
+		return ss.str();
+	}
 };
 
 /**
@@ -243,7 +248,9 @@ struct InputStream {
 	bool isSavedToken = false;
 	int tabulations;
 
-	InputStream(std::istream &stream, int tabulations=4) : stream{stream}, tabulations{tabulations} {}
+	InputStream(std::istream &stream, std::string filename, int tabulations=4) : stream{stream}, tabulations{tabulations} {
+		location.filename = filename;
+	}
 	InputStream(std::istream &stream, SourceLocation location, int tabulations=4) : 
 		stream{stream}, location{location}, tabulations{tabulations} {}
 
@@ -512,15 +519,14 @@ struct InputStream {
 
 	Transformation parseTransformation(Scene scene) {
 		Transformation result{};
-		
+
 		for (;;) {
-			Token token{readToken()};
-			expectKeywords(std::vector{
+			Keyword k{expectKeywords(std::vector{
 				Keyword::IDENTITY, Keyword::TRANSLATION,
 				Keyword::ROTATION_X, Keyword::ROTATION_Y,
-				Keyword::ROTATION_Z, Keyword::SCALING});
+				Keyword::ROTATION_Z, Keyword::SCALING})};
 
-			switch (token.value.k) {
+			switch (k) {
 			case Keyword::IDENTITY:
 				break;	// Identity doesn't change the matrix value
 			case Keyword::TRANSLATION: {
@@ -561,7 +567,7 @@ struct InputStream {
 			default:
 				break;
 			}
-			token = readToken();
+			Token token{readToken()};
 			if (token.type != TokenType::SYMBOL or token.value.ch != '*') {
 				unreadToken(token);
 				break;
@@ -575,8 +581,8 @@ struct InputStream {
 		expectSymbol('(');
 		Keyword typeKeyw = expectKeywords(std::vector{Keyword::PERSPECTIVE, Keyword::ORTHOGONAL});
 		expectSymbol(',');
-		//Transformation transformation = parseTransformation(scene);
-		//expectSymbol(',');
+		Transformation transformation = parseTransformation(scene);
+		expectSymbol(',');
 		float aspectRatio = expectNumber(scene);
 		expectSymbol(',');
 		float distance = expectNumber(scene);
@@ -595,8 +601,8 @@ struct InputStream {
 		std::string materialName = expectIdentifier();
 		if (scene.materials.find(materialName) == scene.materials.end())
 			throw GrammarError(location, "Unknown material "+materialName);
-		//expectSymbol(',');
-		//Transformation transformation = parseTransformation(scene);
+		expectSymbol(',');
+		Transformation transformation = parseTransformation(scene);
 		expectSymbol(')');
 
 		return Plane{Transformation{}, scene.materials[materialName]};
@@ -607,8 +613,8 @@ struct InputStream {
 		std::string materialName = expectIdentifier();
 		if (scene.materials.find(materialName) == scene.materials.end())
 			throw GrammarError(location, "Unknown material "+materialName);
-		//expectSymbol(',');
-		//Transformation transformation = parseTransformation(scene);
+		expectSymbol(',');
+		Transformation transformation = parseTransformation(scene);
 		expectSymbol(')');
 
 		return Sphere{Transformation{}, scene.materials[materialName]};
