@@ -244,10 +244,11 @@ int demo(argh::parser cmdl) {
 
 	Material gold{SpecularBRDF(UniformPigment(Color{.8f, .8f, .2f}))};
 	Material matte{DiffusiveBRDF{UniformPigment(Color{.5f, .5f, .5f})}};
+*/
 
 	Material materialSky{DiffusiveBRDF{UniformPigment(Color{1.f, 1.f, 1.f})}, UniformPigment{Color{.6f, .6f, .8f}}};
-	Material materialGround{DiffusiveBRDF(CheckeredPigment(Color{1.f, 0.f, 0.f}, Color{1.f, 1.f, 1.f}, 2))};
-*/
+	Material materialGround{DiffusiveBRDF(CheckeredPigment(Color{0.3f, 0.5f, 0.1f}, Color{0.1f, 0.2f, 0.5f}, 4))};
+	Material materialSphere{SpecularBRDF{UniformPigment{Color{.5f, .5f, .5f}}}, UniformPigment{Color{0.f, 0.f, 0.f}}};
 
 	string projString;
 	int angle;
@@ -273,14 +274,14 @@ int demo(argh::parser cmdl) {
 	world.add(Sphere{scaling(.5f)*translation(Vec{1.2f, -1.2f, 0.f}), material1});
 	world.add(Sphere{scaling(.5f)*translation(Vec{0.f, .5f, 0.f}), material2});
 	//world.add(CSGUnion{Box{Point{-.5f, -.5f, 0.f}, Point{.5f, .5f, 1.f}, matte}, Sphere{translation(Vec{0.f, 0.f, 1.f}), gold}});
+*/
 	world.add(Sphere{scaling(5.f), materialSky});
 	world.add(Plane{translation(Vec{0.f, 0.f, -1.f}), materialGround});
-*/
 
-	world.add(Sphere{});
+	world.add(Sphere{materialSphere});
 	//world.add(Sphere{scaling(.5f)*translation(Vec{0.f, .5f, 0.f})});
-	world.add(Plane{translation(Vec{0.f, 0.f, 4.f})});
-	world.add(Plane{translation(Vec{0.f, 0.f, -4.f})});
+	//world.add(Plane{translation(Vec{0.f, 0.f, 4.f})});
+	//world.add(Plane{translation(Vec{0.f, 0.f, -4.f})});
 	
 
 	int samplesPerPixel;
@@ -293,8 +294,8 @@ int demo(argh::parser cmdl) {
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t) seed};
 
-	//tracer.fireAllRays(PathTracer{world, pcg, 2, 4, 5});
-	tracer.fireAllRays(DebugRenderer(world));
+	tracer.fireAllRays(PathTracer{world, pcg, 2, 4, 3});
+	//tracer.fireAllRays(DebugRenderer(world));
 
 	string ofilename;
 	cmdl({"-o", "--outfile"}, "demo.pfm") >> ofilename;
@@ -348,7 +349,7 @@ int render(argh::parser cmdl)
 		HdrImage image{width, height};
 		ImageTracer tracer{image, *scene.camera, samplesPerSide};
 		PCG pcg{(uint64_t) seed};
-		tracer.fireAllRays(PathTracer{scene.world, pcg, 2, 4, 5});
+		tracer.fireAllRays(PathTracer{scene.world, pcg, 2, 4, 3});
 		//tracer.fireAllRays(DebugRenderer(scene.world));
 
 		string ofilename;
