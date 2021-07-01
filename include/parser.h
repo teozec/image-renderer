@@ -498,8 +498,10 @@ struct InputStream {
 		switch (k) {
 		case Keyword::DIFFUSE:
 			brdf = std::make_shared<DiffusiveBRDF>(DiffusiveBRDF{pigment});
+			break;
 		case Keyword::SPECULAR:
 			brdf = std::make_shared<SpecularBRDF>(SpecularBRDF{pigment});
+			break;
 		default:
 			break;
 		}
