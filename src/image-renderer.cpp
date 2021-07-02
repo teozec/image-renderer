@@ -226,17 +226,11 @@ int demo(argh::parser cmdl) {
 	cmdl({"-h", "--height"}, 1000) >> height;
 	float aspectRatio = (float) width / height;
 
-/*
-	Material material1{SpecularBRDF(UniformPigment(Color{.8f, .8f, .8f}))};
-
-	Material material2{DiffusiveBRDF(CheckeredPigment(Color{.7f, .8f, .5f}, Color{.7f, .2f, .3f}, 4))};
-
-	Material gold{SpecularBRDF(UniformPigment(Color{.8f, .8f, .2f}))};
+	Material gold{SpecularBRDF(0.02f, UniformPigment(Color{.8f, .8f, .2f}))};
 	Material matte{DiffusiveBRDF{UniformPigment(Color{.5f, .5f, .5f})}};
-
+	Material glass{DielectricBSDF{1.5f}};
 	Material materialSky{DiffusiveBRDF{UniformPigment(Color{1.f, 1.f, 1.f})}, UniformPigment{Color{.6f, .6f, .8f}}};
 	Material materialGround{DiffusiveBRDF(CheckeredPigment(Color{1.f, 0.f, 0.f}, Color{1.f, 1.f, 1.f}, 2))};
-*/
 
 	string projString;
 	int angle;
@@ -266,10 +260,10 @@ int demo(argh::parser cmdl) {
 	world.add(Plane{translation(Vec{0.f, 0.f, -1.f}), materialGround});
 */
 
-	world.add(Sphere{});
+	world.add(Sphere{glass});
 	//world.add(Sphere{scaling(.5f)*translation(Vec{0.f, .5f, 0.f})});
-	world.add(Plane{translation(Vec{0.f, 0.f, 4.f})});
-	world.add(Plane{translation(Vec{0.f, 0.f, -4.f})});
+	world.add(Plane{translation(Vec{0.f, 0.f, 4.f}), materialSky});
+	world.add(Plane{translation(Vec{0.f, 0.f, -4.f}), materialGround});
 	
 
 	int samplesPerPixel;
@@ -282,8 +276,8 @@ int demo(argh::parser cmdl) {
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t) seed};
 
-	//tracer.fireAllRays(PathTracer{world, pcg, 2, 4, 5});
-	tracer.fireAllRays(DebugRenderer(world));
+	tracer.fireAllRays(PathTracer{world, pcg, 2, 3, 6});
+	//tracer.fireAllRays(DebugRenderer(world));
 
 	string ofilename;
 	cmdl({"-o", "--outfile"}, "demo.pfm") >> ofilename;
