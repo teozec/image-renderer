@@ -135,7 +135,7 @@ struct BRDF {
 	template <class T> BRDF(const T &pigment): pigment{std::make_shared<T>(pigment)} {}
 	
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) = 0;
-	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) = 0;
+	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth, bool inward) = 0;
 
 	/**
 	 * @brief Returns a scattered direction.
@@ -192,7 +192,7 @@ struct DiffusiveBRDF : BRDF {
 		return (*pigment)(uv) * (reflectance / M_PI);
 	}
 
-	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) override {
+	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth, bool inward = true) override {
 		float cosThetaSq = pcg.randFloat();
 		float phi = 2.f * M_PI * pcg.randFloat();
 
@@ -219,14 +219,37 @@ struct SpecularBRDF : BRDF {
 			return BLACK;
 	}
 
-	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal n, int depth) override {
+	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal n, int depth, bool inward = true) override {
 		return Ray{interactionPoint, reflect(incomingDir, n) + pcg.randDir(n)*roughness, depth, 1e-5f};
 	}
 };
-/*
-struct DielectricBSDF : BRDF {
 
-}*/
+struct DielectricBSDF : BRDF {
+	float refractionIndex;
+	DielectricBSDF() : BRDF(UniformPigment{WHITE}), refractionIndex{1.f} {}
+	DielectricBSDF(float ri) : BRDF(UniformPigment{WHITE}), refractionIndex{ri} {}
+	template<class T> DielectricBSDF(float ri, const T &pigment) : BRDF(pigment), refractionIndex{ri} {}
+	template<class T> DielectricBSDF(const T &pigment) : BRDF(pigment), refractionIndex{1.f} {}
+
+	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
+		return WHITE;
+	}
+
+
+	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal n, int depth, bool inward) override {
+		Vec dir{incomingDir};
+		float refractionRatio;
+		Normal normal;
+		if (inward) {
+			refractionRatio = 1.f/refractionIndex;
+			normal = n;
+		} else {
+			refractionRatio = refractionIndex;
+			normal = -n;
+		}
+		return Ray{interactionPoint, refract(dir, normal, refractionRatio, inward), depth, 1e-5f};
+	}
+};
 
 struct Material {
 	std::shared_ptr<BRDF> brdf;

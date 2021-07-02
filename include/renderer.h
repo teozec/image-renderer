@@ -108,7 +108,7 @@ struct PathTracer : public Renderer {
 		Material hitMaterial{hit.shape->material};
 		Color hitColor{(*hitMaterial.brdf->pigment)(hit.surfacePoint)};
 		Color emittedRadiance{(*hitMaterial.emittedRadiance)(hit.surfacePoint)};
-
+		bool inward = !hit.shape->isInner(hit.worldPoint - hit.ray.dir*0.01f);
 		float hitColorLum = std::max({hitColor.r, hitColor.g, hitColor.b});
 
 		// Russian roulette
@@ -126,7 +126,7 @@ struct PathTracer : public Renderer {
 		if (hitColorLum > 0.f)
 			for (int i{}; i < nRays; i++)
 				cumulativeRadiance += hitColor * (*this)(hitMaterial.brdf->scatterRay(
-					pcg, hit.ray.dir, hit.worldPoint, hit.normal, ray.depth+1));	
+					pcg, hit.ray.dir, hit.worldPoint, hit.normal, ray.depth+1, inward));	
 
 		return emittedRadiance + cumulativeRadiance / (float) nRays;
 	}
