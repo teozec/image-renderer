@@ -125,6 +125,10 @@ struct ImagePigment : public Pigment {
 	}
 };
 
+/**
+ * @brief Abstract class for a generic BSDF.
+ * 
+ */
 struct BRDF {
 	std::shared_ptr<Pigment> pigment;
 	BRDF(): BRDF{UniformPigment{}} {}
@@ -132,6 +136,47 @@ struct BRDF {
 	
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) = 0;
 	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) = 0;
+
+	/**
+	 * @brief Returns a scattered direction.
+	 * 
+	 * @param normal 
+	 * @param cosThetaSq Squared cosine of angle between incoming ray and normal.
+	 * @param phi 
+	 * @return Vec
+	 */
+	Vec scatter(Normal normal, float cosThetaSq, float phi){
+		ONB onb{normal};
+		float cosTheta = sqrt(cosThetaSq);
+		float sinTheta = sqrt(1.f - cosThetaSq);
+		return onb.e1*cos(phi)*cosTheta + onb.e2*sin(phi)*cosTheta + onb.e3*sinTheta;
+	}
+
+	/**
+	 * @brief Returns the reflected direction.
+	 * 
+	 * @return Vec
+	 */
+	Vec reflect(Vec dir, Normal normal){
+		return dir - normal.toVec()*(normal.toVec().dot(dir)*2);
+	}
+
+	/**
+	 * @brief Returns the scattered direction given the index-of-refraction ratio.
+	 * 
+	 * @param dir 
+	 * @param normal 
+	 * @param refractionRatio 
+	 * @param inward 
+	 * @return Vec 
+	 */
+	Vec refract(Vec dir, Normal normal, float refractionRatio, bool inward){
+		float cos = normal.toVec().dot(-dir);
+		Vec outDirPerpendicular = (dir - normal.toVec()*cos)*refractionRatio;
+		Vec outDirParallel = - normal.toVec()*sqrt(1.f - refractionRatio*refractionRatio*(1.f - cos*cos));
+		return outDirPerpendicular + outDirParallel;
+	}
+
 };
 
 struct DiffusiveBRDF : BRDF {
@@ -148,12 +193,15 @@ struct DiffusiveBRDF : BRDF {
 	}
 
 	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) override {
-		return Ray{interactionPoint, pcg.randDir(normal), depth, 1e-3f};
+		float cosThetaSq = pcg.randFloat();
+		float phi = 2.f * M_PI * pcg.randFloat();
+
+		return Ray{interactionPoint, scatter(normal, cosThetaSq, phi), depth, 1e-5f};
 	}
 };
 
 struct SpecularBRDF : BRDF {
-	float thresholdAngle = M_PI/1800.f; //radian
+	float thresholdAngle = M_PI/1800.f;
 	float roughness = 0.f;
 	SpecularBRDF(float roughness, float thresholdAngle):
 		thresholdAngle{thresholdAngle}, roughness{roughness}, BRDF() {};
@@ -163,30 +211,22 @@ struct SpecularBRDF : BRDF {
 		thresholdAngle{thresholdAngle}, roughness{roughness}, BRDF(pigment) {};
 
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
-		//unused
 		float thetaIn = acos(normal.toVec().dot(in));
 		float thetaOut = acos(normal.toVec().dot(out));
 		if (abs(thetaIn - thetaOut) < thresholdAngle)
 			return (*pigment)(uv);
 		else
-			return Color{0.f, 0.f, 0.f};
+			return BLACK;
 	}
 
 	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal n, int depth) override {
-		
-		Vec dir{incomingDir.x, incomingDir.y, incomingDir.z};
-		dir.normalize();
-		Vec normal = n.toVec();
-		normal.normalize();
-		float dotProd = normal.dot(dir);
-
-		return Ray{interactionPoint,
-			dir - normal*2*dotProd + pcg.randDir(n)*roughness,
-			depth,
-			1e-5f};
+		return Ray{interactionPoint, reflect(incomingDir, n) + pcg.randDir(n)*roughness, depth, 1e-5f};
 	}
-
 };
+/*
+struct DielectricBSDF : BRDF {
+
+}*/
 
 struct Material {
 	std::shared_ptr<BRDF> brdf;
