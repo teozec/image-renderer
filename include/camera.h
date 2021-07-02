@@ -190,18 +190,15 @@ struct ImageTracer {
 	 * @param color The function to compute a Color given a Ray
 	 */
 	template <typename T> void fireAllRays(T colorFunc, bool showProgress) {
-		int progress = 0;
-		#pragma omp parallel for num_threads(2) collapse(2) schedule(dynamic, 1000)
 		for (int row = 0; row < image.height; row++) {
+			if (showProgress){
+				std::cerr << "\rRendering: " << 100*row/(image.height) << "% " << std::flush;
+			}
+			#pragma parallel for schedule(static, 1)
 			for (int col = 0; col < image.width; col++) {
-				if (showProgress){
-					progress++;
-					#pragma omp critical
-					std::cout << "\rRendering: " << 100*progress/(image.width*image.height) << "% " << std::flush;
-				}
 				Color cumColor{0.f, 0.f, 0.f};
 				if (samplesPerSide > 0) {
-					#pragma omp parallel for num_threads(2) collapse(2) schedule(dynamic, 4)
+					#pragma omp parallel for collapse(2)
 					for (int rowPixel = 0; rowPixel<samplesPerSide; rowPixel++) {
 						for (int colPixel = 0; colPixel<samplesPerSide; colPixel++) {
 							float uPixel = (colPixel+pcg.randFloat())/samplesPerSide;
