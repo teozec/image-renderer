@@ -626,8 +626,8 @@ struct InputStream {
 		Scene scene;
 
 		// Insert the variables overriden from the function argument into the scene (if there's any)
-		if (variables.size() != 0){
-			for (auto it = variables.begin(); it == variables.end(); it++)
+		if (variables.size() != 0) {
+			for (auto it = variables.begin(); it != variables.end(); it++)
 				scene.floatVariables.insert({it->first, FloatVariable{it->second, true}});
 		}
 

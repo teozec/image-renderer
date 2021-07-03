@@ -79,7 +79,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"render: render a scenefile to a pfm image." << endl << endl << \
 	"Available options:" << endl << \
 	"	-h, --help: print this message." << endl << \
-	"	-o <string>, --outfile=<string>			Filename of the output image." << endl
+	"	-f <variable1:value1,variable2:value2,...>, --float=<...>	Defines float variables to be used in the scenefile." << endl << \
+	"	-o <string>, --outfile=<string>					Filename of the output image." << endl
 
 using namespace std;
 
@@ -105,6 +106,7 @@ int main(int argc, char *argv[])
 			 "--antialiasing",
 			 "-o", "--outfile",
 			 "-s", "--seed",
+			 "-f", "-float",
 			 "-S", "--nSigma",
 			 "-m", "--method"});
 	cmdl.parse(argc, argv);
@@ -343,7 +345,34 @@ int render(argh::parser cmdl)
 		return 1;
 	}
 	InputStream input{ifile, cmdl[2]};
+
+	string variablesString;
+	cmdl({"--float", "-f"}, string{}) >> variablesString;
+	stringstream variablesStream{variablesString};
+	variablesStream.peek();	// To set eofbit if the stream is empty.
 	unordered_map<string, float> variables;
+	while (!variablesStream.eof()) {
+		string name;
+		getline(variablesStream, name, ':');
+		if (name.empty() or variablesStream.fail()) {
+			cerr << "Error: expected variable name in --float definition" << endl;
+			return 1;
+		} else if (variablesStream.eof()) {
+			cerr << "Error: expected : after variable name in --float definition" << endl;
+			return 1;
+		}
+		float value;
+		variablesStream >> value;
+		if (variablesStream.fail()) {
+			cerr << "Error: expected variable value after : in --float definition" << endl;
+			return 1;
+		}
+		variables.insert({name, value});
+		if (!variablesStream.eof() and variablesStream.get() != ',') {
+			cerr << "Error: expected , or string end after value in --float definition" << endl;
+			return 1;
+		}
+	}
 	try {
 		Scene scene{input.parseScene(variables)};
 		HdrImage image{width, height};
