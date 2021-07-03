@@ -53,15 +53,15 @@ struct HitRecord {
 	Vec2D surfacePoint;
 	float t;
 	Ray ray;
-	std::shared_ptr<Shape> shape = nullptr;
+	Material material;
 
 	HitRecord() {}
 	HitRecord(const HitRecord &other) :	//
 		hit{other.hit}, worldPoint{other.worldPoint}, normal{other.normal}, //
-		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, shape{other.shape} {}
-	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray) : //
+		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, material{other.material} {}
+	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray, Material material) : //
 		hit{true}, worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint}, //
-		t{t}, ray{ray} {}
+		t{t}, ray{ray}, material{material} {}
 
 	HitRecord operator=(const HitRecord &other) {
 		hit = other.hit;
@@ -71,7 +71,7 @@ struct HitRecord {
 			surfacePoint = other.surfacePoint;
 			t = other.t;
 			ray = other.ray;
-			shape = other.shape;
+			material = other.material;
 		}
 		return *this;
 	}	
@@ -220,7 +220,8 @@ private:
 			transformation * sphereNormal(hitPoint, invRay.dir),
 			spherePointToUV(hitPoint),
 			t,
-			ray};
+			ray,
+			material};
 	}
 
 	/**
@@ -286,7 +287,8 @@ struct Plane : public Shape {
 			transformation * planeNormal(hitPoint, invRay.dir),
 			planePointToUV(hitPoint),
 			t,
-			ray};
+			ray,
+			material};
 	}
 
 	/**
@@ -412,7 +414,8 @@ struct Triangle : public Shape {
 			hitNormal,
 			trianglePointToUV(beta, gamma),
 			t,
-			ray};
+			ray,
+			material};
 	}
 
 	/**
@@ -561,7 +564,8 @@ struct CSGUnion : public Shape {
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
-			ray};
+			ray,
+			hit.material};
 	}
 
 	/**
@@ -657,7 +661,8 @@ struct CSGDifference : public Shape {
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
-			ray};
+			ray,
+			hit.material};
 	}
 
 	/**
@@ -767,7 +772,8 @@ struct CSGIntersection : public Shape {
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
-			ray};
+			ray,
+			hit.material};
 	}
 
 	/**
@@ -871,7 +877,8 @@ struct Box : Shape {
 			transformation * normal,
 			boxPointToUV(hitPoint, face),
 			t,
-			ray
+			ray,
+			material
 		};
 	}
 
@@ -897,7 +904,8 @@ struct Box : Shape {
 				transformation * normal,
 				boxPointToUV(hitPoint, faceMin),
 				tMin,
-				ray
+				ray,
+				material
 			});
 		}
 		if (invRay.tmin < tMax and tMax < invRay.tmax) {
@@ -908,7 +916,8 @@ struct Box : Shape {
 				transformation * normal,
 				boxPointToUV(hitPoint, faceMax),
 				tMax,
-				ray
+				ray,
+				material
 			});
 		}
 		return intersections;
@@ -1073,10 +1082,8 @@ struct World {
 			HitRecord intersection = shapes[i]->rayIntersection(ray);
 			if(!intersection.hit)
 				continue;
-			if((!closest.hit) or (intersection.t < closest.t)) {
+			if((!closest.hit) or (intersection.t < closest.t))
 				closest = intersection;
-				closest.shape = shapes[i];
-			}
 		}
 		return closest;
 	}
