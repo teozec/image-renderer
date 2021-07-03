@@ -1,0 +1,43 @@
+# Declare a floating-point variable named "clock"
+float red(0.5)
+float green(0.5)
+float blue(0.5)
+
+# Declare a few new materials. Each of them includes a BRDF and a pigment
+
+# We can split a definition over multiple lines and indent them as we like
+material sky_material(
+	diffuse(uniform(<1., 1., 1.>)),
+	uniform(<0.6, 0.6, 0.8>)
+)
+
+material ground_material(
+	diffuse(checkered(<0.3, 0.5, 0.1>,
+		<0.1, 0.2, 0.5>, 4)),
+	uniform(<0, 0, 0>)
+)
+
+material sphere1_material(
+	specular(uniform(<red, green, blue>)),
+	uniform(<0, 0, 0>)
+)
+
+material sphere2_material(
+	diffuse(uniform(<0.1, 0.1, 0.1>)),
+	uniform(<0, 0, 0>)
+)
+
+# Define a few shapes
+union(sphere(sphere1_material,
+		translation([0, 0.5, 0])),
+	sphere(sphere2_material,
+		translation([0, -0.5, 0])),
+	identity)
+
+# The language is flexible enough to permit spaces before "("
+plane (ground_material, translation([0, 0, -1]))
+
+sphere(sky_material, scaling([5, 5, 5]))
+
+# Define a camera
+camera(perspective, translation([-1, 0, 0]), 1.0, 1.0)

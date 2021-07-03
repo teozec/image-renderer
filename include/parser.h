@@ -64,7 +64,7 @@ struct GrammarError : std::runtime_error {
 enum class Keyword {
 	NEW, MATERIAL, PLANE, SPHERE, DIFFUSE, SPECULAR, UNIFORM, CHECKERED,
 	IMAGE, IDENTITY, TRANSLATION, ROTATION_X, ROTATION_Y, ROTATION_Z,
-	SCALING, CAMERA, ORTHOGONAL, PERSPECTIVE, FLOAT
+	SCALING, CAMERA, ORTHOGONAL, PERSPECTIVE, FLOAT, UNION, DIFFERENCE, INTERSECTION
 };
 
 /**
@@ -177,11 +177,11 @@ struct Token {
 			assignIdentifier(s);
 	}
 
-	operator std::string() {
+	operator std::string() const {
 		switch (type) {
 		case TokenType::KEYWORD: {
 			auto it = keywordTable.begin();
-			for (; it == keywordTable.end(); it++)
+			for (; it != keywordTable.end(); it++)
 				if (it->second == value.k)
 					break;
 			return "Keyword{" + it->first + "}";
@@ -218,7 +218,8 @@ private:
 		{"rotation_y", Keyword::ROTATION_Y}, {"rotation_z", Keyword::ROTATION_Z},
 		{"scaling", Keyword::SCALING}, {"camera", Keyword::CAMERA},
 		{"orthogonal", Keyword::ORTHOGONAL}, {"perspective", Keyword::PERSPECTIVE},
-		{"float", Keyword::FLOAT}
+		{"float", Keyword::FLOAT}, {"union", Keyword::UNION},
+		{"difference", Keyword::DIFFERENCE}, {"intersection", Keyword::INTERSECTION}
 	};
 };
 
@@ -623,6 +624,59 @@ struct InputStream {
 		return Sphere{transformation, scene.materials[materialName]};
 	}
 
+	std::shared_ptr<Shape> parseShape(Scene scene) {
+		Keyword typeKeyw = expectKeywords(std::vector{Keyword::SPHERE, Keyword::PLANE, Keyword::UNION, Keyword::DIFFERENCE, Keyword::INTERSECTION});
+		switch (typeKeyw) {
+		case Keyword::SPHERE:
+			return std::make_shared<Sphere>(parseSphere(scene));
+		case Keyword::PLANE:
+			return std::make_shared<Plane>(parsePlane(scene));
+		case Keyword::UNION:
+			return std::make_shared<CSGUnion>(parseUnion(scene));
+		case Keyword::DIFFERENCE:
+			return std::make_shared<CSGDifference>(parseDifference(scene));
+		case Keyword::INTERSECTION:
+			return std::make_shared<CSGIntersection>(parseIntersection(scene));
+		}
+	}
+
+
+	CSGUnion parseUnion(Scene scene) {
+		expectSymbol('(');
+		auto shape1{parseShape(scene)};
+		expectSymbol(',');
+		auto shape2{parseShape(scene)};
+		expectSymbol(',');
+		auto transformation(parseTransformation(scene));
+		expectSymbol(')');
+
+		return CSGUnion(shape1, shape2, transformation);
+	}
+
+	CSGDifference parseDifference(Scene scene) {
+		expectSymbol('(');
+		auto shape1{parseShape(scene)};
+		expectSymbol(',');
+		auto shape2{parseShape(scene)};
+		expectSymbol(',');
+		auto transformation(parseTransformation(scene));
+		expectSymbol(')');
+
+		return CSGDifference(shape1, shape2, transformation);
+	}
+
+	CSGIntersection parseIntersection(Scene scene) {
+		expectSymbol('(');
+		auto shape1{parseShape(scene)};
+		expectSymbol(',');
+		auto shape2{parseShape(scene)};
+		expectSymbol(',');
+		auto transformation(parseTransformation(scene));
+		expectSymbol(')');
+
+		return CSGIntersection(shape1, shape2, transformation);
+	}
+
 	Scene parseScene(std::unordered_map<std::string, float> variables) {
 		Scene scene;
 
@@ -671,10 +725,19 @@ struct InputStream {
 				scene.camera = parseCamera(scene);
 				break;
 			case Keyword::MATERIAL: {
-				auto material = parseMaterial(scene);
+				auto material{parseMaterial(scene)};
 				scene.materials.insert({std::get<0>(material), std::get<1>(material)});
 				break;
 			}
+			case Keyword::UNION:
+				scene.world.add(parseUnion(scene));
+				break;
+			case Keyword::DIFFERENCE:
+				scene.world.add(parseDifference(scene));
+				break;
+			case Keyword::INTERSECTION:
+				scene.world.add(parseIntersection(scene));
+				break;
 			default:
 				throw GrammarError{location, "Unexpected keyword " + std::string{token}};
 				break;

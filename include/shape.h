@@ -544,11 +544,11 @@ private:
  * @param a		First shape.
  * @param b		Second shape.
  * @param transformation	The transformation to the shape.
- * @param material			The material of the shape.
  * @see Shape.
  */
 struct CSGUnion : public Shape {
 	std::shared_ptr<Shape> a, b;
+	CSGUnion(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation = Transformation{}): a{a}, b{b}, Shape(transformation) {}
 	template <class A, class B> CSGUnion(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGUnion(const A &a, const B &b, Material material): Shape(material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGUnion(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
@@ -636,6 +636,7 @@ struct CSGUnion : public Shape {
  */
 struct CSGDifference : public Shape {
 	std::shared_ptr<Shape> a, b;
+	CSGDifference(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation = Transformation{}): a{a}, b{b}, Shape(transformation) {}
 	template <class A, class B> CSGDifference(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGDifference(const A &a, const B &b, Material material): Shape(material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGDifference(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
@@ -753,6 +754,7 @@ struct CSGDifference : public Shape {
  */
 struct CSGIntersection : public Shape {
 	std::shared_ptr<Shape> a, b;
+	CSGIntersection(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation = Transformation{}): a{a}, b{b}, Shape(transformation) {}
 	template <class A, class B> CSGIntersection(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGIntersection(const A &a, const B &b, Material material): Shape(material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGIntersection(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
