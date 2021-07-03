@@ -203,6 +203,7 @@ struct Token {
 		case TokenType::STOP:
 			return "Stop{}";
 		}
+		return std::string{};
 	}
 	
 private:
