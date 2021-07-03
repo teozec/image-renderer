@@ -70,7 +70,7 @@ struct FlatRenderer : public Renderer {
 	*/
 	virtual Color operator()(Ray ray) override {
 		HitRecord record = world.rayIntersection(ray);
-		return record.hit ? (*record.shape->material.brdf->pigment)(record.surfacePoint) : backgroundColor;
+		return record.hit ? (*record.material.brdf->pigment)(record.surfacePoint) : backgroundColor;
 	}
 };
 
@@ -105,7 +105,7 @@ struct PathTracer : public Renderer {
 		if (!hit.hit)
 			return backgroundColor;
 
-		Material hitMaterial{hit.shape->material};
+		Material hitMaterial{hit.material};
 		Color hitColor{(*hitMaterial.brdf->pigment)(hit.surfacePoint)};
 		Color emittedRadiance{(*hitMaterial.emittedRadiance)(hit.surfacePoint)};
 

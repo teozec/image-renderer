@@ -53,15 +53,15 @@ struct HitRecord {
 	Vec2D surfacePoint;
 	float t;
 	Ray ray;
-	std::shared_ptr<Shape> shape = nullptr;
+	Material material;
 
 	HitRecord() {}
 	HitRecord(const HitRecord &other) :	//
 		hit{other.hit}, worldPoint{other.worldPoint}, normal{other.normal}, //
-		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, shape{other.shape} {}
-	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray) : //
+		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, material{other.material} {}
+	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray, Material material) : //
 		hit{true}, worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint}, //
-		t{t}, ray{ray} {}
+		t{t}, ray{ray}, material{material} {}
 
 	HitRecord operator=(const HitRecord &other) {
 		hit = other.hit;
@@ -71,7 +71,7 @@ struct HitRecord {
 			surfacePoint = other.surfacePoint;
 			t = other.t;
 			ray = other.ray;
-			shape = other.shape;
+			material = other.material;
 		}
 		return *this;
 	}	
@@ -228,7 +228,8 @@ private:
 			transformation * sphereNormal(hitPoint, invRay.dir),
 			spherePointToUV(hitPoint),
 			t,
-			ray};
+			ray,
+			material};
 	}
 
 	/**
@@ -294,7 +295,8 @@ struct Plane : public Shape {
 			transformation * planeNormal(hitPoint, invRay.dir),
 			planePointToUV(hitPoint),
 			t,
-			ray};
+			ray,
+			material};
 	}
 
 	/**
@@ -426,7 +428,8 @@ struct Triangle : public Shape {
 			hitNormal,
 			trianglePointToUV(beta, gamma),
 			t,
-			ray};
+			ray,
+			material};
 	}
 
 	/**
@@ -581,7 +584,8 @@ struct CSGUnion : public Shape {
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
-			ray};
+			ray,
+			hit.material};
 	}
 
 	/**
@@ -683,7 +687,8 @@ struct CSGDifference : public Shape {
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
-			ray};
+			ray,
+			hit.material};
 	}
 
 	/**
@@ -799,7 +804,8 @@ struct CSGIntersection : public Shape {
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
-			ray};
+			ray,
+			hit.material};
 	}
 
 	/**
@@ -909,7 +915,8 @@ struct Box : Shape {
 			transformation * normal,
 			boxPointToUV(hitPoint, face),
 			t,
-			ray
+			ray,
+			material
 		};
 	}
 
@@ -935,7 +942,8 @@ struct Box : Shape {
 				transformation * normal,
 				boxPointToUV(hitPoint, faceMin),
 				tMin,
-				ray
+				ray,
+				material
 			});
 		}
 		if (invRay.tmin < tMax and tMax < invRay.tmax) {
@@ -946,7 +954,8 @@ struct Box : Shape {
 				transformation * normal,
 				boxPointToUV(hitPoint, faceMax),
 				tMax,
-				ray
+				ray,
+				material
 			});
 		}
 		return intersections;
@@ -1117,10 +1126,8 @@ struct World {
 			HitRecord intersection = shapes[i]->rayIntersection(ray);
 			if(!intersection.hit)
 				continue;
-			if((!closest.hit) or (intersection.t < closest.t)) {
+			if((!closest.hit) or (intersection.t < closest.t))
 				closest = intersection;
-				closest.shape = shapes[i];
-			}
 		}
 		return closest;
 	}
@@ -1141,18 +1148,92 @@ struct World {
  * 
  * @return CSGUnion 
  */
-CSGUnion Chair(){
-	Box legFrontLeft{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}};
-	Box legFrontRight{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(1.f, -1.f, 1.f)};
+CSGUnion Chair(Transformation transformation, Material material){
+	Box legFrontLeft{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, material};
+	Box legFrontRight{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(1.f, -1.f, 1.f), material};
 	CSGUnion frontLegs{legFrontLeft, legFrontRight};
-	Box legBackLeft{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(-1.f, 1.f, 1.f)};
-	Box legBackRight{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(-1.f, -1.f, 1.f)};
+	Box legBackLeft{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(-1.f, 1.f, 1.f), material};
+	Box legBackRight{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(-1.f, -1.f, 1.f), material};
 	CSGUnion backLegs{legBackLeft, legBackRight};
 	CSGUnion legs{frontLegs, backLegs};
-	Box bottom{Point{-.5f, -.5f, -.5f}, Point{.5f, .5f, -.3f}};
-	CSGIntersection back{Box{Point{.3f, -.5f, -.3f}, Point{.5f, .5f, 1.f}}, Sphere{translation(Vec{.4f, 0.f, 0.f})}};
+	Box bottom{Point{-.5f, -.5f, -.5f}, Point{.5f, .5f, -.3f}, material};
+	CSGIntersection back{Box{Point{.3f, -.5f, -.3f}, Point{.5f, .5f, 1.f}, material}, Sphere{translation(Vec{.4f, 0.f, 0.f}), material}};
 	CSGUnion top{bottom, back};
-	return CSGUnion{legs, top, translation(Vec{0.f, 0.f, 1.5f})};
+	return CSGUnion{legs, top, transformation*translation(Vec{0.f, 0.f, 1.5f})};
 };
+
+/**
+ * @brief This is a predefinite dice that lays on the floor (plane xy).
+ * 
+ * @return CSGIntersection
+ */
+CSGIntersection Dice(Transformation transformation, Material diceMat, Material numbersMat){
+	Box cube{Point{-.5f, -.5f, -.5f}, Point{.5f, .5f, .5f}, diceMat};
+
+	Sphere one{translation(Vec{0.f, 0.f, -.5f})*scaling(.1f), numbersMat};
+	CSGDifference face1{cube, one};
+
+	CSGUnion two{
+		Sphere{translation(Vec{0.3f, 0.f, 0.3f})*translation(Vec{0.f, .5f, 0.f})*scaling(.1f), numbersMat}, 
+		Sphere{translation(Vec{-0.3f, 0.f, -0.3f})*translation(Vec{0.f, .5f, 0.f})*scaling(.1f), numbersMat}, 
+		numbersMat};
+	CSGDifference face2{face1, two};
+
+	CSGUnion three{
+		Sphere{translation(Vec{0.5f, 0.f, 0.f})*scaling(.1f), numbersMat}, 
+		CSGUnion{
+			Sphere{translation(Vec{0.f, 0.3f, 0.3f})*translation(Vec{.5f, 0.f, 0.f})*scaling(.1f), numbersMat},
+			Sphere{translation(Vec{0.f, -0.3f, -0.3f})*translation(Vec{.5f, 0.f, 0.f})*scaling(.1f), numbersMat}
+		}
+	};
+	CSGDifference face3{face2, three};
+
+	CSGUnion four{
+		Sphere{translation(Vec{0.f, 0.3f, 0.3f})*translation(Vec{-.5f, 0.f, 0.f})*scaling(.1f), numbersMat}, 
+		CSGUnion{
+			Sphere{translation(Vec{0.f, -0.3f, 0.3f})*translation(Vec{-.5f, 0.f, 0.f})*scaling(.1f), numbersMat},
+			CSGUnion{
+				Sphere{translation(Vec{0.f, 0.3f, -0.3f})*translation(Vec{-.5f, 0.f, 0.f})*scaling(.1f), numbersMat},
+				Sphere{translation(Vec{0.f, -0.3f, -0.3f})*translation(Vec{-.5f, 0.f, 0.f})*scaling(.1f), numbersMat}
+			}
+		}
+	};
+	CSGDifference face4{face3, four};
+
+	CSGUnion five{
+		Sphere{translation(Vec{0.f, -.5f, 0.f})*scaling(.1f), numbersMat}, 
+		CSGUnion{
+			Sphere{translation(Vec{0.3f, 0.f, 0.3f})*translation(Vec{0.f, -.5f, 0.f})*scaling(.1f), numbersMat}, 
+			CSGUnion{
+				Sphere{translation(Vec{-0.3f, 0.f, 0.3f})*translation(Vec{0.f, -.5f, 0.f})*scaling(.1f), numbersMat},
+				CSGUnion{
+					Sphere{translation(Vec{0.3f, 0.f, -0.3f})*translation(Vec{0.f, -.5f, 0.f})*scaling(.1f), numbersMat},
+					Sphere{translation(Vec{-0.3f, 0.f, -0.3f})*translation(Vec{0.f, -.5f, 0.f})*scaling(.1f), numbersMat}
+				}
+			}
+		}
+	};
+	CSGDifference face5{face4, five};
+
+	CSGUnion six{
+		Sphere{translation(Vec{0.3f, 0.f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat}, 
+		CSGUnion{	
+			Sphere{translation(Vec{-0.3f, 0.f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat}, 
+			CSGUnion{
+				Sphere{translation(Vec{0.3f, 0.3f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat}, 
+				CSGUnion{
+					Sphere{translation(Vec{-0.3f, 0.3f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat},
+					CSGUnion{
+						Sphere{translation(Vec{0.3f, -0.3f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat},
+						Sphere{translation(Vec{-0.3f, -0.3f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat}
+					}
+				}
+			}
+		}
+	};
+	CSGDifference face6{face5, six};
+
+	return CSGIntersection{face6, Sphere{scaling(.8f)}, transformation};
+}
 
 #endif // #SHAPE_H
