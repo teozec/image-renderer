@@ -108,7 +108,7 @@ struct PathTracer : public Renderer {
 		Material hitMaterial{hit.shape->material};
 		Color hitColor{(*hitMaterial.brdf->pigment)(hit.surfacePoint)};
 		Color emittedRadiance{(*hitMaterial.emittedRadiance)(hit.surfacePoint)};
-		bool inward = !hit.shape->isInner(hit.worldPoint - hit.ray.dir*0.01f);
+		bool inward = !(hit.shape->isInner(hit.worldPoint - hit.ray.dir*1e-4f)); //Be carefull: not all shapes have it implemented
 		float hitColorLum = std::max({hitColor.r, hitColor.g, hitColor.b});
 
 		// Russian roulette

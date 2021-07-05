@@ -126,7 +126,7 @@ struct ImagePigment : public Pigment {
 };
 
 /**
- * @brief Abstract class for a generic BSDF.
+ * @brief Abstract class for a generic BxDF.
  * 
  */
 struct BRDF {
@@ -167,13 +167,13 @@ struct BRDF {
 	 * @param dir 
 	 * @param normal 
 	 * @param refractionRatio 
-	 * @param inward 
+	 * @param cosI
+	 * @param cosT
 	 * @return Vec 
 	 */
-	Vec refract(Vec dir, Normal normal, float refractionRatio, bool inward){
-		float cos = normal.toVec().dot(-dir);
-		Vec outDirPerpendicular = (dir - normal.toVec()*cos)*refractionRatio;
-		Vec outDirParallel = - normal.toVec()*sqrt(1.f - refractionRatio*refractionRatio*(1.f - cos*cos));
+	Vec refract(Vec dir, Normal normal, float refractionRatio, float cosI, float cosT){
+		Vec outDirPerpendicular = (dir - normal.toVec()*cosI)*refractionRatio;
+		Vec outDirParallel = - normal.toVec()*cosT;
 		return outDirPerpendicular + outDirParallel;
 	}
 
@@ -232,22 +232,44 @@ struct DielectricBSDF : BRDF {
 	template<class T> DielectricBSDF(const T &pigment) : BRDF(pigment), refractionIndex{1.f} {}
 
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
-		return WHITE;
+		float thetaIn = acos(normal.toVec().dot(in));
+		float thetaOut = acos(normal.toVec().dot(out));
+		if (abs(thetaIn - thetaOut) < M_PI/1800.f)
+			return (*pigment)(uv);
+		else
+			return BLACK;
 	}
 
 
 	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal n, int depth, bool inward) override {
-		Vec dir{incomingDir};
 		float refractionRatio;
-		Normal normal;
+		//Normal outwardNormal;
 		if (inward) {
 			refractionRatio = 1.f/refractionIndex;
-			normal = n;
+			//outwardNormal = n;
 		} else {
 			refractionRatio = refractionIndex;
-			normal = -n;
+			//outwardNormal = -n;
 		}
-		return Ray{interactionPoint, refract(dir, normal, refractionRatio, inward), depth, 1e-5f};
+		// Incident (I) angles
+		float cosThetaI = -incomingDir.dot(n.toVec());
+		float sinThetaSqI = std::max(0.f, 1.f - cosThetaI*cosThetaI);
+		// Transmitted (T) angles
+		float sinThetaSqT = refractionRatio * refractionRatio * sinThetaSqI;
+		// cosThetaT squared is the discriminant
+		float discriminant = 1.f - sinThetaSqT;
+
+		// total reflection (discriminant negative) or Schlick approx for reflectance
+		if (discriminant <= 0.f || schlick(cosThetaI, refractionRatio) > pcg.randFloat())
+			return Ray{interactionPoint, reflect(incomingDir, n), depth, 1e-5f};
+		else
+			return Ray{interactionPoint, refract(incomingDir, n, refractionRatio, cosThetaI, sqrt(discriminant)), depth, 1e-5f};
+	}
+
+	float schlick(float cosine, float refractionRatio) {
+		float r0 = (1.f - refractionRatio) / (1.f + refractionRatio);
+		float r0Sq = r0 * r0;
+		return r0Sq + (1.f - r0Sq) * pow((1.f - cosine), 5);
 	}
 };
 
