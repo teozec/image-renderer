@@ -227,10 +227,11 @@ int demo(argh::parser cmdl) {
 	float aspectRatio = (float) width / height;
 
 	Material gold{SpecularBRDF(0.02f, UniformPigment(Color{.8f, .8f, .2f}))};
-	Material matte{DiffusiveBRDF{UniformPigment(Color{.5f, .5f, .5f})}};
-	Material glass{DielectricBSDF{1.5f}};
+	Material matteBlue{DiffusiveBRDF{UniformPigment(Color{.1f, .2f, .5f})}};
+	Material matteYellow{DiffusiveBRDF{UniformPigment(Color{.4f, .4f, .1f})}};
+	Material glass{DielectricBSDF{1.5f, UniformPigment(Color{.2f, .2f, .8f})}};
 	Material materialSky{DiffusiveBRDF{UniformPigment(Color{1.f, 1.f, 1.f})}, UniformPigment{Color{.6f, .6f, .8f}}};
-	Material materialGround{DiffusiveBRDF(CheckeredPigment(Color{1.f, 0.f, 0.f}, Color{1.f, 1.f, 1.f}, 2))};
+	Material materialGround{DiffusiveBRDF(UniformPigment(Color{.3f, .3f, .3f}))};
 
 	string projString;
 	int angle;
@@ -260,8 +261,9 @@ int demo(argh::parser cmdl) {
 	world.add(Plane{translation(Vec{0.f, 0.f, -1.f}), materialGround});
 */
 
-	world.add(Sphere{glass});
-	//world.add(Sphere{scaling(.5f)*translation(Vec{0.f, .5f, 0.f})});
+	world.add(Sphere{translation(Vec{1.f, 0.f, 0.f})*scaling(.5f), glass});
+	world.add(Sphere{translation(Vec{2.f, .75f, 0.f})*scaling(.5f), matteBlue});
+	world.add(Sphere{translation(Vec{2.f, -.75f, 0.f})*scaling(.5f), matteYellow});
 	world.add(Plane{translation(Vec{0.f, 0.f, 4.f}), materialSky});
 	world.add(Plane{translation(Vec{0.f, 0.f, -4.f}), materialGround});
 	
