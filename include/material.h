@@ -232,12 +232,7 @@ struct DielectricBSDF : BRDF {
 	template<class T> DielectricBSDF(const T &pigment) : BRDF(pigment), refractionIndex{1.f} {}
 
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
-		float thetaIn = acos(normal.toVec().dot(in));
-		float thetaOut = acos(normal.toVec().dot(out));
-		if (abs(thetaIn - thetaOut) < M_PI/1800.f)
-			return (*pigment)(uv);
-		else
-			return BLACK;
+		return (*pigment)(uv) * (1.f / M_PI);
 	}
 
 
