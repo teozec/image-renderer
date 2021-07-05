@@ -226,12 +226,19 @@ int demo(argh::parser cmdl) {
 	cmdl({"-h", "--height"}, 1000) >> height;
 	float aspectRatio = (float) width / height;
 
-	Material gold{SpecularBRDF(0.02f, UniformPigment(Color{.8f, .8f, .2f}))};
+
+
 	Material matteBlue{DiffusiveBRDF{UniformPigment(Color{.1f, .2f, .5f})}};
-	Material matteYellow{DiffusiveBRDF{UniformPigment(Color{.4f, .4f, .1f})}};
-	Material glass{DielectricBSDF{1.5f, UniformPigment(Color{.2f, .2f, .8f})}};
-	Material materialSky{DiffusiveBRDF{UniformPigment(Color{1.f, 1.f, 1.f})}, UniformPigment{Color{.6f, .6f, .8f}}};
-	Material materialGround{DiffusiveBRDF(UniformPigment(Color{.3f, .3f, .3f}))};
+	Material matteRed{DiffusiveBRDF{UniformPigment(Color{.5f, .2f, .1f})}};
+	Material matteBlack{DiffusiveBRDF{UniformPigment{Color{.2f, .2f, .2f}}}};
+	Material matteGreen{DiffusiveBRDF{UniformPigment{Color{.2f, .5f, .1f}}}};
+	Material gold1{SpecularBRDF{.05f, UniformPigment{Color{.9f, .75f, .2f}}}};
+	Material gold2{SpecularBRDF{.75f, UniformPigment{Color{.9f, .75f, .2f}}}};
+	Material glass{DielectricBSDF{1.2f, 0.f}};
+	Material glassYellow{DielectricBSDF{1.2f, UniformPigment{Color{.8f, .8f, .2f}}}};
+	Material glassRough{DielectricBSDF{1.2f, .75f}};
+	Material skyMat{DiffusiveBRDF{UniformPigment{WHITE}}, UniformPigment{WHITE}};
+	Material wallsMat{DiffusiveBRDF{CheckeredPigment{Color{.8f, .8f, .8f}, Color{.2f, .2f, .2f}, 10}}};
 
 	string projString;
 	int angle;
@@ -259,14 +266,27 @@ int demo(argh::parser cmdl) {
 	//world.add(CSGUnion{Box{Point{-.5f, -.5f, 0.f}, Point{.5f, .5f, 1.f}, matte}, Sphere{translation(Vec{0.f, 0.f, 1.f}), gold}});
 	world.add(Sphere{scaling(5.f), materialSky});
 	world.add(Plane{translation(Vec{0.f, 0.f, -1.f}), materialGround});
-*/
 
 	world.add(Sphere{translation(Vec{1.f, 0.f, 0.f})*scaling(.5f), glass});
 	world.add(Sphere{translation(Vec{2.f, .75f, 0.f})*scaling(.5f), matteBlue});
 	world.add(Sphere{translation(Vec{2.f, -.75f, 0.f})*scaling(.5f), matteYellow});
 	world.add(Plane{translation(Vec{0.f, 0.f, 4.f}), materialSky});
 	world.add(Plane{translation(Vec{0.f, 0.f, -4.f}), materialGround});
+	*/
+
+	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, 3.5f}, wallsMat});
+	world.add(Box{Point{-1.5f, -3.5f, 3.4f}, Point{5.5f, 3.5f, 3.5f}, skyMat});
+	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, -3.4f}, matteGreen});
+
 	
+	//world.add(Chair(translation(Vec{2.5f, 0.f, -2.5f}), matteBlack));
+	world.add(Sphere{scaling(0.5f), glass});
+	world.add(Sphere{scaling(0.5f)*translation(Vec{1.f, 2.5f, 0.f}), glassYellow});
+	world.add(Sphere{scaling(0.5f)*translation(Vec{1.f, -2.5f, 0.f}), glassRough});
+	world.add(Sphere{translation(Vec{2.5f, -2.5f, -2.5f}), gold1});
+	world.add(Sphere{translation(Vec{2.5f, 2.5f, -2.5f}), gold2});
+	world.add(Sphere{translation(Vec{4.5f, -2.5f, 2.5f}), matteBlue});
+	world.add(Sphere{translation(Vec{4.5f, 2.5f, 2.5f}), matteRed});
 
 	int samplesPerPixel;
 	cmdl({"--antialiasing"}, 0) >> samplesPerPixel;
