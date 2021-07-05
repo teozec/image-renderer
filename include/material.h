@@ -226,8 +226,9 @@ struct SpecularBRDF : BRDF {
 
 struct DielectricBSDF : BRDF {
 	float refractionIndex;
+	float roughness = 0.f;
 	DielectricBSDF() : BRDF(UniformPigment{WHITE}), refractionIndex{1.f} {}
-	DielectricBSDF(float ri) : BRDF(UniformPigment{WHITE}), refractionIndex{ri} {}
+	DielectricBSDF(float ri, float roughness) : BRDF(UniformPigment{WHITE}), refractionIndex{ri}, roughness{roughness} {}
 	template<class T> DielectricBSDF(float ri, const T &pigment) : BRDF(pigment), refractionIndex{ri} {}
 	template<class T> DielectricBSDF(const T &pigment) : BRDF(pigment), refractionIndex{1.f} {}
 
@@ -256,9 +257,9 @@ struct DielectricBSDF : BRDF {
 
 		// total reflection (discriminant negative) or Schlick approx for reflectance
 		if (discriminant <= 0.f || schlick(cosThetaI, refractionRatio) > pcg.randFloat())
-			return Ray{interactionPoint, reflect(incomingDir, n), depth, 1e-5f};
+			return Ray{interactionPoint, reflect(incomingDir, n) + pcg.randDir(n)*roughness, depth, 1e-5f};
 		else
-			return Ray{interactionPoint, refract(incomingDir, n, refractionRatio, cosThetaI, sqrt(discriminant)), depth, 1e-5f};
+			return Ray{interactionPoint, refract(incomingDir, n, refractionRatio, cosThetaI, sqrt(discriminant)) + pcg.randDir(n)*roughness, depth, 1e-5f};
 	}
 
 	float schlick(float cosine, float refractionRatio) {
