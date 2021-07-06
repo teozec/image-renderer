@@ -226,8 +226,6 @@ int demo(argh::parser cmdl) {
 	cmdl({"-h", "--height"}, 1000) >> height;
 	float aspectRatio = (float) width / height;
 
-
-
 	Material matteBlue{DiffusiveBRDF{UniformPigment(Color{.1f, .2f, .5f})}};
 	Material matteRed{DiffusiveBRDF{UniformPigment(Color{.5f, .2f, .1f})}};
 	Material matteBlack{DiffusiveBRDF{UniformPigment{Color{.2f, .2f, .2f}}}};
@@ -277,7 +275,6 @@ int demo(argh::parser cmdl) {
 	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, 3.5f}, wallsMat});
 	world.add(Box{Point{-1.5f, -3.5f, 3.4f}, Point{5.5f, 3.5f, 3.5f}, skyMat});
 	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, -3.4f}, matteGreen});
-
 	
 	//world.add(Chair(translation(Vec{2.5f, 0.f, -2.5f}), matteBlack));
 	world.add(Sphere{scaling(0.5f), glass});
