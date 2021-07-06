@@ -295,7 +295,7 @@ int demo(argh::parser cmdl) {
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t) seed};
 
-	tracer.fireAllRays(PathTracer{world, pcg, 2, 3, 6});
+	tracer.fireAllRays(PathTracer{world, pcg, 2, 3, 6}, true);
 	//tracer.fireAllRays(DebugRenderer(world));
 
 	string ofilename;
