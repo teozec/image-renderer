@@ -39,7 +39,7 @@ void testImageTracer()
 	Ray bottomRightRay = tracer.fireRay(3, 1, 1.f, 1.f);
 	assert((Point{0.f, -2.f, -1.f}) == bottomRightRay(1.f));
 
-	tracer.fireAllRays([](Ray r) {return Color{1.f, 2.f, 3.f};});
+	tracer.fireAllRays([](Ray r) {return Color{1.f, 2.f, 3.f};}, false);
 	for (int row{}; row < image.height; row++)
 		for (int col{}; col < image.width; col++)
 			assert((tracer.image.getPixel(col, row) == Color{1.f, 2.f, 3.f}));

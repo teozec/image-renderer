@@ -35,6 +35,9 @@ add_library(trace
 	src/hdr-image.cpp
 	)
 
+find_package(OpenMP REQUIRED)
+target_link_libraries(trace PUBLIC OpenMP::OpenMP_CXX)
+
 find_package(GD REQUIRED)
 target_link_libraries(trace PUBLIC ${GD_LIBRARIES})
 
