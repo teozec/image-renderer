@@ -64,13 +64,13 @@ struct HdrImage {
 
 	// Gets color of the pixel in (x, y)
 	Color getPixel(const int x, const int y) {
-		assert(validCoordinates(x, y));
+		//assert(validCoordinates(x, y));
 		return pixels[pixelOffset(x, y)];
 	}
 
 	// Sets the color of a pixel
 	void setPixel(const int x, const int y, const Color c) {
-		assert(validCoordinates(x, y));
+		//assert(validCoordinates(x, y));
 		pixels[pixelOffset(x, y)] = c;
 	}
 

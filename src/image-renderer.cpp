@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "renderer.h"
+#include "texture.h"
 #include "argh.h"
 #undef NDEBUG
 #include <cassert>
@@ -225,18 +226,26 @@ int demo(argh::parser cmdl) {
 	cmdl({"-w", "--width"}, 1000) >> width;
 	cmdl({"-h", "--height"}, 1000) >> height;
 	float aspectRatio = (float) width / height;
-
-	Material matteBlue{DiffusiveBRDF{UniformPigment(Color{.1f, .2f, .5f})}};
-	Material matteRed{DiffusiveBRDF{UniformPigment(Color{.5f, .2f, .1f})}};
-	Material matteBlack{DiffusiveBRDF{UniformPigment{Color{.2f, .2f, .2f}}}};
-	Material matteGreen{DiffusiveBRDF{UniformPigment{Color{.2f, .5f, .1f}}}};
-	Material gold1{SpecularBRDF{.05f, UniformPigment{Color{.9f, .75f, .2f}}}};
-	Material gold2{SpecularBRDF{.75f, UniformPigment{Color{.9f, .75f, .2f}}}};
-	Material glass{DielectricBSDF{1.2f, 0.f}};
-	Material glassYellow{DielectricBSDF{1.2f, UniformPigment{Color{.8f, .8f, .2f}}}};
-	Material glassRough{DielectricBSDF{1.2f, .75f}};
+	
 	Material skyMat{DiffusiveBRDF{UniformPigment{WHITE}}, UniformPigment{WHITE}};
 	Material wallsMat{DiffusiveBRDF{CheckeredPigment{Color{.8f, .8f, .8f}, Color{.2f, .2f, .2f}, 10}}};
+	
+	Material matteGreen{DiffusiveBRDF{UniformPigment{Color{.2f, .5f, .1f}}}};
+	
+	HdrImage marbleImage{"../textures/marble_10.pfm"};
+	Material marble{DiffusiveBRDF{ImagePigment{marbleImage}}};
+
+	HdrImage woodImage{"../textures/wood_20.pfm"};
+	Material wood{DiffusiveBRDF{ImagePigment{woodImage}}};
+	
+	HdrImage noiseImage{"../textures/noise_10.pfm"};
+	Material noise{DiffusiveBRDF{ImagePigment{noiseImage}}};
+
+	/*
+	HdrImage turbImage{"../../textures/turb_3.pfm"};
+	Material turb{DiffusiveBRDF{ImagePigment{turbImage}}};
+	*/
+
 
 	string projString;
 	int angle;
@@ -244,7 +253,7 @@ int demo(argh::parser cmdl) {
 	int seed;
 	cmdl({"-s", "--seed"}, 42) >> seed;
 	cmdl({"--angleDeg"}, 0) >> angle;
-	Transformation camTransformation{rotationY(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
+	Transformation camTransformation{rotationZ(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
 	shared_ptr<Camera> cam;
 	if (projString == "orthogonal")
 		cam = make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, camTransformation});
@@ -258,32 +267,15 @@ int demo(argh::parser cmdl) {
 	HdrImage image{width, height};
 	World world;
 
-/*
-	world.add(Sphere{scaling(.5f)*translation(Vec{1.2f, -1.2f, 0.f}), material1});
-	world.add(Sphere{scaling(.5f)*translation(Vec{0.f, .5f, 0.f}), material2});
-	//world.add(CSGUnion{Box{Point{-.5f, -.5f, 0.f}, Point{.5f, .5f, 1.f}, matte}, Sphere{translation(Vec{0.f, 0.f, 1.f}), gold}});
-	world.add(Sphere{scaling(5.f), materialSky});
-	world.add(Plane{translation(Vec{0.f, 0.f, -1.f}), materialGround});
+	world.add(Sphere{translation(Vec{3.5f, 2.f, 0.f}), marble});
+	world.add(Sphere{translation(Vec{3.5f, 0.f, 0.f}), wood});
+	world.add(Sphere{translation(Vec{3.5f, -2.f, 0.f}), noise});
+	world.add(Sphere{translation(Vec{1.5f, 0.f, -2.4f})*scaling(.5f), skyMat});
 
-	world.add(Sphere{translation(Vec{1.f, 0.f, 0.f})*scaling(.5f), glass});
-	world.add(Sphere{translation(Vec{2.f, .75f, 0.f})*scaling(.5f), matteBlue});
-	world.add(Sphere{translation(Vec{2.f, -.75f, 0.f})*scaling(.5f), matteYellow});
-	world.add(Plane{translation(Vec{0.f, 0.f, 4.f}), materialSky});
-	world.add(Plane{translation(Vec{0.f, 0.f, -4.f}), materialGround});
-	*/
 
 	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, 3.5f}, wallsMat});
 	world.add(Box{Point{-1.5f, -3.5f, 3.4f}, Point{5.5f, 3.5f, 3.5f}, skyMat});
 	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, -3.4f}, matteGreen});
-	
-	//world.add(Chair(translation(Vec{2.5f, 0.f, -2.5f}), matteBlack));
-	world.add(Sphere{scaling(0.5f), glass});
-	world.add(Sphere{scaling(0.5f)*translation(Vec{1.f, 2.5f, 0.f}), glassYellow});
-	world.add(Sphere{scaling(0.5f)*translation(Vec{1.f, -2.5f, 0.f}), glassRough});
-	world.add(Sphere{translation(Vec{2.5f, -2.5f, -2.5f}), gold1});
-	world.add(Sphere{translation(Vec{2.5f, 2.5f, -2.5f}), gold2});
-	world.add(Sphere{translation(Vec{4.5f, -2.5f, 2.5f}), matteBlue});
-	world.add(Sphere{translation(Vec{4.5f, 2.5f, 2.5f}), matteRed});
 
 	int samplesPerPixel;
 	cmdl({"--antialiasing"}, 0) >> samplesPerPixel;
@@ -295,7 +287,7 @@ int demo(argh::parser cmdl) {
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t) seed};
 
-	tracer.fireAllRays(PathTracer{world, pcg, 2, 3, 6}, true);
+	tracer.fireAllRays(PathTracer{world, pcg, 2, 4, 6}, true);
 	//tracer.fireAllRays(DebugRenderer(world));
 
 	string ofilename;
