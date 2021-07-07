@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "renderer.h"
+#include "texture.h"
 #include "argh.h"
 #undef NDEBUG
 #include <cassert>
@@ -225,12 +226,26 @@ int demo(argh::parser cmdl) {
 	cmdl({"-w", "--width"}, 1000) >> width;
 	cmdl({"-h", "--height"}, 1000) >> height;
 	float aspectRatio = (float) width / height;
-
-	Material gold1{SpecularBRDF{.05f, UniformPigment{Color{.9f, .75f, .2f}}}};
-	Material gold2{SpecularBRDF{.75f, UniformPigment{Color{.9f, .75f, .2f}}}};
-	Material matteBlack{DiffusiveBRDF{UniformPigment{Color{.2f, .2f, .2f}}}};
-	Material groundMat{DiffusiveBRDF{UniformPigment{Color{.2f, .5f, .1f}}}};
+	
 	Material skyMat{DiffusiveBRDF{UniformPigment{WHITE}}, UniformPigment{WHITE}};
+	Material wallsMat{DiffusiveBRDF{CheckeredPigment{Color{.8f, .8f, .8f}, Color{.2f, .2f, .2f}, 10}}};
+	
+	Material matteGreen{DiffusiveBRDF{UniformPigment{Color{.2f, .5f, .1f}}}};
+	
+	HdrImage marbleImage{"../textures/marble_10.pfm"};
+	Material marble{DiffusiveBRDF{ImagePigment{marbleImage}}};
+
+	HdrImage woodImage{"../textures/wood_20.pfm"};
+	Material wood{DiffusiveBRDF{ImagePigment{woodImage}}};
+	
+	HdrImage noiseImage{"../textures/noise_10.pfm"};
+	Material noise{DiffusiveBRDF{ImagePigment{noiseImage}}};
+
+	/*
+	HdrImage turbImage{"../../textures/turb_3.pfm"};
+	Material turb{DiffusiveBRDF{ImagePigment{turbImage}}};
+	*/
+
 
 	string projString;
 	int angle;
@@ -238,7 +253,7 @@ int demo(argh::parser cmdl) {
 	int seed;
 	cmdl({"-s", "--seed"}, 42) >> seed;
 	cmdl({"--angleDeg"}, 0) >> angle;
-	Transformation camTransformation{rotationY(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
+	Transformation camTransformation{rotationZ(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
 	shared_ptr<Camera> cam;
 	if (projString == "orthogonal")
 		cam = make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, camTransformation});
@@ -252,10 +267,15 @@ int demo(argh::parser cmdl) {
 	HdrImage image{width, height};
 	World world;
 
-	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, 3.5f}, matteBlack});
+	world.add(Sphere{translation(Vec{3.5f, 2.f, 0.f}), marble});
+	world.add(Sphere{translation(Vec{3.5f, 0.f, 0.f}), wood});
+	world.add(Sphere{translation(Vec{3.5f, -2.f, 0.f}), noise});
+	world.add(Sphere{translation(Vec{1.5f, 0.f, -2.4f})*scaling(.5f), skyMat});
+
+
+	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, 3.5f}, wallsMat});
 	world.add(Box{Point{-1.5f, -3.5f, 3.4f}, Point{5.5f, 3.5f, 3.5f}, skyMat});
-	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, -3.4f}, groundMat});
-	
+	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, -3.4f}, matteGreen});
 
 	int samplesPerPixel;
 	cmdl({"--antialiasing"}, 0) >> samplesPerPixel;
@@ -267,8 +287,8 @@ int demo(argh::parser cmdl) {
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t) seed};
 
-	//tracer.fireAllRays(PathTracer{world, pcg, 2, 4, 6}, false);
-	tracer.fireAllRays(DebugRenderer(world), false);
+	tracer.fireAllRays(PathTracer{world, pcg, 2, 4, 6}, true);
+	//tracer.fireAllRays(DebugRenderer(world));
 
 	string ofilename;
 	cmdl({"-o", "--outfile"}, "demo.pfm") >> ofilename;

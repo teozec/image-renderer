@@ -24,6 +24,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include "hdr-image.h"
 #include "color.h"
 #include "random.h"
+#include <omp.h>
 
 struct Ray {
 	Point origin;
@@ -194,7 +195,6 @@ struct ImageTracer {
 			if (showProgress){
 				std::cerr << "\rRendering: " << 100*row/(image.height) << "% " << std::flush;
 			}
-			#pragma parallel for schedule(static, 1)
 			for (int col = 0; col < image.width; col++) {
 				Color cumColor{0.f, 0.f, 0.f};
 				if (samplesPerSide > 0) {
