@@ -109,7 +109,7 @@ struct ImagePigment : public Pigment {
 	ImagePigment(HdrImage img) : Pigment(), img{img} {}
 
 	/**
-	 * @brief Overloading operator(). It let you get the color in a given surface coordinates (u, v).
+	 * @brief Overloading operator(). It let you get the color in a given surface coordinates pair (u, v).
 	 * 
 	 * @param coords 
 	 * @return Color 

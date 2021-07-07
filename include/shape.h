@@ -60,7 +60,7 @@ struct HitRecord {
 	HitRecord(const HitRecord &other) :	//
 		hit{other.hit}, worldPoint{other.worldPoint}, normal{other.normal}, //
 		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, // 
-		material{other.material}, inward{inward} {}
+		material{other.material}, inward{other.inward} {}
 	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray, Material material, bool inward) : //
 		hit{true}, worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint}, //
 		t{t}, ray{ray}, material{material}, inward{inward} {}
@@ -262,10 +262,11 @@ private:
  * @see Shape
  */
 struct Plane : public Shape {
+	int scale;
 	Plane(): Shape() {}
 	Plane(Transformation transformation): Shape(transformation) {}
-	Plane(Material material): Shape(material) {}
-	Plane(Transformation transformation, Material material): Shape(transformation, material) {}
+	Plane(Material material, int scale=1): Shape(material), scale{scale} {}
+	Plane(Transformation transformation, Material material, int scale=1): Shape(transformation, material), scale{scale} {}
 
 	/**
 	 * @brief 	Return a HitRecord corresponding to the intersection between the ray and the plane.
@@ -346,7 +347,10 @@ private:
 	 * @return Vec2D 
 	 */
 	Vec2D planePointToUV(Point p) {
-		return Vec2D{p.x - std::floor(p.x), p.y - std::floor(p.y)};
+		//Move the origin of uv coords and scale up (or down) the texture map
+		Vec origin{-10.f, 10.f, -10.f};
+		Point ref = (p-origin)*(1.f/scale);
+		return Vec2D{(ref.x - std::floor(ref.x)), (ref.y - std::floor(ref.y))};
 	}
 };
 
