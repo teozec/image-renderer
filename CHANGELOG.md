@@ -1,5 +1,6 @@
 # HEAD
 
+- Implement `PerlinNoise` and some related textures ([PR#24](https://github.com/teozec/image-renderer/pull/24)).
 - Improve `SpecularBRDF` and implement `DielectricBSDF` ([PR#24](https://github.com/teozec/image-renderer/pull/24)).
 - Enable multithreading ([PR#25](https://github.com/teozec/image-renderer/pull/25)).
 - Bug fix: make Materials work with CSG shapes ([PR#27](https://github.com/teozec/image-renderer/pull/27), [#26](https://github.com/teozec/image-renderer/issues/26)).
