@@ -230,8 +230,9 @@ struct DielectricBSDF : BRDF {
 	float roughness = 0.f;
 	DielectricBSDF() : BRDF(UniformPigment{WHITE}), refractionIndex{1.f} {}
 	DielectricBSDF(float ri, float roughness) : BRDF(UniformPigment{WHITE}), refractionIndex{ri}, roughness{roughness} {}
-	template<class T> DielectricBSDF(float ri, const T &pigment) : BRDF(pigment), refractionIndex{ri} {}
-	template<class T> DielectricBSDF(const T &pigment) : BRDF(pigment), refractionIndex{1.f} {}
+	template<class T> DielectricBSDF(float ri, float roughness, const T &pigment) : BRDF(pigment), refractionIndex{ri}, roughness{roughness} {}
+	template<class T> DielectricBSDF(float ri, const T &pigment) : BRDF(pigment), refractionIndex{ri}, roughness{0} {}
+	template<class T> DielectricBSDF(const T &pigment) : BRDF(pigment), refractionIndex{1.f}, roughness{0} {}
 
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
 		return (*pigment)(uv) * (1.f / M_PI);

@@ -491,6 +491,9 @@ struct InputStream {
 		return result;
 	}
 
+	// diffuse(pigment)
+	// specular(pigment, roughness)
+	// dielectric(pigment, roughness, refractionIndex)
 	std::shared_ptr<BRDF> parseBRDF(Scene scene) {
 		Keyword k{expectKeywords(std::vector{Keyword::DIFFUSE, Keyword::SPECULAR, Keyword::DIELECTRIC})};
 		expectSymbol('(');
@@ -506,14 +509,16 @@ struct InputStream {
 			expectSymbol(',');
 			float roughness{expectNumber(scene)};
 			expectSymbol(')');
-			brdf = std::make_shared<SpecularBRDF>(SpecularBRDF{roughness, pigment}); // 0.f default roughness
+			brdf = std::make_shared<SpecularBRDF>(SpecularBRDF{roughness, pigment});
 			break;
 		}
 		case Keyword::DIELECTRIC: {
 			expectSymbol(',');
+			float roughness{expectNumber(scene)};
+			expectSymbol(',');
 			float rifraction{expectNumber(scene)};
 			expectSymbol(')');
-			brdf = std::make_shared<DielectricBSDF>(DielectricBSDF{rifraction, pigment}); // 0.f default roughness
+			brdf = std::make_shared<DielectricBSDF>(DielectricBSDF{rifraction, roughness, pigment});
 		}
 		default:
 			break;
