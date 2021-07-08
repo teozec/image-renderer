@@ -109,7 +109,7 @@ struct ImagePigment : public Pigment {
 	ImagePigment(HdrImage img) : Pigment(), img{img} {}
 
 	/**
-	 * @brief Overloading operator(). It let you get the color in a given surface coordinates (u, v).
+	 * @brief Overloading operator(). It let you get the color in a given surface coordinates pair (u, v).
 	 * 
 	 * @param coords 
 	 * @return Color 
@@ -125,6 +125,10 @@ struct ImagePigment : public Pigment {
 	}
 };
 
+/**
+ * @brief Abstract class for a generic BxDF.
+ * 
+ */
 struct BRDF {
 	std::shared_ptr<Pigment> pigment;
 	BRDF(): BRDF{UniformPigment{}} {}
@@ -132,7 +136,48 @@ struct BRDF {
 	BRDF(const std::shared_ptr<Pigment> pigment): pigment{pigment} {}
 	
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) = 0;
-	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) = 0;
+	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth, bool inward) = 0;
+
+	/**
+	 * @brief Returns a scattered direction.
+	 * 
+	 * @param normal 
+	 * @param cosThetaSq Squared cosine of angle between incoming ray and normal.
+	 * @param phi 
+	 * @return Vec
+	 */
+	Vec scatter(Normal normal, float cosThetaSq, float phi){
+		ONB onb{normal};
+		float cosTheta = sqrt(cosThetaSq);
+		float sinTheta = sqrt(1.f - cosThetaSq);
+		return onb.e1*cos(phi)*cosTheta + onb.e2*sin(phi)*cosTheta + onb.e3*sinTheta;
+	}
+
+	/**
+	 * @brief Returns the reflected direction.
+	 * 
+	 * @return Vec
+	 */
+	Vec reflect(Vec dir, Normal normal){
+		return dir - normal.toVec()*(normal.toVec().dot(dir)*2);
+	}
+
+	/**
+	 * @brief Returns the scattered direction given the index-of-refraction ratio.
+	 * 
+	 * @param dir 
+	 * @param normal 
+	 * @param refractionRatio 
+	 * @param cosI
+	 * @param cosT
+	 * @return Vec 
+	 */
+	Vec refract(Vec dir, Normal normal, float refractionRatio, float cosI, float cosT){
+		Vec outDirPerpendicular = (dir - normal.toVec()*cosI)*refractionRatio;
+		Vec outDirParallel = - normal.toVec()*cosT;
+		return outDirPerpendicular + outDirParallel;
+	}
+
 };
 
 struct DiffusiveBRDF : BRDF {
@@ -148,53 +193,81 @@ struct DiffusiveBRDF : BRDF {
 		return (*pigment)(uv) * (reflectance / M_PI);
 	}
 
-	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth) override {
-		ONB onb{normal};
+	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth, bool inward = true) override {
 		float cosThetaSq = pcg.randFloat();
-		float cosTheta = std::sqrt(cosThetaSq);
-		float sinTheta = std::sqrt(1.f-cosThetaSq);
 		float phi = 2.f * M_PI * pcg.randFloat();
 
-		return Ray{interactionPoint,
-			onb.e1*cos(phi)*cosTheta + onb.e2*sin(phi)*cosTheta + onb.e3*sinTheta,
-			depth,
-			1e-3f};
+		return Ray{interactionPoint, scatter(normal, cosThetaSq, phi), depth, 1e-5f};
 	}
 };
 
 struct SpecularBRDF : BRDF {
-	float thresholdAngle = M_PI/1800.f; //radian
-	SpecularBRDF(float thresholdAngle):
-		thresholdAngle{thresholdAngle}, BRDF() {};
-	template <class T> SpecularBRDF(const T &pigment):
-		BRDF(pigment) {};
-	template <class T> SpecularBRDF(float thresholdAngle, const T &pigment):
-		thresholdAngle{thresholdAngle}, BRDF(pigment) {};
+	float thresholdAngle = M_PI/1800.f;
+	float roughness = 0.f;
+	SpecularBRDF(float roughness, float thresholdAngle):
+		thresholdAngle{thresholdAngle}, roughness{roughness}, BRDF() {};
+	template <class T> SpecularBRDF(float roughness, const T &pigment):
+		roughness{roughness}, BRDF(pigment) {};
+	template <class T> SpecularBRDF(float roughness, float thresholdAngle, const T &pigment):
+		thresholdAngle{thresholdAngle}, roughness{roughness}, BRDF(pigment) {};
 
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
-		//unused
 		float thetaIn = acos(normal.toVec().dot(in));
 		float thetaOut = acos(normal.toVec().dot(out));
 		if (abs(thetaIn - thetaOut) < thresholdAngle)
 			return (*pigment)(uv);
 		else
-			return Color{0.f, 0.f, 0.f};
+			return BLACK;
 	}
 
-	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal n, int depth) override {
-		
-		Vec dir{incomingDir.x, incomingDir.y, incomingDir.z};
-		dir.normalize();
-		Vec normal = n.toVec();
-		normal.normalize();
-		float dotProd = normal.dot(dir);
+	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal n, int depth, bool inward = true) override {
+		return Ray{interactionPoint, reflect(incomingDir, n) + pcg.randDir(n)*roughness, depth, 1e-5f};
+	}
+};
 
-		return Ray{interactionPoint,
-			dir - normal*2*dotProd,
-			depth,
-			1e-5f};
+struct DielectricBSDF : BRDF {
+	float refractionIndex;
+	float roughness = 0.f;
+	DielectricBSDF() : BRDF(UniformPigment{WHITE}), refractionIndex{1.f} {}
+	DielectricBSDF(float ri, float roughness) : BRDF(UniformPigment{WHITE}), refractionIndex{ri}, roughness{roughness} {}
+	template<class T> DielectricBSDF(float ri, const T &pigment) : BRDF(pigment), refractionIndex{ri} {}
+	template<class T> DielectricBSDF(const T &pigment) : BRDF(pigment), refractionIndex{1.f} {}
+
+	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
+		return (*pigment)(uv) * (1.f / M_PI);
 	}
 
+
+	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal n, int depth, bool inward) override {
+		float refractionRatio;
+		//Normal outwardNormal;
+		if (inward) {
+			refractionRatio = 1.f/refractionIndex;
+			//outwardNormal = n;
+		} else {
+			refractionRatio = refractionIndex;
+			//outwardNormal = -n;
+		}
+		// Incident (I) angles
+		float cosThetaI = -incomingDir.dot(n.toVec());
+		float sinThetaSqI = std::max(0.f, 1.f - cosThetaI*cosThetaI);
+		// Transmitted (T) angles
+		float sinThetaSqT = refractionRatio * refractionRatio * sinThetaSqI;
+		// cosThetaT squared is the discriminant
+		float discriminant = 1.f - sinThetaSqT;
+
+		// total reflection (discriminant negative) or Schlick approx for reflectance
+		if (discriminant <= 0.f || schlick(cosThetaI, refractionRatio) > pcg.randFloat())
+			return Ray{interactionPoint, reflect(incomingDir, n) + pcg.randDir(n)*roughness, depth, 1e-5f};
+		else
+			return Ray{interactionPoint, refract(incomingDir, n, refractionRatio, cosThetaI, sqrt(discriminant)) + pcg.randDir(n)*roughness, depth, 1e-5f};
+	}
+
+	float schlick(float cosine, float refractionRatio) {
+		float r0 = (1.f - refractionRatio) / (1.f + refractionRatio);
+		float r0Sq = r0 * r0;
+		return r0Sq + (1.f - r0Sq) * pow((1.f - cosine), 5);
+	}
 };
 
 struct Material {

@@ -503,7 +503,7 @@ struct InputStream {
 			brdf = std::make_shared<DiffusiveBRDF>(DiffusiveBRDF{pigment});
 			break;
 		case Keyword::SPECULAR:
-			brdf = std::make_shared<SpecularBRDF>(SpecularBRDF{pigment});
+			brdf = std::make_shared<SpecularBRDF>(SpecularBRDF{0.f, pigment}); // 0.f default roughness
 			break;
 		default:
 			break;

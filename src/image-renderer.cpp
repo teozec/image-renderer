@@ -17,7 +17,9 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "renderer.h"
 #include "parser.h"
+#include "texture.h"
 #include "argh.h"
+
 #undef NDEBUG
 #include <cassert>
 #include <sstream>
@@ -238,19 +240,20 @@ int demo(argh::parser cmdl) {
 	cmdl({"-w", "--width"}, 600) >> width;
 	cmdl({"-h", "--height"}, 400) >> height;
 	float aspectRatio = (float) width / height;
+	
+	Material skyMat{DiffusiveBRDF{UniformPigment{WHITE}}, UniformPigment{WHITE}};
+	Material wallsMat{DiffusiveBRDF{CheckeredPigment{Color{.8f, .8f, .8f}, Color{.2f, .2f, .2f}, 10}}};
+	
+	Material matteGreen{DiffusiveBRDF{UniformPigment{Color{.2f, .5f, .1f}}}};
+	
+	HdrImage marbleImage{"../textures/marble_10.pfm"};
+	Material marble{DiffusiveBRDF{ImagePigment{marbleImage}}};
 
-/*
-	Material material1{SpecularBRDF(UniformPigment(Color{.8f, .8f, .8f}))};
-
-	Material material2{DiffusiveBRDF(CheckeredPigment(Color{.7f, .8f, .5f}, Color{.7f, .2f, .3f}, 4))};
-
-	Material gold{SpecularBRDF(UniformPigment(Color{.8f, .8f, .2f}))};
-	Material matte{DiffusiveBRDF{UniformPigment(Color{.5f, .5f, .5f})}};
-*/
-
-	Material materialSky{DiffusiveBRDF{UniformPigment(Color{1.f, 1.f, 1.f})}, UniformPigment{Color{.6f, .6f, .8f}}};
-	Material materialGround{DiffusiveBRDF(CheckeredPigment(Color{0.3f, 0.5f, 0.1f}, Color{0.1f, 0.2f, 0.5f}, 4))};
-	Material materialSphere{SpecularBRDF{UniformPigment{Color{.5f, .5f, .5f}}}, UniformPigment{Color{0.f, 0.f, 0.f}}};
+	HdrImage woodImage{"../textures/wood_20.pfm"};
+	Material wood{DiffusiveBRDF{ImagePigment{woodImage}}};
+	
+	HdrImage noiseImage{"../textures/noise_10.pfm"};
+	Material noise{DiffusiveBRDF{ImagePigment{noiseImage}}};
 
 	string projString;
 	int angle;
@@ -258,7 +261,7 @@ int demo(argh::parser cmdl) {
 	int seed;
 	cmdl({"-s", "--seed"}, 42) >> seed;
 	cmdl({"--angleDeg"}, 0) >> angle;
-	Transformation camTransformation{rotationY(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
+	Transformation camTransformation{rotationZ(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
 	shared_ptr<Camera> cam;
 	if (projString == "orthogonal")
 		cam = make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, camTransformation});
@@ -272,19 +275,15 @@ int demo(argh::parser cmdl) {
 	HdrImage image{width, height};
 	World world;
 
-/*
-	world.add(Sphere{scaling(.5f)*translation(Vec{1.2f, -1.2f, 0.f}), material1});
-	world.add(Sphere{scaling(.5f)*translation(Vec{0.f, .5f, 0.f}), material2});
-	//world.add(CSGUnion{Box{Point{-.5f, -.5f, 0.f}, Point{.5f, .5f, 1.f}, matte}, Sphere{translation(Vec{0.f, 0.f, 1.f}), gold}});
-*/
-	world.add(Sphere{scaling(5.f), materialSky});
-	world.add(Plane{translation(Vec{0.f, 0.f, -1.f}), materialGround});
+	world.add(Sphere{translation(Vec{3.5f, 2.f, 0.f}), marble});
+	world.add(Sphere{translation(Vec{3.5f, 0.f, 0.f}), wood});
+	world.add(Sphere{translation(Vec{3.5f, -2.f, 0.f}), noise});
+	world.add(Sphere{translation(Vec{1.5f, 0.f, -2.4f})*scaling(.5f), skyMat});
 
-	world.add(Sphere{materialSphere});
-	//world.add(Sphere{scaling(.5f)*translation(Vec{0.f, .5f, 0.f})});
-	//world.add(Plane{translation(Vec{0.f, 0.f, 4.f})});
-	//world.add(Plane{translation(Vec{0.f, 0.f, -4.f})});
-	
+
+	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, 3.5f}, wallsMat});
+	world.add(Box{Point{-1.5f, -3.5f, 3.4f}, Point{5.5f, 3.5f, 3.5f}, skyMat});
+	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, -3.4f}, matteGreen});
 
 	int samplesPerPixel;
 	cmdl({"--antialiasing"}, 0) >> samplesPerPixel;
@@ -296,8 +295,7 @@ int demo(argh::parser cmdl) {
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t) seed};
 
-	tracer.fireAllRays(PathTracer{world, pcg, 2, 4, 3});
-	//tracer.fireAllRays(DebugRenderer(world));
+	tracer.fireAllRays(PathTracer{world, pcg, 2, 4, 6}, true);
 
 	string ofilename;
 	cmdl({"-o", "--outfile"}, "demo.pfm") >> ofilename;

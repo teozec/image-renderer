@@ -54,14 +54,16 @@ struct HitRecord {
 	float t;
 	Ray ray;
 	Material material;
+	bool inward;
 
 	HitRecord() {}
 	HitRecord(const HitRecord &other) :	//
 		hit{other.hit}, worldPoint{other.worldPoint}, normal{other.normal}, //
-		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, material{other.material} {}
-	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray, Material material) : //
+		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, // 
+		material{other.material}, inward{other.inward} {}
+	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray, Material material, bool inward) : //
 		hit{true}, worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint}, //
-		t{t}, ray{ray}, material{material} {}
+		t{t}, ray{ray}, material{material}, inward{inward} {}
 
 	HitRecord operator=(const HitRecord &other) {
 		hit = other.hit;
@@ -72,6 +74,7 @@ struct HitRecord {
 			t = other.t;
 			ray = other.ray;
 			material = other.material;
+			inward = other.inward;
 		}
 		return *this;
 	}	
@@ -223,13 +226,15 @@ private:
 	 */
 	HitRecord intersection(float t, Ray ray, Ray invRay) {
 		Point hitPoint{invRay(t)};
+		bool inward = !isInner(hitPoint - invRay.dir*1e-4f);
 		return HitRecord{
 			transformation * hitPoint,
 			transformation * sphereNormal(hitPoint, invRay.dir),
 			spherePointToUV(hitPoint),
 			t,
 			ray,
-			material};
+			material,
+			inward};
 	}
 
 	/**
@@ -265,10 +270,11 @@ private:
  * @see Shape
  */
 struct Plane : public Shape {
+	int scale;
 	Plane(): Shape() {}
 	Plane(Transformation transformation): Shape(transformation) {}
-	Plane(Material material): Shape(material) {}
-	Plane(Transformation transformation, Material material): Shape(transformation, material) {}
+	Plane(Material material, int scale=1): Shape(material), scale{scale} {}
+	Plane(Transformation transformation, Material material, int scale=1): Shape(transformation, material), scale{scale} {}
 
 	/**
 	 * @brief 	Return a HitRecord corresponding to the intersection between the ray and the plane.
@@ -290,13 +296,15 @@ struct Plane : public Shape {
 			return HitRecord{};
 
 		Point hitPoint{invRay(t)};
+		bool inward = !isInner(hitPoint - invRay.dir*1e-4f);
 		return HitRecord{
 			transformation * hitPoint,
 			transformation * planeNormal(hitPoint, invRay.dir),
 			planePointToUV(hitPoint),
 			t,
 			ray,
-			material};
+			material,
+			inward};
 	}
 
 	/**
@@ -353,7 +361,10 @@ private:
 	 * @return Vec2D 
 	 */
 	Vec2D planePointToUV(Point p) {
-		return Vec2D{p.x - std::floor(p.x), p.y - std::floor(p.y)};
+		//Move the origin of uv coords and scale up (or down) the texture map
+		Vec origin{-10.f, 10.f, -10.f};
+		Point ref = (p-origin)*(1.f/scale);
+		return Vec2D{(ref.x - std::floor(ref.x)), (ref.y - std::floor(ref.y))};
 	}
 };
 
@@ -429,7 +440,8 @@ struct Triangle : public Shape {
 			trianglePointToUV(beta, gamma),
 			t,
 			ray,
-			material};
+			material,
+			false};
 	}
 
 	/**
@@ -579,13 +591,15 @@ struct CSGUnion : public Shape {
 		else
 			hit = hitB;
 
+		bool inward = !isInner(hit.worldPoint - invRay.dir*1e-4f);
 		return HitRecord {
 			transformation * hit.worldPoint,
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
 			ray,
-			hit.material};
+			hit.material,
+			inward};
 	}
 
 	/**
@@ -683,13 +697,16 @@ struct CSGDifference : public Shape {
 			hit = hitA;
 		else
 			hit = hitB;
+
+		bool inward = !isInner(hit.worldPoint - invRay.dir*1e-4f);
 		return HitRecord {
 			transformation * hit.worldPoint,
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
 			ray,
-			hit.material};
+			hit.material,
+			inward};
 	}
 
 	/**
@@ -801,13 +818,16 @@ struct CSGIntersection : public Shape {
 			hit = hitA;
 		else
 			hit = hitB;
+		
+		bool inward = !isInner(hit.worldPoint - invRay.dir*1e-4f);
 		return HitRecord {
 			transformation * hit.worldPoint,
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
 			ray,
-			hit.material};
+			hit.material,
+			inward};
 	}
 
 	/**
@@ -912,13 +932,15 @@ struct Box : Shape {
 			return HitRecord{};
 		}
 		Point hitPoint{invRay(t)};
+		bool inward = !isInner(hitPoint - invRay.dir*1e-4f);
 		return HitRecord{
 			transformation * hitPoint,
 			transformation * normal,
 			boxPointToUV(hitPoint, face),
 			t,
 			ray,
-			material
+			material,
+			inward
 		};
 	}
 
@@ -939,25 +961,29 @@ struct Box : Shape {
 		if (invRay.tmin < tMin and tMin < invRay.tmax) {
 			Normal normal{boxNormal(faceMin)};
 			Point hitPoint{invRay(tMin)};
+			bool inward = !isInner(hitPoint - invRay.dir*1e-4f);
 			intersections.push_back(HitRecord{
 				transformation * hitPoint,
 				transformation * normal,
 				boxPointToUV(hitPoint, faceMin),
 				tMin,
 				ray,
-				material
+				material,
+				inward
 			});
 		}
 		if (invRay.tmin < tMax and tMax < invRay.tmax) {
 			Normal normal{-boxNormal(faceMax)};
 			Point hitPoint{invRay(tMax)};
+			bool inward = !isInner(hitPoint - invRay.dir*1e-4f);
 			intersections.push_back(HitRecord{
 				transformation * hitPoint,
 				transformation * normal,
 				boxPointToUV(hitPoint, faceMax),
 				tMax,
 				ray,
-				material
+				material,
+				inward
 			});
 		}
 		return intersections;
