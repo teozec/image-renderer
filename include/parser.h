@@ -481,7 +481,9 @@ struct InputStream {
 		case Keyword::IMAGE: {
 			std::string file{expectString()};
 			HdrImage image{file};
-			result = std::make_shared<ImagePigment>(ImagePigment{image});
+			expectSymbol(',');
+			Color c{parseColor(scene)};
+			result = std::make_shared<ImagePigment>(ImagePigment{image * c});
 			break;
 		}
 		default:
@@ -502,13 +504,11 @@ struct InputStream {
 
 		switch (k) {
 		case Keyword::DIFFUSE:
-			expectSymbol(')');
 			brdf = std::make_shared<DiffusiveBRDF>(DiffusiveBRDF{pigment});
 			break;
 		case Keyword::SPECULAR: {
 			expectSymbol(',');
 			float roughness{expectNumber(scene)};
-			expectSymbol(')');
 			brdf = std::make_shared<SpecularBRDF>(SpecularBRDF{roughness, pigment});
 			break;
 		}
@@ -517,12 +517,12 @@ struct InputStream {
 			float roughness{expectNumber(scene)};
 			expectSymbol(',');
 			float rifraction{expectNumber(scene)};
-			expectSymbol(')');
 			brdf = std::make_shared<DielectricBSDF>(DielectricBSDF{rifraction, roughness, pigment});
 		}
 		default:
 			break;
 		}
+		expectSymbol(')');
 		return brdf;
 	}
 
@@ -677,6 +677,8 @@ struct InputStream {
 			return std::make_shared<CSGIntersection>(parseIntersection(scene));
 		case Keyword::BOX:
 			return std::make_shared<Box>(parseBox(scene));
+		default:
+			exit(1);	// We should never get here
 		}
 	}
 

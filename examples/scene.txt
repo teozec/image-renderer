@@ -17,18 +17,24 @@ material ground_material(
 	uniform(<0, 0, 0>)
 )
 
+material box_material(
+	dielectric(uniform(<red, green, blue>), 0.1, 1.5),
+	uniform(<0, 0, 0>)
+)
+
 material sphere_material(
-	specular(uniform(<red, green, blue>), 0.),
+	diffuse(image("../textures/wood_50.pfm", <0.5, 0.3, 0>)),
 	uniform(<0, 0, 0>)
 )
 
 # Define a few shapes
-sphere(sphere_material, identity)
+box(box_material, [-0.5, -0.5, -1], [0.5, 0.5, 0], rotation_z(45))
+sphere(sphere_material, translation([0, 0, 1]))
 
 # The language is flexible enough to permit spaces before "("
 plane (ground_material, translation([0, 0, -1]))
 
-sphere(sky_material, scaling([5, 5, 5]))
+sphere(sky_material, scaling([7.5, 7.5, 7.5]))
 
 # Define a camera
 camera(perspective, translation([-1, 0, 0]), 1.0, 1.0)
