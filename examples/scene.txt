@@ -18,7 +18,7 @@ material ground_material(
 )
 
 material sphere_material(
-	specular(uniform(<red, green, blue>)),
+	specular(uniform(<red, green, blue>), 0.),
 	uniform(<0, 0, 0>)
 )
 

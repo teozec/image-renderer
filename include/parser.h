@@ -62,7 +62,7 @@ struct GrammarError : std::runtime_error {
  * @brief An enum to identify the available keywords
  */
 enum class Keyword {
-	NEW, MATERIAL, PLANE, SPHERE, DIFFUSE, SPECULAR, UNIFORM, CHECKERED,
+	NEW, MATERIAL, PLANE, SPHERE, DIFFUSE, SPECULAR, DIELECTRIC, UNIFORM, CHECKERED,
 	IMAGE, IDENTITY, TRANSLATION, ROTATION_X, ROTATION_Y, ROTATION_Z,
 	SCALING, CAMERA, ORTHOGONAL, PERSPECTIVE, FLOAT, UNION, DIFFERENCE, INTERSECTION, BOX
 };
@@ -220,7 +220,7 @@ private:
 		{"orthogonal", Keyword::ORTHOGONAL}, {"perspective", Keyword::PERSPECTIVE},
 		{"float", Keyword::FLOAT}, {"union", Keyword::UNION},
 		{"difference", Keyword::DIFFERENCE}, {"intersection", Keyword::INTERSECTION},
-		{"box", Keyword::BOX}
+		{"box", Keyword::BOX}, {"dielectric", Keyword::DIELECTRIC}
 	};
 };
 
@@ -492,19 +492,29 @@ struct InputStream {
 	}
 
 	std::shared_ptr<BRDF> parseBRDF(Scene scene) {
-		Keyword k{expectKeywords(std::vector{Keyword::DIFFUSE, Keyword::SPECULAR})};
+		Keyword k{expectKeywords(std::vector{Keyword::DIFFUSE, Keyword::SPECULAR, Keyword::DIELECTRIC})};
 		expectSymbol('(');
 		std::shared_ptr<Pigment> pigment{parsePigment(scene)};
-		expectSymbol(')');
 		std::shared_ptr<BRDF> brdf;
 
 		switch (k) {
 		case Keyword::DIFFUSE:
+			expectSymbol(')');
 			brdf = std::make_shared<DiffusiveBRDF>(DiffusiveBRDF{pigment});
 			break;
-		case Keyword::SPECULAR:
-			brdf = std::make_shared<SpecularBRDF>(SpecularBRDF{0.f, pigment}); // 0.f default roughness
+		case Keyword::SPECULAR: {
+			expectSymbol(',');
+			float roughness{expectNumber(scene)};
+			expectSymbol(')');
+			brdf = std::make_shared<SpecularBRDF>(SpecularBRDF{roughness, pigment}); // 0.f default roughness
 			break;
+		}
+		case Keyword::DIELECTRIC: {
+			expectSymbol(',');
+			float rifraction{expectNumber(scene)};
+			expectSymbol(')');
+			brdf = std::make_shared<DielectricBSDF>(DielectricBSDF{rifraction, pigment}); // 0.f default roughness
+		}
 		default:
 			break;
 		}
