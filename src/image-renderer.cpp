@@ -376,7 +376,7 @@ int render(argh::parser cmdl)
 		HdrImage image{width, height};
 		ImageTracer tracer{image, *scene.camera, samplesPerSide};
 		PCG pcg{(uint64_t) seed};
-		tracer.fireAllRays(PathTracer{scene.world, pcg, 2, 4, 3});
+		tracer.fireAllRays(PathTracer{scene.world, pcg, 2, 5, 4});
 		//tracer.fireAllRays(DebugRenderer(scene.world));
 
 		string ofilename;
