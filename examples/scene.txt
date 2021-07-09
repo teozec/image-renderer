@@ -1,11 +1,8 @@
-# Declare a floating-point variable named "clock"
 float red(0.5)
 float green(0.5)
 float blue(0.5)
 
 # Declare a few new materials. Each of them includes a BRDF and a pigment
-
-# We can split a definition over multiple lines and indent them as we like
 material sky_material(
 	diffuse(uniform(<1., 1., 1.>)),
 	uniform(<0.6, 0.6, 0.8>)
