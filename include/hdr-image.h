@@ -137,7 +137,7 @@ struct HdrImage {
 	}
 
 	// Normalization of pixels given a factor and (optional) luminosity
-	void normalizeImage(const float factor, const float luminosity){
+	void normalizeImage(const float factor, const float luminosity) {
 		for (auto it = pixels.begin(); it != pixels.end(); ++it){
 			(*it) = (*it)*(factor/luminosity);
 		}

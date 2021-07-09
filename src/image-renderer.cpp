@@ -92,6 +92,7 @@ int demo(argh::parser cmdl);
 int render(argh::parser cmdl);
 int pfm2ldr(argh::parser cmdl);
 int stackPfm(argh::parser cmdl);
+string baseFilename(string s);
 
 int main(int argc, char *argv[])
 {
@@ -101,6 +102,7 @@ int main(int argc, char *argv[])
 			 "-g", "--gamma",
 			 "-c", "--compression",
 			 "-q", "--quality",
+			 "-l", "--luminosity",
 			 "-w", "--width",
 			 "-h", "--height",
 			 "-p", "--projection",
@@ -108,7 +110,7 @@ int main(int argc, char *argv[])
 			 "--antialiasing",
 			 "-o", "--outfile",
 			 "-s", "--seed",
-			 "-f", "-float",
+			 "-f", "--float", "--format",
 			 "-S", "--nSigma",
 			 "-m", "--method"});
 	cmdl.parse(argc, argv);
@@ -143,13 +145,18 @@ int pfm2ldr(argh::parser cmdl)
 		return 0;
 	}
 
-	if (cmdl.size() != 5) {
+	if (cmdl.size() != 3) {
 		cerr << USAGE << endl << RUN_HELP;
 		return 1;
 	}
 
+	// Parse input filename (first positional argument)
+	string infileString = cmdl[2];
+	const char *infile = infileString.c_str();
+
 	// Parse format
-	const string formatStr = cmdl[2]; 
+	string formatStr;
+	cmdl({"-f", "--format"}, "png") >> formatStr;
 	ImageFormat format;
 	if (formatStr == "png") {
 		format = ImageFormat::png;
@@ -169,10 +176,12 @@ int pfm2ldr(argh::parser cmdl)
 		return 1;
 	}
 
-	const char *infile = cmdl[3].c_str();
-	const char *outfile = cmdl[4].c_str();
+	// Parse output filename
+	string ofileString;
+	cmdl({"-o", "--outfile"}, baseFilename(infileString) + "." + formatStr) >> ofileString;
+	const char *outfile = ofileString.c_str();
 
-	// Parse parameters (also specifying default values).
+	// Parse parameters
 	float aFactor;
 	cmdl({"-a", "--afactor"}, .3f) >> aFactor;
 
@@ -187,6 +196,9 @@ int pfm2ldr(argh::parser cmdl)
 	int quality;
 	cmdl({"-q", "--quality"}, -1) >> quality;
 
+	float luminosity;
+	cmdl({"-l", "--luminosity"}, -1.f) >> luminosity;
+
 	// Read the input file
 	HdrImage img;
 	try {
@@ -197,7 +209,10 @@ int pfm2ldr(argh::parser cmdl)
 	}
 
 	// Convert HDR to LDR
-	img.normalizeImage(aFactor, .2f);
+	if (luminosity > 0.f)	// User inputted luminosity
+		img.normalizeImage(aFactor, luminosity);
+	else			// Default luminosity
+		img.normalizeImage(aFactor);
 	img.clampImage();
 
 	// Write to output file
@@ -529,4 +544,11 @@ int stackPfm(argh::parser cmdl)
 	outPfm.close();
 
 	return 0;
+}
+
+string baseFilename(string s)
+{
+	s = s.substr(s.find_last_of('/')+1);
+	s = s.substr(0, s.find_last_of('.'));
+	return s;
 }
