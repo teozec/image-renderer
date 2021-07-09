@@ -62,7 +62,7 @@ struct GrammarError : std::runtime_error {
  * @brief An enum to identify the available keywords
  */
 enum class Keyword {
-	NEW, MATERIAL, PLANE, SPHERE, DIFFUSE, SPECULAR, DIELECTRIC, UNIFORM, CHECKERED,
+	NEW, MATERIAL, PLANE, SPHERE, TRIANGLE, DIFFUSE, SPECULAR, DIELECTRIC, UNIFORM, CHECKERED,
 	IMAGE, IDENTITY, TRANSLATION, ROTATION_X, ROTATION_Y, ROTATION_Z,
 	SCALING, CAMERA, ORTHOGONAL, PERSPECTIVE, FLOAT, UNION, DIFFERENCE, INTERSECTION, BOX
 };
@@ -220,7 +220,8 @@ private:
 		{"orthogonal", Keyword::ORTHOGONAL}, {"perspective", Keyword::PERSPECTIVE},
 		{"float", Keyword::FLOAT}, {"union", Keyword::UNION},
 		{"difference", Keyword::DIFFERENCE}, {"intersection", Keyword::INTERSECTION},
-		{"box", Keyword::BOX}, {"dielectric", Keyword::DIELECTRIC}
+		{"box", Keyword::BOX}, {"dielectric", Keyword::DIELECTRIC},
+		{"triangle", Keyword::TRIANGLE}
 	};
 };
 
@@ -516,8 +517,8 @@ struct InputStream {
 			expectSymbol(',');
 			float roughness{expectNumber(scene)};
 			expectSymbol(',');
-			float rifraction{expectNumber(scene)};
-			brdf = std::make_shared<DielectricBSDF>(DielectricBSDF{rifraction, roughness, pigment});
+			float refraction{expectNumber(scene)};
+			brdf = std::make_shared<DielectricBSDF>(DielectricBSDF{refraction, roughness, pigment});
 		}
 		default:
 			break;
@@ -642,6 +643,29 @@ struct InputStream {
 		return Sphere{transformation, scene.materials[materialName]};
 	}
 
+	// triangle(material, pointA, pointB, pointC, transformation)
+	Triangle parseTriangle(Scene scene){
+		expectSymbol('(');
+		std::string materialName = expectIdentifier();
+		if (scene.materials.find(materialName) == scene.materials.end())
+			throw GrammarError(location, "Unknown material "+materialName);
+		expectSymbol(',');
+		Vec vecA{parseVec(scene)};
+		Point pointA{vecA.x, vecA.y, vecA.z};
+		expectSymbol(',');
+		Vec vecB{parseVec(scene)};
+		Point pointB{vecB.x, vecB.y, vecB.z};
+		expectSymbol(',');
+		Vec vecC{parseVec(scene)};
+		Point pointC{vecC.x, vecC.y, vecC.z};
+		expectSymbol(',');
+		Transformation transformation = parseTransformation(scene);
+		expectSymbol(')');
+
+		return Triangle{pointA, pointB, pointC, transformation, scene.materials[materialName]};
+	}
+
+
 	// box(material, pointMin, pointMax, transformation)
 	Box parseBox(Scene scene){
 		expectSymbol('(');
@@ -663,7 +687,7 @@ struct InputStream {
 
 
 	std::shared_ptr<Shape> parseShape(Scene scene) {
-		Keyword typeKeyw = expectKeywords(std::vector{Keyword::SPHERE, Keyword::PLANE, Keyword::UNION, Keyword::DIFFERENCE, Keyword::INTERSECTION, Keyword::BOX});
+		Keyword typeKeyw = expectKeywords(std::vector{Keyword::SPHERE, Keyword::PLANE, Keyword::UNION, Keyword::DIFFERENCE, Keyword::INTERSECTION, Keyword::BOX, Keyword::TRIANGLE});
 		switch (typeKeyw) {
 		case Keyword::SPHERE:
 			return std::make_shared<Sphere>(parseSphere(scene));
@@ -677,6 +701,8 @@ struct InputStream {
 			return std::make_shared<CSGIntersection>(parseIntersection(scene));
 		case Keyword::BOX:
 			return std::make_shared<Box>(parseBox(scene));
+		case Keyword::TRIANGLE:
+			return std::make_shared<Triangle>(parseTriangle(scene));
 		default:
 			exit(1);	// We should never get here
 		}
@@ -760,6 +786,9 @@ struct InputStream {
 				break;
 			case Keyword::PLANE:
 				scene.world.add(parsePlane(scene));
+				break;
+			case Keyword::TRIANGLE:
+				scene.world.add(parseTriangle(scene));
 				break;
 			case Keyword::CAMERA:
 				if (scene.camera != nullptr)
