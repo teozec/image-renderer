@@ -30,31 +30,35 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <unordered_map>
 
 #define USAGE \
+	programName << ": a C++ tool to generate photo-realistic images." << endl << endl << \
 	"Usage: " << endl << \
 	programName << " -h|--help" << endl << \
 	programName << " render [options] <inputfile>" << endl << \
 	programName << " demo [options]" << endl << \
-	programName << " pfm2ldr [options] <format> <inputfile> <outputfile>" << \
+	programName << " pfm2ldr [options] <inputfile>" << endl << \
 	programName << " stack [options] <inputfiles>" << endl
 
 #define RUN_HELP \
-	"Run '" << programName << " <action-name> -h' for all supported options." << endl
+	"Run '" << programName << " <action-name> -h|--help' for all supported options." << endl
 
 #define HELP_PFM2LDR \
-	"Available actions:" << endl << \
-	"-h, --help: print this message." << endl << endl << \
-	"pfm2ldr: convert a pfm image to a ldr image in the desired format." << endl << \
-	"	Common options:" << endl << \
-	"		-a <value>, --afactor=<value>			Normalization factor." << endl << \
-	"		-g <value>, --gamma=<value>			Gamma factor." << endl << endl << \
-	"	Supported formats and related options:" << endl << \
-	"		bmp" << endl << \
-	"		gif" << endl << \
-	"		jpeg 	-q <value>, --quality=<value>		Compression quality (0-95, 0 means default)." << endl << \
-	"		png	-p, --palette				Whether to use palette or not."<< endl << \
-	"			-c <value>, --compression=<value>	Compression level (0-9)." << endl << \
-	"		tiff" << endl << \
-	"		webp	-q <value>, --quality=<value>		Compression quality (0-100)." << endl
+	"pfm2ldr: convert a pfm image to a ldr image in the desired format." << endl << endl << \
+	"Usage:	" << programName << " pfm2ldr [options] <inputfile>" << endl << endl << \
+	"General options:" << endl << \
+	"	-h, --help					Print this message." << endl << \
+	"	-f <format>, --format=<format>			Format of the output ldr image (see below for a list of supported formats)." << endl << \
+	"	-o <string>, --outfile=<string>			Filename of output image." << endl << \
+	"	-l <value>, --luminosity=<value>		Total luminosity normalization factor." << endl << \
+	"	-a <value>, --afactor=<value>			Normalization coefficient." << endl << \
+	"	-g <value>, --gamma=<value>			Gamma factor." << endl << endl << \
+	"Supported formats and related options:" << endl << \
+	"	bmp" << endl << \
+	"	gif" << endl << \
+	"	jpeg 	-q <value>, --quality=<value>		Compression quality (0-95, 0 means default)." << endl << \
+	"	png	-p, --palette				Whether to use palette or not."<< endl << \
+	"		-c <value>, --compression=<value>	Compression level (0-9)." << endl << \
+	"	tiff" << endl << \
+	"	webp	-q <value>, --quality=<value>		Compression quality (0-100)." << endl
 
 #define HELP_DEMO \
 	"Available actions:" << endl << \
@@ -128,10 +132,11 @@ int main(int argc, char *argv[])
 	} else if (actionName == "stack") {
 		return stackPfm(cmdl);
 	} else if (cmdl[{"-h", "--help"}]) {
-		cout << USAGE;
+		cout << USAGE << endl << RUN_HELP;
 		return 0;
 	} else {
-		cout << USAGE << endl << RUN_HELP;
+		cout << USAGE;
+		return 1;
 	}
 }
 
@@ -141,12 +146,12 @@ int pfm2ldr(argh::parser cmdl)
 	const string actionName = cmdl[1];
 
 	if (cmdl[{"-h", "--help"}]) {
-		cerr << HELP_PFM2LDR <<endl;
+		cout << HELP_PFM2LDR;
 		return 0;
 	}
 
 	if (cmdl.size() != 3) {
-		cerr << USAGE << endl << RUN_HELP;
+		cerr << USAGE;
 		return 1;
 	}
 
