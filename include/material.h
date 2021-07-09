@@ -133,6 +133,7 @@ struct BRDF {
 	std::shared_ptr<Pigment> pigment;
 	BRDF(): BRDF{UniformPigment{}} {}
 	template <class T> BRDF(const T &pigment): pigment{std::make_shared<T>(pigment)} {}
+	BRDF(const std::shared_ptr<Pigment> pigment): pigment{pigment} {}
 	
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) = 0;
 	virtual Ray scatterRay(PCG &pcg, Vec incomingDir, Point interactionPoint, Normal normal, int depth, bool inward) = 0;
@@ -229,8 +230,9 @@ struct DielectricBSDF : BRDF {
 	float roughness = 0.f;
 	DielectricBSDF() : BRDF(UniformPigment{WHITE}), refractionIndex{1.f} {}
 	DielectricBSDF(float ri, float roughness) : BRDF(UniformPigment{WHITE}), refractionIndex{ri}, roughness{roughness} {}
-	template<class T> DielectricBSDF(float ri, const T &pigment) : BRDF(pigment), refractionIndex{ri} {}
-	template<class T> DielectricBSDF(const T &pigment) : BRDF(pigment), refractionIndex{1.f} {}
+	template<class T> DielectricBSDF(float ri, float roughness, const T &pigment) : BRDF(pigment), refractionIndex{ri}, roughness{roughness} {}
+	template<class T> DielectricBSDF(float ri, const T &pigment) : BRDF(pigment), refractionIndex{ri}, roughness{0} {}
+	template<class T> DielectricBSDF(const T &pigment) : BRDF(pigment), refractionIndex{1.f}, roughness{0} {}
 
 	virtual Color eval(Normal normal, Vec in, Vec out, Vec2D uv) override {
 		return (*pigment)(uv) * (1.f / M_PI);
@@ -277,6 +279,7 @@ struct Material {
 	template <class B> Material(const B &brdf) : Material{brdf, UniformPigment{BLACK}} {}
 	//template <class P> Material(const P &emittedRadiance) : Material{DiffusiveBRDF{}, emittedRadiance} {} // Cannot have both Material(brdf) and Material(emittedRadiance) using templates
 	template <class B, class P> Material(const B &brdf, const P &emittedRadiance) : brdf{std::make_shared<B>(brdf)}, emittedRadiance{std::make_shared<P>(emittedRadiance)} {}
+	Material(std::shared_ptr<BRDF> brdf, std::shared_ptr<Pigment> emittedRadiance) : brdf{brdf}, emittedRadiance{emittedRadiance} {}
 };
 
 #endif // MATERIAL_H

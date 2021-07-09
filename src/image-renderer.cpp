@@ -16,8 +16,10 @@ You should have received a copy of the GNU General Public License
 along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #include "renderer.h"
+#include "parser.h"
 #include "texture.h"
 #include "argh.h"
+
 #undef NDEBUG
 #include <cassert>
 #include <sstream>
@@ -25,14 +27,15 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <unordered_map>
 
 #define USAGE \
 	"Usage: " << endl << \
 	programName << " -h|--help" << endl << \
+	programName << " render [options] <inputfile>" << endl << \
 	programName << " demo [options]" << endl << \
 	programName << " pfm2ldr [options] <format> <inputfile> <outputfile>" << \
-	programName << " stack [options] <inputfiles>" \
-	" <input-pfm-file> <output-file> " << endl
+	programName << " stack [options] <inputfiles>" << endl
 
 #define RUN_HELP \
 	"Run '" << programName << " <action-name> -h' for all supported options." << endl
@@ -74,11 +77,19 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"	-S <value>, --nSigma=<value>			Number of sigma clipping iterations (default 0)." << endl << \
 	"	-a <value>, --alpha=<value>			Sigma clipping alpha factor (consider outliers values farther than alpha*sigma from the median, default 2)." << endl
 
+#define HELP_RENDER \
+	"render: render a scenefile to a pfm image." << endl << endl << \
+	"Available options:" << endl << \
+	"	-h, --help: print this message." << endl << \
+	"	-f <variable1:value1,variable2:value2,...>, --float=<...>	Defines float variables to be used in the scenefile." << endl << \
+	"	-o <string>, --outfile=<string>					Filename of the output image." << endl
+
 using namespace std;
 
 enum class ImageFormat { png, webp, jpeg, tiff, bmp, gif };
 
 int demo(argh::parser cmdl);
+int render(argh::parser cmdl);
 int pfm2ldr(argh::parser cmdl);
 int stackPfm(argh::parser cmdl);
 
@@ -97,6 +108,7 @@ int main(int argc, char *argv[])
 			 "--antialiasing",
 			 "-o", "--outfile",
 			 "-s", "--seed",
+			 "-f", "-float",
 			 "-S", "--nSigma",
 			 "-m", "--method"});
 	cmdl.parse(argc, argv);
@@ -107,6 +119,8 @@ int main(int argc, char *argv[])
 	// Parse action
 	if (actionName == "demo") { 
 		return demo(cmdl);
+	} else if (actionName == "render") {
+		return render(cmdl);
 	} else if (actionName == "pfm2ldr") {
 		return pfm2ldr(cmdl);
 	} else if (actionName == "stack") {
@@ -223,8 +237,8 @@ int demo(argh::parser cmdl) {
 		return 0;
 	}
 	int width, height;
-	cmdl({"-w", "--width"}, 1000) >> width;
-	cmdl({"-h", "--height"}, 1000) >> height;
+	cmdl({"-w", "--width"}, 600) >> width;
+	cmdl({"-h", "--height"}, 400) >> height;
 	float aspectRatio = (float) width / height;
 	
 	Material skyMat{DiffusiveBRDF{UniformPigment{WHITE}}, UniformPigment{WHITE}};
@@ -240,12 +254,6 @@ int demo(argh::parser cmdl) {
 	
 	HdrImage noiseImage{"../textures/noise_10.pfm"};
 	Material noise{DiffusiveBRDF{ImagePigment{noiseImage}}};
-
-	/*
-	HdrImage turbImage{"../../textures/turb_3.pfm"};
-	Material turb{DiffusiveBRDF{ImagePigment{turbImage}}};
-	*/
-
 
 	string projString;
 	int angle;
@@ -283,12 +291,11 @@ int demo(argh::parser cmdl) {
 	if (samplesPerPixel != samplesPerSide*samplesPerSide){
 		cerr << "Not a perfect square given as --antialiasing parameter."  <<endl;
 		return 1;
-	} 
+	}
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t) seed};
 
 	tracer.fireAllRays(PathTracer{world, pcg, 2, 4, 6}, true);
-	//tracer.fireAllRays(DebugRenderer(world));
 
 	string ofilename;
 	cmdl({"-o", "--outfile"}, "demo.pfm") >> ofilename;
@@ -299,6 +306,92 @@ int demo(argh::parser cmdl) {
 
 	return 0;
 
+}
+
+int render(argh::parser cmdl)
+{
+	const string programName = cmdl[0];
+	const string actionName = cmdl[1];
+	if (cmdl[{"-h", "--help"}]) {
+		cerr << HELP_RENDER << endl;
+		return 0;
+	}
+
+	if (cmdl.size() != 3) {
+		cerr << USAGE << endl << HELP_RENDER;
+		return 1;
+	}
+
+	int width, height;
+	cmdl({"-w", "--width"}, 500) >> width;
+	cmdl({"-h", "--height"}, 500) >> height;
+	float aspectRatio = (float) width / height;
+
+	int seed;
+	cmdl({"-s", "--seed"}, 42) >> seed;
+
+	int samplesPerPixel;
+	cmdl({"--antialiasing"}, 0) >> samplesPerPixel;
+	int samplesPerSide = sqrt(samplesPerPixel);
+	if (samplesPerPixel != samplesPerSide*samplesPerSide){
+		cerr << "Not a perfect square given as --antialiasing parameter."  <<endl;
+		return 1;
+	} 
+
+	ifstream ifile{cmdl[2]};
+	if (!ifile.is_open()) {
+		cerr << "Cannot open file " + cmdl[2] << endl;
+		return 1;
+	}
+	InputStream input{ifile, cmdl[2]};
+
+	string variablesString;
+	cmdl({"--float", "-f"}, string{}) >> variablesString;
+	stringstream variablesStream{variablesString};
+	variablesStream.peek();	// To set eofbit if the stream is empty.
+	unordered_map<string, float> variables;
+	while (!variablesStream.eof()) {
+		string name;
+		getline(variablesStream, name, ':');
+		if (name.empty() or variablesStream.fail()) {
+			cerr << "Error: expected variable name in --float definition" << endl;
+			return 1;
+		} else if (variablesStream.eof()) {
+			cerr << "Error: expected : after variable name in --float definition" << endl;
+			return 1;
+		}
+		float value;
+		variablesStream >> value;
+		if (variablesStream.fail()) {
+			cerr << "Error: expected variable value after : in --float definition" << endl;
+			return 1;
+		}
+		variables.insert({name, value});
+		if (!variablesStream.eof() and variablesStream.get() != ',') {
+			cerr << "Error: expected , or string end after value in --float definition" << endl;
+			return 1;
+		}
+	}
+	try {
+		Scene scene{input.parseScene(variables, aspectRatio)};
+		HdrImage image{width, height};
+		ImageTracer tracer{image, *scene.camera, samplesPerSide};
+		PCG pcg{(uint64_t) seed};
+		tracer.fireAllRays(PathTracer{scene.world, pcg, 2, 5, 4});
+		//tracer.fireAllRays(DebugRenderer(scene.world));
+
+		string ofilename;
+		cmdl({"-o", "--outfile"}, "render.pfm") >> ofilename;
+		ofstream outPfm;
+		outPfm.open(ofilename);
+		image.writePfm(outPfm);
+		outPfm.close();
+	} catch (GrammarError &e) {
+		cerr << "Error: " << string{e.location} << ": " << e.what() << endl;
+		return 1;
+	}
+
+	return 0;
 }
 
 int stackPfm(argh::parser cmdl)

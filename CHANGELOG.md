@@ -1,5 +1,6 @@
 # HEAD
 
+- Implement a parser for scene files and a render action ([PR#20](https://github.com/teozec/image-renderer/pull/20)).
 - Implement `PerlinNoise` and some related textures ([PR#24](https://github.com/teozec/image-renderer/pull/24)).
 - Improve `SpecularBRDF` and implement `DielectricBSDF` ([PR#24](https://github.com/teozec/image-renderer/pull/24)).
 - Enable multithreading ([PR#25](https://github.com/teozec/image-renderer/pull/25)).

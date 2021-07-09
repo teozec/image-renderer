@@ -112,6 +112,18 @@ struct HdrImage {
 		return *this;
 	}
 
+	HdrImage operator*(const Color x) {
+		HdrImage sum{width, height};
+		for (int i{}; i < height * width; i++)
+			sum.pixels[i] = pixels[i] * x;
+		return sum;
+	}
+
+	HdrImage operator*=(const Color x) {
+		for (int i{}; i < height * width; i++)
+			pixels[i] *= x;
+		return *this;
+	}
 
 	// write&read pfm file image
 	void writePfm(std::ostream &stream, Endianness endianness=Endianness::littleEndian);

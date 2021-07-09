@@ -190,7 +190,7 @@ struct ImageTracer {
 	 * @tparam T	The signature of the color function
 	 * @param color The function to compute a Color given a Ray
 	 */
-	template <typename T> void fireAllRays(T colorFunc, bool showProgress) {
+	template <typename T> void fireAllRays(T colorFunc, bool showProgress = true) {
 		for (int row = 0; row < image.height; row++) {
 			if (showProgress){
 				std::cerr << "\rRendering: " << 100*row/(image.height) << "% " << std::flush;
