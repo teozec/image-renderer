@@ -325,6 +325,7 @@ int render(argh::parser cmdl)
 	int width, height;
 	cmdl({"-w", "--width"}, 500) >> width;
 	cmdl({"-h", "--height"}, 500) >> height;
+	float aspectRatio = (float) width / height;
 
 	int seed;
 	cmdl({"-s", "--seed"}, 42) >> seed;
@@ -372,7 +373,7 @@ int render(argh::parser cmdl)
 		}
 	}
 	try {
-		Scene scene{input.parseScene(variables)};
+		Scene scene{input.parseScene(variables, aspectRatio)};
 		HdrImage image{width, height};
 		ImageTracer tracer{image, *scene.camera, samplesPerSide};
 		PCG pcg{(uint64_t) seed};

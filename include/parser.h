@@ -237,6 +237,7 @@ struct Scene {
 	World world;
 	std::shared_ptr<Camera> camera = nullptr;
 	std::unordered_map<std::string, FloatVariable> floatVariables;
+	float aspectRatio;
 };
 
 /**
@@ -604,16 +605,14 @@ struct InputStream {
 		expectSymbol(',');
 		Transformation transformation = parseTransformation(scene);
 		expectSymbol(',');
-		float aspectRatio = expectNumber(scene);
-		expectSymbol(',');
 		float distance = expectNumber(scene);
 		expectSymbol(')');
 
 		std::shared_ptr<Camera> cam;
 		if (typeKeyw == Keyword::PERSPECTIVE)
-			cam = std::make_shared<PerspectiveCamera>(PerspectiveCamera{aspectRatio, transformation, distance});
+			cam = std::make_shared<PerspectiveCamera>(PerspectiveCamera{scene.aspectRatio, transformation, distance});
 		else if (typeKeyw == Keyword::ORTHOGONAL)
-			cam = std::make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, transformation});
+			cam = std::make_shared<OrthogonalCamera>(OrthogonalCamera{scene.aspectRatio, transformation});
 		return cam;
 	}
 
@@ -745,8 +744,9 @@ struct InputStream {
 		return CSGIntersection(shape1, shape2, transformation);
 	}
 
-	Scene parseScene(std::unordered_map<std::string, float> variables) {
+	Scene parseScene(std::unordered_map<std::string, float> variables, float aspectRatio) {
 		Scene scene;
+		scene.aspectRatio = aspectRatio;
 
 		// Insert the variables overriden from the function argument into the scene (if there's any)
 		if (variables.size() != 0) {

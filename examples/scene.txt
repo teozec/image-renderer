@@ -37,4 +37,4 @@ plane (ground_material, translation([0, 0, -1]))
 sphere(sky_material, scaling([7.5, 7.5, 7.5]))
 
 # Define a camera
-camera(perspective, translation([-1, 0, 0]), 1.0, 1.0)
+camera(perspective, translation([-1, 0, 0]), 1.0)
