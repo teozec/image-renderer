@@ -73,9 +73,9 @@ cmake -G "Xcode" ..
 ```
 Now that it is all set you can open up the Xcode project built in the `build` directory and compile it from within the IDE.
 
-If you use `bash`, you can enable autocompletion for the program running
+If you use `bash`, you can enable autocompletion for the program running (from the `build` directory)
 ```bash
-source tools/bash-completion.bash
+source ../tools/bash-completion.bash
 ```
 To make it permanent, you can add it to your `~/.bashrc` file.
 
