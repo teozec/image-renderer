@@ -46,11 +46,11 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"Usage:	" << programName << " pfm2ldr [options] <inputfile>" << endl << endl << \
 	"General options:" << endl << \
 	"	-h, --help					Print this message." << endl << \
-	"	-f <format>, --format=<format>			Format of the output ldr image (see below for a list of supported formats)." << endl << \
-	"	-o <string>, --outfile=<string>			Filename of output image." << endl << \
-	"	-l <value>, --luminosity=<value>		Total luminosity normalization factor." << endl << \
-	"	-a <value>, --afactor=<value>			Normalization coefficient." << endl << \
-	"	-g <value>, --gamma=<value>			Gamma factor." << endl << endl << \
+	"	-f <format>, --format=<format>			Format of the output ldr image (default 'png'). See below for a list of supported formats." << endl << \
+	"	-o <string>, --outfile=<string>			Filename of output image (default input filename with format-dependent extension)." << endl << \
+	"	-l <value>, --luminosity=<value>		Total luminosity normalization factor (by default, it is calculated from the input pfm)." << endl << \
+	"	-a <value>, --afactor=<value>			Normalization coefficient (default 0.3)." << endl << \
+	"	-g <value>, --gamma=<value>			Gamma factor (default 1)." << endl << endl << \
 	"Supported formats and related options:" << endl << \
 	"	bmp" << endl << \
 	"	gif" << endl << \
@@ -61,17 +61,23 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"	webp	-q <value>, --quality=<value>		Compression quality (0-100)." << endl
 
 #define HELP_DEMO \
-	"Available actions:" << endl << \
-	"-h, --help: print this message." << endl << endl << \
-	"demo: render a demo pfm image and write it to a PFM file (default: 'demo.pfm')." << endl << endl << \
-	"	Common options:" << endl << \
-	"		-w <value>, --width=<value>			Width of the final image." << endl << \
-	"		-h <value>, --height=<value>			Height of the final image." << endl << \
-	"		-p <string>, --projection=<string>		Projection used (default 'perspective')." <<endl << \
-	"		--angleDeg=<value>				Angle of rotation (on z axis) of the camera." <<endl << \
-	"		--antialiasing=<value>				Number of samples per single pixel (must be a perfect square, e.g. 4)." <<endl << \
-	"		-s <value>, --seed=<value>			Random number generator seed." << endl << \
-	"		-o <string>, --outfile=<string>			Filename of the output image." << endl
+	"demo: render a demo pfm image." << endl << endl << \
+	"Usage: " << programName << " demo [options] <inputfile>" << endl << endl << \
+	"General options:" << endl << \
+	"	-h, --help					Print this message." << endl << \
+	"	-w <value>, --width=<value>			Width of the final image (default 600)." << endl << \
+	"	-h <value>, --height=<value>			Height of the final image (default 400)." << endl << \
+	"	-a <value>, --aspectRatio=<value>		Aspect ratio of the final image (default width/height)." << endl << \
+	"	-p <string>, --projection=<string>		Projection used (default 'perspective'). Can be 'perspective' or 'orthogonal'" << endl << \
+	"	-D <value>, --angleDeg=<value>			Angle of rotation (on z axis) of the camera (default 0)." << endl << \
+	"	-A <value>, --antialiasing=<value>		Number of samples per single pixel (default 0). Must be a perfect square, e.g. 4." << endl << \
+	"	-R <renderer>, --renderer=<renderer>		Rendering algorithm (default 'path'). Can be 'path', 'debug', 'onoff', 'flat'." << endl << \
+	"	-o <string>, --outfile=<string>			Filename of the output image (default 'demo.pfm')." << endl << endl << \
+	"Options for 'path' rendering algorithm:" << endl << \
+	"	-s <value>, --seed=<value>			Random number generator seed (default 42)." << endl << \
+	"	-n <value>, --nRays=<value>			Number of rays started at each intersection (default 3)." << endl << \
+	"	-d <value>, --depth=<value>			Max ray depth (default 4)." << endl << \
+	"	-r <value>, --roulette=<value>			Ray depth to start Russian roulette (default 3)." << endl
 
 #define HELP_STACK \
 	"stack: stack more pfm images representing the same scene." << endl << endl << \
@@ -102,7 +108,7 @@ int main(int argc, char *argv[])
 {
 	argh::parser cmdl;
 
-	cmdl.add_params({"-a", "--afactor", "--alpha",
+	cmdl.add_params({"-a", "--afactor", "--alpha", "--aspectRatio",
 			 "-g", "--gamma",
 			 "-c", "--compression",
 			 "-q", "--quality",
@@ -110,8 +116,12 @@ int main(int argc, char *argv[])
 			 "-w", "--width",
 			 "-h", "--height",
 			 "-p", "--projection",
-			 "--angleDeg",
-			 "--antialiasing",
+			 "-D", "--angleDeg",
+			 "-A", "--antialiasing",
+			 "-n", "--nRays",
+			 "-d", "--depth",
+			 "-r", "--roulette",
+			 "-R", "--renderer",
 			 "-o", "--outfile",
 			 "-s", "--seed",
 			 "-f", "--float", "--format",
@@ -250,16 +260,20 @@ int pfm2ldr(argh::parser cmdl)
 	return 0;
 }
 
-int demo(argh::parser cmdl) {
-
+int demo(argh::parser cmdl)
+{
+	const string programName = cmdl[0];
+	const string actionName = cmdl[1];
 	if (cmdl[{"-h", "--help"}]) {
-		cerr << HELP_DEMO <<endl;
+		cout << HELP_DEMO;
 		return 0;
 	}
+
 	int width, height;
 	cmdl({"-w", "--width"}, 600) >> width;
 	cmdl({"-h", "--height"}, 400) >> height;
-	float aspectRatio = (float) width / height;
+	float aspectRatio;
+	cmdl({"-a", "--aspectRatio"},  (float) width / height) >> aspectRatio;
 	
 	Material skyMat{DiffusiveBRDF{UniformPigment{WHITE}}, UniformPigment{WHITE}};
 	Material wallsMat{DiffusiveBRDF{CheckeredPigment{Color{.8f, .8f, .8f}, Color{.2f, .2f, .2f}, 10}}};
@@ -275,14 +289,15 @@ int demo(argh::parser cmdl) {
 	HdrImage noiseImage{"../textures/noise_10.pfm"};
 	Material noise{DiffusiveBRDF{ImagePigment{noiseImage}}};
 
-	string projString;
-	int angle;
-	cmdl({"-p", "--projection"}, "perspective") >> projString;
 	int seed;
 	cmdl({"-s", "--seed"}, 42) >> seed;
-	cmdl({"--angleDeg"}, 0) >> angle;
+	float angle;
+	cmdl({"-D", "--angleDeg"}, 0) >> angle;
 	Transformation camTransformation{rotationZ(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
+
 	shared_ptr<Camera> cam;
+	string projString;
+	cmdl({"-p", "--projection"}, "perspective") >> projString;
 	if (projString == "orthogonal")
 		cam = make_shared<OrthogonalCamera>(OrthogonalCamera{aspectRatio, camTransformation});
 	else if (projString == "perspective")
@@ -306,7 +321,7 @@ int demo(argh::parser cmdl) {
 	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, -3.4f}, matteGreen});
 
 	int samplesPerPixel;
-	cmdl({"--antialiasing"}, 0) >> samplesPerPixel;
+	cmdl({"-A", "--antialiasing"}, 0) >> samplesPerPixel;
 	int samplesPerSide = sqrt(samplesPerPixel);
 	if (samplesPerPixel != samplesPerSide*samplesPerSide){
 		cerr << "Not a perfect square given as --antialiasing parameter."  <<endl;
@@ -315,7 +330,28 @@ int demo(argh::parser cmdl) {
 	ImageTracer tracer{image, *cam, samplesPerSide};
 	PCG pcg{(uint64_t) seed};
 
-	tracer.fireAllRays(PathTracer{world, pcg, 2, 4, 6}, true);
+	int nRays;
+	cmdl({"-n", "--nRays"}, 3) >> nRays;
+	int depth;
+	cmdl({"-d", "--depth"}, 4) >> depth;
+	int roulette;
+	cmdl({"-r", "--roulette"}, 3) >> roulette;
+
+	string renderer;
+	cmdl({"-R", "--renderer"}, "path") >> renderer;
+
+	if (renderer == "path")
+		tracer.fireAllRays(PathTracer{world, pcg, nRays, depth, roulette}, true);
+	else if (renderer == "debug")
+		tracer.fireAllRays(DebugRenderer{world});
+	else if (renderer == "onoff")
+		tracer.fireAllRays(OnOffRenderer{world});
+	else if (renderer == "flat")
+		tracer.fireAllRays(FlatRenderer{world});
+	else {
+		cerr << "Error: renderer " << renderer << " not supported" << endl;
+		return 1;
+	}
 
 	string ofilename;
 	cmdl({"-o", "--outfile"}, "demo.pfm") >> ofilename;
@@ -397,7 +433,7 @@ int render(argh::parser cmdl)
 		HdrImage image{width, height};
 		ImageTracer tracer{image, *scene.camera, samplesPerSide};
 		PCG pcg{(uint64_t) seed};
-		tracer.fireAllRays(PathTracer{scene.world, pcg, 2, 5, 4});
+		tracer.fireAllRays(PathTracer{scene.world, pcg, 5, 5, 5});
 		//tracer.fireAllRays(DebugRenderer(scene.world));
 
 		string ofilename;
@@ -418,8 +454,9 @@ int stackPfm(argh::parser cmdl)
 {
 	const string programName = cmdl[0];
 	const string actionName = cmdl[1];
+
 	if (cmdl[{"-h", "--help"}]) {
-		cerr << HELP_STACK << endl;
+		cout << HELP_STACK;
 		return 0;
 	}
 
@@ -551,6 +588,8 @@ int stackPfm(argh::parser cmdl)
 	return 0;
 }
 
+// Return the filename without the path and the extension
+// E.g.: baseFilename("/usr/include/stdio.h") == "stdio".
 string baseFilename(string s)
 {
 	s = s.substr(s.find_last_of('/')+1);
