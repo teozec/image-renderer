@@ -1,0 +1,37 @@
+float red(0.5)
+float green(0.5)
+float blue(0.5)
+
+# Declare a few new materials. Each of them includes a BRDF and a pigment
+material sky_material(
+	diffuse(uniform(<1., 1., 1.>)),
+	uniform(<0.6, 0.6, 0.8>)
+)
+
+material ground_material(
+	diffuse(checkered(<0.3, 0.5, 0.1>,
+		<0.1, 0.2, 0.5>, 4)),
+	uniform(<0, 0, 0>)
+)
+
+material box_material(
+	dielectric(uniform(<red, green, blue>), 0.1, 1.5),
+	uniform(<0, 0, 0>)
+)
+
+material sphere_material(
+	diffuse(image("../textures/marble_20.pfm", <0.8, 0.3, 0.4>)),
+	uniform(<0, 0, 0>)
+)
+
+# Define a few shapes
+box(box_material, [-0.5, -0.5, -1], [0.5, 0.5, 0], rotation_z(45) * translation([0, -1, 0]))
+sphere(sphere_material, translation([0, 0, 0.5]) * scaling([0.5, 0.5, 0.5]) * translation([0, -0.9, 0]))
+
+# The language is flexible enough to permit spaces before "("
+plane (ground_material, translation([0, 0, -1]))
+
+sphere(sky_material, scaling([7.5, 7.5, 7.5]))
+
+# Define a camera
+camera(perspective, translation([-1, 0, 0]), 1.0)

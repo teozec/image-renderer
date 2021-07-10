@@ -70,7 +70,7 @@ struct FlatRenderer : public Renderer {
 	*/
 	virtual Color operator()(Ray ray) override {
 		HitRecord record = world.rayIntersection(ray);
-		return record.hit ? (*record.shape->material.brdf->pigment)(record.surfacePoint) : backgroundColor;
+		return record.hit ? (*record.material.brdf->pigment)(record.surfacePoint) : backgroundColor;
 	}
 };
 
@@ -105,10 +105,10 @@ struct PathTracer : public Renderer {
 		if (!hit.hit)
 			return backgroundColor;
 
-		Material hitMaterial{hit.shape->material};
+		Material hitMaterial{hit.material};
 		Color hitColor{(*hitMaterial.brdf->pigment)(hit.surfacePoint)};
 		Color emittedRadiance{(*hitMaterial.emittedRadiance)(hit.surfacePoint)};
-
+		bool inward = hit.inward; //Be carefull: not all shapes have it implemented
 		float hitColorLum = std::max({hitColor.r, hitColor.g, hitColor.b});
 
 		// Russian roulette
@@ -126,7 +126,7 @@ struct PathTracer : public Renderer {
 		if (hitColorLum > 0.f)
 			for (int i{}; i < nRays; i++)
 				cumulativeRadiance += hitColor * (*this)(hitMaterial.brdf->scatterRay(
-					pcg, hit.ray.dir, hit.worldPoint, hit.normal, ray.depth+1));	
+					pcg, hit.ray.dir, hit.worldPoint, hit.normal, ray.depth+1, inward));	
 
 		return emittedRadiance + cumulativeRadiance / (float) nRays;
 	}

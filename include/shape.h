@@ -53,15 +53,17 @@ struct HitRecord {
 	Vec2D surfacePoint;
 	float t;
 	Ray ray;
-	std::shared_ptr<Shape> shape = nullptr;
+	Material material;
+	bool inward;
 
 	HitRecord() {}
 	HitRecord(const HitRecord &other) :	//
 		hit{other.hit}, worldPoint{other.worldPoint}, normal{other.normal}, //
-		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, shape{other.shape} {}
-	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray) : //
+		surfacePoint{other.surfacePoint}, t{other.t}, ray{other.ray}, // 
+		material{other.material}, inward{other.inward} {}
+	HitRecord(Point worldPoint, Normal normal, Vec2D surfacePoint, float t, Ray ray, Material material, bool inward) : //
 		hit{true}, worldPoint{worldPoint}, normal{normal}, surfacePoint{surfacePoint}, //
-		t{t}, ray{ray} {}
+		t{t}, ray{ray}, material{material}, inward{inward} {}
 
 	HitRecord operator=(const HitRecord &other) {
 		hit = other.hit;
@@ -71,7 +73,8 @@ struct HitRecord {
 			surfacePoint = other.surfacePoint;
 			t = other.t;
 			ray = other.ray;
-			shape = other.shape;
+			material = other.material;
+			inward = other.inward;
 		}
 		return *this;
 	}	
@@ -119,6 +122,8 @@ struct Shape {
 	virtual std::vector<HitRecord> allIntersections(Ray ray) = 0;
 
 	virtual bool isInner(Point p) = 0;
+
+	virtual operator std::string() = 0;
 };
 
 /**
@@ -204,6 +209,12 @@ struct Sphere : public Shape {
 		return p.x * p.x + p.y * p.y + p.z * p.z < 1.f;
 	}
 
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "Sphere";
+		return ss.str();
+	}
+
 private:
 	/**
 	 * @brief Wrapper of intersection info.
@@ -215,12 +226,15 @@ private:
 	 */
 	HitRecord intersection(float t, Ray ray, Ray invRay) {
 		Point hitPoint{invRay(t)};
+		bool inward = !isInner(hitPoint - invRay.dir*1e-4f);
 		return HitRecord{
 			transformation * hitPoint,
 			transformation * sphereNormal(hitPoint, invRay.dir),
 			spherePointToUV(hitPoint),
 			t,
-			ray};
+			ray,
+			material,
+			inward};
 	}
 
 	/**
@@ -256,10 +270,11 @@ private:
  * @see Shape
  */
 struct Plane : public Shape {
+	int scale;
 	Plane(): Shape() {}
 	Plane(Transformation transformation): Shape(transformation) {}
-	Plane(Material material): Shape(material) {}
-	Plane(Transformation transformation, Material material): Shape(transformation, material) {}
+	Plane(Material material, int scale=1): Shape(material), scale{scale} {}
+	Plane(Transformation transformation, Material material, int scale=1): Shape(transformation, material), scale{scale} {}
 
 	/**
 	 * @brief 	Return a HitRecord corresponding to the intersection between the ray and the plane.
@@ -281,12 +296,15 @@ struct Plane : public Shape {
 			return HitRecord{};
 
 		Point hitPoint{invRay(t)};
+		bool inward = !isInner(hitPoint - invRay.dir*1e-4f);
 		return HitRecord{
 			transformation * hitPoint,
 			transformation * planeNormal(hitPoint, invRay.dir),
 			planePointToUV(hitPoint),
 			t,
-			ray};
+			ray,
+			material,
+			inward};
 	}
 
 	/**
@@ -316,6 +334,12 @@ struct Plane : public Shape {
 		return p.z < 0;
 	}
 
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "Plane";
+		return ss.str();
+	}
+
 private:
 
 	/**
@@ -337,7 +361,10 @@ private:
 	 * @return Vec2D 
 	 */
 	Vec2D planePointToUV(Point p) {
-		return Vec2D{p.x - std::floor(p.x), p.y - std::floor(p.y)};
+		//Move the origin of uv coords and scale up (or down) the texture map
+		Vec origin{-10.f, 10.f, -10.f};
+		Point ref = (p-origin)*(1.f/scale);
+		return Vec2D{(ref.x - std::floor(ref.x)), (ref.y - std::floor(ref.y))};
 	}
 };
 
@@ -412,7 +439,9 @@ struct Triangle : public Shape {
 			hitNormal,
 			trianglePointToUV(beta, gamma),
 			t,
-			ray};
+			ray,
+			material,
+			false};
 	}
 
 	/**
@@ -435,6 +464,12 @@ struct Triangle : public Shape {
 	 */
 	virtual bool isInner(Point p) override {
 		return false;
+	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "Triangle";
+		return ss.str();
 	}
 
 private:
@@ -521,11 +556,11 @@ private:
  * @param a		First shape.
  * @param b		Second shape.
  * @param transformation	The transformation to the shape.
- * @param material			The material of the shape.
  * @see Shape.
  */
 struct CSGUnion : public Shape {
 	std::shared_ptr<Shape> a, b;
+	CSGUnion(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation = Transformation{}): a{a}, b{b}, Shape(transformation) {}
 	template <class A, class B> CSGUnion(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGUnion(const A &a, const B &b, Material material): Shape(material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGUnion(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
@@ -556,12 +591,15 @@ struct CSGUnion : public Shape {
 		else
 			hit = hitB;
 
+		bool inward = !isInner(hit.worldPoint - invRay.dir*1e-4f);
 		return HitRecord {
 			transformation * hit.worldPoint,
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
-			ray};
+			ray,
+			hit.material,
+			inward};
 	}
 
 	/**
@@ -591,6 +629,12 @@ struct CSGUnion : public Shape {
 		p = transformation.inverse() * p;
 		return a->isInner(p) or b->isInner(p);
 	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "CSGUnion";
+		return ss.str();
+	}
 };
 
 /**
@@ -606,6 +650,7 @@ struct CSGUnion : public Shape {
  */
 struct CSGDifference : public Shape {
 	std::shared_ptr<Shape> a, b;
+	CSGDifference(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation = Transformation{}): a{a}, b{b}, Shape(transformation) {}
 	template <class A, class B> CSGDifference(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGDifference(const A &a, const B &b, Material material): Shape(material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGDifference(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
@@ -652,12 +697,16 @@ struct CSGDifference : public Shape {
 			hit = hitA;
 		else
 			hit = hitB;
+
+		bool inward = !isInner(hit.worldPoint - invRay.dir*1e-4f);
 		return HitRecord {
 			transformation * hit.worldPoint,
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
-			ray};
+			ray,
+			hit.material,
+			inward};
 	}
 
 	/**
@@ -701,6 +750,12 @@ struct CSGDifference : public Shape {
 		p = transformation.inverse() * p;
 		return a->isInner(p) and !b->isInner(p);
 	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "CSGDifference";
+		return ss.str();
+	}
 };
 
 /**
@@ -716,6 +771,7 @@ struct CSGDifference : public Shape {
  */
 struct CSGIntersection : public Shape {
 	std::shared_ptr<Shape> a, b;
+	CSGIntersection(std::shared_ptr<Shape> a, std::shared_ptr<Shape> b, Transformation transformation = Transformation{}): a{a}, b{b}, Shape(transformation) {}
 	template <class A, class B> CSGIntersection(const A &a, const B &b): Shape(), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGIntersection(const A &a, const B &b, Material material): Shape(material), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
 	template <class A, class B> CSGIntersection(const A &a, const B &b, Transformation transformation): Shape(transformation), a{std::make_shared<A>(a)}, b{std::make_shared<B>(b)} {}
@@ -762,12 +818,16 @@ struct CSGIntersection : public Shape {
 			hit = hitA;
 		else
 			hit = hitB;
+		
+		bool inward = !isInner(hit.worldPoint - invRay.dir*1e-4f);
 		return HitRecord {
 			transformation * hit.worldPoint,
 			transformation * hit.normal,
 			hit.surfacePoint,
 			hit.t,
-			ray};
+			ray,
+			hit.material,
+			inward};
 	}
 
 	/**
@@ -809,6 +869,12 @@ struct CSGIntersection : public Shape {
 	virtual bool isInner(Point p) override {
 		p = transformation.inverse() * p;
 		return a->isInner(p) and b->isInner(p);
+	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "CSGIntersection";
+		return ss.str();
 	}
 };
 
@@ -866,12 +932,15 @@ struct Box : Shape {
 			return HitRecord{};
 		}
 		Point hitPoint{invRay(t)};
+		bool inward = !isInner(hitPoint - invRay.dir*1e-4f);
 		return HitRecord{
 			transformation * hitPoint,
 			transformation * normal,
 			boxPointToUV(hitPoint, face),
 			t,
-			ray
+			ray,
+			material,
+			inward
 		};
 	}
 
@@ -892,23 +961,29 @@ struct Box : Shape {
 		if (invRay.tmin < tMin and tMin < invRay.tmax) {
 			Normal normal{boxNormal(faceMin)};
 			Point hitPoint{invRay(tMin)};
+			bool inward = !isInner(hitPoint - invRay.dir*1e-4f);
 			intersections.push_back(HitRecord{
 				transformation * hitPoint,
 				transformation * normal,
 				boxPointToUV(hitPoint, faceMin),
 				tMin,
-				ray
+				ray,
+				material,
+				inward
 			});
 		}
 		if (invRay.tmin < tMax and tMax < invRay.tmax) {
 			Normal normal{-boxNormal(faceMax)};
 			Point hitPoint{invRay(tMax)};
+			bool inward = !isInner(hitPoint - invRay.dir*1e-4f);
 			intersections.push_back(HitRecord{
 				transformation * hitPoint,
 				transformation * normal,
 				boxPointToUV(hitPoint, faceMax),
 				tMax,
-				ray
+				ray,
+				material,
+				inward
 			});
 		}
 		return intersections;
@@ -919,6 +994,12 @@ struct Box : Shape {
 		return pMin.x < p.x and p.x < pMax.x and
 			pMin.y < p.y and p.y < pMax.y and
 			pMin.z < p.z and p.z < pMax.z;
+	}
+
+	virtual operator std::string() override {
+		std::ostringstream ss;
+		ss << "Box";
+		return ss.str();
 	}
 
 private:
@@ -1073,13 +1154,19 @@ struct World {
 			HitRecord intersection = shapes[i]->rayIntersection(ray);
 			if(!intersection.hit)
 				continue;
-			if((!closest.hit) or (intersection.t < closest.t)) {
+			if((!closest.hit) or (intersection.t < closest.t))
 				closest = intersection;
-				closest.shape = shapes[i];
-			}
 		}
 		return closest;
 	}
+
+	operator std::string() {
+		std::ostringstream ss;
+		for (auto shape : shapes)
+			ss << std::string{*shape} << std::endl;
+		return ss.str();
+	}
+
 };
 
 // ASSETS
@@ -1089,18 +1176,92 @@ struct World {
  * 
  * @return CSGUnion 
  */
-CSGUnion Chair(){
-	Box legFrontLeft{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}};
-	Box legFrontRight{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(1.f, -1.f, 1.f)};
+CSGUnion Chair(Transformation transformation, Material material){
+	Box legFrontLeft{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, material};
+	Box legFrontRight{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(1.f, -1.f, 1.f), material};
 	CSGUnion frontLegs{legFrontLeft, legFrontRight};
-	Box legBackLeft{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(-1.f, 1.f, 1.f)};
-	Box legBackRight{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(-1.f, -1.f, 1.f)};
+	Box legBackLeft{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(-1.f, 1.f, 1.f), material};
+	Box legBackRight{Point{-.5f, .3f, -1.5f}, Point{-.3f, .5f, -.5f}, scaling(-1.f, -1.f, 1.f), material};
 	CSGUnion backLegs{legBackLeft, legBackRight};
 	CSGUnion legs{frontLegs, backLegs};
-	Box bottom{Point{-.5f, -.5f, -.5f}, Point{.5f, .5f, -.3f}};
-	CSGIntersection back{Box{Point{.3f, -.5f, -.3f}, Point{.5f, .5f, 1.f}}, Sphere{translation(Vec{.4f, 0.f, 0.f})}};
+	Box bottom{Point{-.5f, -.5f, -.5f}, Point{.5f, .5f, -.3f}, material};
+	CSGIntersection back{Box{Point{.3f, -.5f, -.3f}, Point{.5f, .5f, 1.f}, material}, Sphere{translation(Vec{.4f, 0.f, 0.f}), material}};
 	CSGUnion top{bottom, back};
-	return CSGUnion{legs, top, translation(Vec{0.f, 0.f, 1.5f})};
+	return CSGUnion{legs, top, transformation*translation(Vec{0.f, 0.f, 1.5f})};
 };
+
+/**
+ * @brief This is a predefinite dice that lays on the floor (plane xy).
+ * 
+ * @return CSGIntersection
+ */
+CSGIntersection Dice(Transformation transformation, Material diceMat, Material numbersMat){
+	Box cube{Point{-.5f, -.5f, -.5f}, Point{.5f, .5f, .5f}, diceMat};
+
+	Sphere one{translation(Vec{0.f, 0.f, -.5f})*scaling(.1f), numbersMat};
+	CSGDifference face1{cube, one};
+
+	CSGUnion two{
+		Sphere{translation(Vec{0.3f, 0.f, 0.3f})*translation(Vec{0.f, .5f, 0.f})*scaling(.1f), numbersMat}, 
+		Sphere{translation(Vec{-0.3f, 0.f, -0.3f})*translation(Vec{0.f, .5f, 0.f})*scaling(.1f), numbersMat}, 
+		numbersMat};
+	CSGDifference face2{face1, two};
+
+	CSGUnion three{
+		Sphere{translation(Vec{0.5f, 0.f, 0.f})*scaling(.1f), numbersMat}, 
+		CSGUnion{
+			Sphere{translation(Vec{0.f, 0.3f, 0.3f})*translation(Vec{.5f, 0.f, 0.f})*scaling(.1f), numbersMat},
+			Sphere{translation(Vec{0.f, -0.3f, -0.3f})*translation(Vec{.5f, 0.f, 0.f})*scaling(.1f), numbersMat}
+		}
+	};
+	CSGDifference face3{face2, three};
+
+	CSGUnion four{
+		Sphere{translation(Vec{0.f, 0.3f, 0.3f})*translation(Vec{-.5f, 0.f, 0.f})*scaling(.1f), numbersMat}, 
+		CSGUnion{
+			Sphere{translation(Vec{0.f, -0.3f, 0.3f})*translation(Vec{-.5f, 0.f, 0.f})*scaling(.1f), numbersMat},
+			CSGUnion{
+				Sphere{translation(Vec{0.f, 0.3f, -0.3f})*translation(Vec{-.5f, 0.f, 0.f})*scaling(.1f), numbersMat},
+				Sphere{translation(Vec{0.f, -0.3f, -0.3f})*translation(Vec{-.5f, 0.f, 0.f})*scaling(.1f), numbersMat}
+			}
+		}
+	};
+	CSGDifference face4{face3, four};
+
+	CSGUnion five{
+		Sphere{translation(Vec{0.f, -.5f, 0.f})*scaling(.1f), numbersMat}, 
+		CSGUnion{
+			Sphere{translation(Vec{0.3f, 0.f, 0.3f})*translation(Vec{0.f, -.5f, 0.f})*scaling(.1f), numbersMat}, 
+			CSGUnion{
+				Sphere{translation(Vec{-0.3f, 0.f, 0.3f})*translation(Vec{0.f, -.5f, 0.f})*scaling(.1f), numbersMat},
+				CSGUnion{
+					Sphere{translation(Vec{0.3f, 0.f, -0.3f})*translation(Vec{0.f, -.5f, 0.f})*scaling(.1f), numbersMat},
+					Sphere{translation(Vec{-0.3f, 0.f, -0.3f})*translation(Vec{0.f, -.5f, 0.f})*scaling(.1f), numbersMat}
+				}
+			}
+		}
+	};
+	CSGDifference face5{face4, five};
+
+	CSGUnion six{
+		Sphere{translation(Vec{0.3f, 0.f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat}, 
+		CSGUnion{	
+			Sphere{translation(Vec{-0.3f, 0.f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat}, 
+			CSGUnion{
+				Sphere{translation(Vec{0.3f, 0.3f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat}, 
+				CSGUnion{
+					Sphere{translation(Vec{-0.3f, 0.3f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat},
+					CSGUnion{
+						Sphere{translation(Vec{0.3f, -0.3f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat},
+						Sphere{translation(Vec{-0.3f, -0.3f, 0.f})*translation(Vec{0.f, 0.f, .5f})*scaling(.1f), numbersMat}
+					}
+				}
+			}
+		}
+	};
+	CSGDifference face6{face5, six};
+
+	return CSGIntersection{face6, Sphere{scaling(.8f)}, transformation};
+}
 
 #endif // #SHAPE_H

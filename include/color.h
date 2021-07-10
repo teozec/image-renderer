@@ -82,6 +82,7 @@ struct Color {
 			return b;
 		}
 		assert(i < 3);
+		exit(1);
 	}
 
 

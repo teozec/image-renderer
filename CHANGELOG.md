@@ -1,6 +1,12 @@
 # HEAD
 
-- Bug fix: make PathTracer work properly also without Russian roulette ([PR#22](https://github.com/teozec/image-renderer/pull/23), [#21](https://github.com/teozec/image-renderer/issues/21)).
+- Improve the command line interface ([#PR28](https://github.com/teozec/image-renderer/pull/28)).
+- Implement a parser for scene files and a render action ([PR#20](https://github.com/teozec/image-renderer/pull/20), [PR#30](https://github.com/teozec/image-renderer/pull/30), [#29](https://github.com/teozec/image-renderer/issues/29)).
+- Implement `PerlinNoise` and some related textures ([PR#24](https://github.com/teozec/image-renderer/pull/24)).
+- Improve `SpecularBRDF` and implement `DielectricBSDF` ([PR#24](https://github.com/teozec/image-renderer/pull/24)).
+- Enable multithreading ([PR#25](https://github.com/teozec/image-renderer/pull/25)).
+- Bug fix: make Materials work with CSG shapes ([PR#27](https://github.com/teozec/image-renderer/pull/27), [#26](https://github.com/teozec/image-renderer/issues/26)).
+- Bug fix: make PathTracer work properly also without Russian roulette ([PR#23](https://github.com/teozec/image-renderer/pull/23), [#21](https://github.com/teozec/image-renderer/issues/21)).
 - Implement a DebugRender for better debugging ([PR#22](https://github.com/teozec/image-renderer/pull/22)).
 
 # Version 0.3.0

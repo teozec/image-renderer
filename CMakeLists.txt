@@ -35,6 +35,9 @@ add_library(trace
 	src/hdr-image.cpp
 	)
 
+find_package(OpenMP REQUIRED)
+target_link_libraries(trace PUBLIC OpenMP::OpenMP_CXX)
+
 find_package(GD REQUIRED)
 target_link_libraries(trace PUBLIC ${GD_LIBRARIES})
 
@@ -126,6 +129,16 @@ add_executable(renderer-test
 target_link_libraries(renderer-test PUBLIC trace)
 add_test(NAME renderer-test
 	COMMAND renderer-test
+	)
+
+# parser-test
+add_executable(parser-test
+	test/parser.cpp
+	)
+
+target_link_libraries(parser-test PUBLIC trace)
+add_test(NAME parser-test
+	COMMAND parser-test
 	)
 
 target_compile_features(image-renderer PUBLIC cxx_std_17)

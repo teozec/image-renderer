@@ -33,6 +33,7 @@ The following software is required to build the project:
 	* [`libjpeg`](https://ijg.org/) or [`libjpeg-turbo`](http://www.libpng.org/pub/png/libpng.html)
 	* [`libwebp`](https://developers.google.com/speed/webp/)
 	* [`libtiff`](http://www.libtiff.org/)
+* [`OpenMP`](https://www.openmp.org)
 
 This project also uses the header-only [`Argh!`](https://github.com/adishavit/argh) library, which is already included in this repository in `include/argh.h`.
 Therefore, you do not need to install it on your system to compile `image-renderer`.

@@ -64,13 +64,13 @@ struct HdrImage {
 
 	// Gets color of the pixel in (x, y)
 	Color getPixel(const int x, const int y) {
-		assert(validCoordinates(x, y));
+		//assert(validCoordinates(x, y));
 		return pixels[pixelOffset(x, y)];
 	}
 
 	// Sets the color of a pixel
 	void setPixel(const int x, const int y, const Color c) {
-		assert(validCoordinates(x, y));
+		//assert(validCoordinates(x, y));
 		pixels[pixelOffset(x, y)] = c;
 	}
 
@@ -112,6 +112,18 @@ struct HdrImage {
 		return *this;
 	}
 
+	HdrImage operator*(const Color x) {
+		HdrImage sum{width, height};
+		for (int i{}; i < height * width; i++)
+			sum.pixels[i] = pixels[i] * x;
+		return sum;
+	}
+
+	HdrImage operator*=(const Color x) {
+		for (int i{}; i < height * width; i++)
+			pixels[i] *= x;
+		return *this;
+	}
 
 	// write&read pfm file image
 	void writePfm(std::ostream &stream, Endianness endianness=Endianness::littleEndian);
@@ -125,7 +137,7 @@ struct HdrImage {
 	}
 
 	// Normalization of pixels given a factor and (optional) luminosity
-	void normalizeImage(const float factor, const float luminosity){
+	void normalizeImage(const float factor, const float luminosity) {
 		for (auto it = pixels.begin(); it != pixels.end(); ++it){
 			(*it) = (*it)*(factor/luminosity);
 		}
