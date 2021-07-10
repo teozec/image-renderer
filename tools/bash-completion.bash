@@ -19,7 +19,7 @@ _complete_image_renderer()
 			COMPREPLY=($(compgen -W "-h" -- $cur))
 			;;
 		*)	# Action
-			COMPREPLY=($(compgen -W "demo pfm2ldr stack" -- $cur))
+			COMPREPLY=($(compgen -W "demo pfm2ldr stack render" -- $cur))
 			;;
 		esac
 
@@ -30,8 +30,8 @@ _complete_image_renderer()
 		prevprev=${COMP_WORDS[COMP_CWORD-2]}
 		case "$action" in
 		"pfm2ldr")
-			# The argument after afactor, gamma, quality or compression does not require autocompletion because it is a number specified by the user
-			if [[ "${prev}" == "-a" || "${prev}" == "-g" || "${prev}" == "-q" || "${prev}" == "-c" || \
+			# The argument after afactor, gamma, quality, compression or luminosity does not require autocompletion because it is a number specified by the user
+			if [[ "${prev}" == "-a" || "${prev}" == "-g" || "${prev}" == "-q" || "${prev}" == "-c" || "${prev}" == "-l" ||  \
 				("${prev}" == "--afactor" && "${cur}" == "=") || \
 				("${prevprev}" == "--afactor" && "${prev}" == "=") || \
 				("${prev}" == "--gamma" && "${cur}" == "=") || \
@@ -39,56 +39,40 @@ _complete_image_renderer()
 				("${prev}" == "--quality" && "${cur}" == "=") || \
 				("${prevprev}" == "--quality" && "${prev}" == "=") || \
 				("${prev}" == "--compression" && "${cur}" == "=") || \
-				("${prevprev}" == "--compression" && "${prev}" == "=") ]]; then
+				("${prevprev}" == "--compression" && "${prev}" == "=") || \
+				("${prev}" == "--luminosity" && "${cur}" == "=") || \
+				("${prevprev}" == "--luminosity" && "${prev}" == "=") ]]; then
 				return 0
 			fi
 
-			# Set the suitable autocompletions depending on the action
-			local single_dash double_dash no_format
-			if [[ " ${COMP_WORDS[@]} " =~ " bmp " ]]; then
-				single_dash="-h -a -g"
-				double_dash="--help --afactor= --gamma="
-			elif [[ " ${COMP_WORDS[@]} " =~ " gif " ]]; then
-				single_dash="-h -a -g"
-				double_dash="--help --afactor= --gamma="
-			elif [[ " ${COMP_WORDS[@]} " =~ " jpeg " ]]; then
-				single_dash="-h -a -g -q"
-				double_dash="--help --afactor= --gamma= --quality="
-			elif [[ " ${COMP_WORDS[@]} " =~ " png " ]]; then
-				single_dash="-h -a -g -p -c"
-				double_dash="--help --afactor= --gamma= --palette --compression="
-			elif [[ " ${COMP_WORDS[@]} " =~ " tiff " ]]; then
-				single_dash="-h -a -g"
-				double_dash="--help --afactor= --gamma="
-			elif [[ " ${COMP_WORDS[@]} " =~ " webp " ]]; then
-				single_dash="-h -a -g -q"
-				double_dash="--help --afactor= --gamma= --quality="
-			else
-				single_dash="-h -a -g"
-				double_dash="--help --afactor= --gamma="
-				no_format=1
-			fi
+			# Complete filenames
+			if [[ $prev == "-o" || ("${prevprev}" == "--outfile" && "${prev}" == "=") ]]; then
+				COMPREPLY=($(compgen -A file -- $cur))
+			elif [[ "${prev}" == "--outfile" && "${cur}" == "=" ]]; then
+				COMPREPLY=($(compgen -A file))
 
-			# Set autocompletion depending on the kind of argument being completed
-			case $cur in
-			--*)	# Double dash
-				COMPREPLY=($(compgen -W "${double_dash}" -- $cur))
+			# Complete formats
+			elif [[ $prev == "-f" || ("${prevprev}" == "--format" && "${prev}" == "=") ]]; then
+				COMPREPLY=($(compgen -W "bmp gif jpeg png tiff webp" -- $cur))
+			elif [[ "${prev}" == "--format" && "${cur}" == "=" ]]; then
+				COMPREPLY=($(compgen -W "bmp gif jpeg png tiff webp"))
+
+			# Complete double dash arguments
+			elif [[ "${cur}" == --* ]]; then
+				COMPREPLY=($(compgen -W "--help --format= --outfile= --luminosity= --afactor= --gamma= --quality= --compression= --palette" -- $cur))
 				# Remove space if there is a "=" in completion
 				if [[ "${COMPREPLY[@]}" =~ "=" ]]; then
 					compopt -o nospace
 				fi
-				;;
-			-*)	# Single dash
-				COMPREPLY=($(compgen -W "${single_dash}" -- $cur))
-				;;
-			*)	# Generic argument
-				if [[ $no_format -eq 1 ]]; then	# Format not selected yet: autocomplete formats
-					COMPREPLY=($(compgen -W "bmp gif jpeg png tiff webp" -- $cur))
-				else	# Format already selected: autocomplete filenames
-					COMPREPLY=($(compgen -A file -- $cur))
-				fi
-				;;
-			esac
+
+			# Complete single dash arguments
+			elif [[ "${cur}" == -* ]]; then
+				COMPREPLY=($(compgen -W "-h -f -o -l -a -g -q -c -p" -- $cur))
+
+			# Complete generic argument
+			else
+				COMPREPLY=($(compgen -A file -- $cur))
+			fi
 			;;
 
 		"demo")
