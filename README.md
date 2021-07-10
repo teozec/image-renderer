@@ -101,7 +101,7 @@ Another example of the `demo` action is
 ```bash
 ./image-renderer demo -p orthogonal -R flat -o output.pfm
 ```
-will generate the `output.pfm` image using an orthogonal camera and a flat rendering algorithm.
+It will generate the `output.pfm` image using an orthogonal camera and a flat rendering algorithm.
 As you can see, you can use both long and short options: for a list of all supported arguments, you can always use the `--help` flag.
 
 ### Converting a PFM file to a LDR image with `pfm2ldr`
