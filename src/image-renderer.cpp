@@ -94,6 +94,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"General options:" << endl << \
 	"	-h, --help							Print this message." << endl << \
 	"	-q, --quiet							Do not show rendering progress." << endl << \
+	"	-D, --dryRun							Parse scenefile, but do not render image. Useful to check correctness of scenes." << endl << \
 	"	-f <variable1:value1,variable2:value2,...>, --float=<...>	Define float variables to be used in the scenefile." << endl << \
 	"	-w <value>, --width=<value>					Width of the final image (default 640)." << endl << \
 	"	-h <value>, --height=<value>					Height of the final image (default 480)." << endl << \
@@ -461,6 +462,10 @@ int render(argh::parser cmdl)
 		HdrImage image{width, height};
 		ImageTracer tracer{image, *scene.camera, samplesPerSide};
 		PCG pcg{(uint64_t) seed};
+
+		if (cmdl[{"-D", "--dryRun"}])
+			return 0;
+
 		if (renderer == "path")
 			tracer.fireAllRays(PathTracer{scene.world, pcg, nRays, depth, roulette}, verbose);
 		else if (renderer == "debug")

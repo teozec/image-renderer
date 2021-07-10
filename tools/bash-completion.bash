@@ -189,7 +189,7 @@ _complete_image_renderer()
 
 			# Complete double dash arguments
 			elif [[ "${cur}" == --* ]]; then
-				COMPREPLY=($(compgen -W "--help --quiet --width= --height= --aspectRatio= --seed= --antialiasing= --renderer= --outfile= --nRays= --depth= --roulette= --float=" -- $cur))
+				COMPREPLY=($(compgen -W "--help --quiet --width= --height= --dryRun --aspectRatio= --seed= --antialiasing= --renderer= --outfile= --nRays= --depth= --roulette= --float=" -- $cur))
 				# Remove space if there is a "=" in completion
 				if [[ "${COMPREPLY[@]}" =~ "=" ]]; then
 					compopt -o nospace
@@ -197,7 +197,7 @@ _complete_image_renderer()
 
 			# Complete single dash arguments
 			elif [[ "${cur}" == -* ]]; then
-				COMPREPLY=($(compgen -W "-q -w -h -a -s -A -R -o -n -d -r -f" -- $cur))
+				COMPREPLY=($(compgen -W "-q -w -h -D -a -s -A -R -o -n -d -r -f" -- $cur))
 
 			# Complete input filename
 			else
