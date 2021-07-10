@@ -126,7 +126,8 @@ To see it at work, you can use
 chmod +x ../examples/cornell.sh
 ../examples/cornell.sh
 ```
-Depending on your PC, this script may take some time, but the result is worth the wait.
+Depending on your PC, this script may take some time, but the result is worth the wait:
+![cornell](rsc/cornell.png)
 The first command in the script makes use of the `render` action, which is used to parse a file describing a scene (or scenefile) and generate a corresponding `pfm` file.
 Many arguments are in common with the `demo` action (except for those about the camera, which is now described in the scenefile). Here is an example:
 ```bash
