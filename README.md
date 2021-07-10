@@ -56,6 +56,12 @@ make
 
 The executable files are generated in the `build` directory.
 
+If you use `bash`, you can enable autocompletion for the program running
+```bash
+source tools/bash-completion.bash
+```
+To make it permanent, you can add it to your `~/.bashrc` file.
+
 ### macOS (Xcode)
 
 If you wish to use Xcode on your macOS, you can build the project using:
@@ -66,6 +72,12 @@ cd build
 cmake -G "Xcode" ..
 ```
 Now that it is all set you can open up the Xcode project built in the `build` directory and compile it from within the IDE.
+
+If you use `bash`, you can enable autocompletion for the program running
+```bash
+source tools/bash-completion.bash
+```
+To make it permanent, you can add it to your `~/.bashrc` file.
 
 ## Basic Tutorial
 We prepared a fun animation for you to start off: from the `image-renderer/` repo run the following

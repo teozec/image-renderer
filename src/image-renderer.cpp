@@ -60,7 +60,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #define HELP_DEMO \
 	"demo: render a demo pfm image." << endl << endl << \
-	"Usage: " << programName << " demo [options] <inputfile>" << endl << endl << \
+	"Usage: " << programName << " demo [options]" << endl << endl << \
 	"General options:" << endl << \
 	"	-h, --help					Print this message." << endl << \
 	"	-w <value>, --width=<value>			Width of the final image (default 640)." << endl << \
