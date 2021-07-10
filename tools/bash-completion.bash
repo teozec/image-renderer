@@ -69,7 +69,7 @@ _complete_image_renderer()
 			elif [[ "${cur}" == -* ]]; then
 				COMPREPLY=($(compgen -W "-h -f -o -l -a -g -q -c -p" -- $cur))
 
-			# Complete generic argument
+			# Complete input filename
 			else
 				COMPREPLY=($(compgen -A file -- $cur))
 			fi
@@ -77,15 +77,24 @@ _complete_image_renderer()
 
 		"demo")
 			# The argument after width, height, angleDeg, seed or antialiasing does not require autocompletion because it is a number specified by the user
-			if [[ "${prev}" == "-w" || \
+			if [[ "${prev}" == "-w" || "${prev}" == "-a" || "${prev}" == "-D" || "${prev}" == "-A" || \
+				"${prev}" == "-s" || "${prev}" == "-n" || "${prev}" == "-d" || "${prev}" == "-r" || \
 				("${prev}" == "--width" && "${cur}" == "=") || \
 				("${prevprev}" == "--width" && "${prev}" == "=") || \
+				("${prev}" == "--aspectRatio" && "${cur}" == "=") || \
+				("${prevprev}" == "--aspectRatio" && "${prev}" == "=") || \
 				("${prev}" == "--height" && "${cur}" == "=") || \
 				("${prevprev}" == "--height" && "${prev}" == "=") || \
 				("${prev}" == "--antialiasing" && "${cur}" == "=") || \
 				("${prevprev}" == "--antialiasing" && "${prev}" == "=") || \
 				("${prev}" == "--seed" && "${cur}" == "=") || \
 				("${prevprev}" == "--seed" && "${prev}" == "=") || \
+				("${prev}" == "--nRays" && "${cur}" == "=") || \
+				("${prevprev}" == "--nRays" && "${prev}" == "=") || \
+				("${prev}" == "--depth" && "${cur}" == "=") || \
+				("${prevprev}" == "--depth" && "${prev}" == "=") || \
+				("${prev}" == "--roulette" && "${cur}" == "=") || \
+				("${prevprev}" == "--roulette" && "${prev}" == "=") || \
 				("${prev}" == "--angleDeg" && "${cur}" == "=") || \
 				("${prevprev}" == "--angleDeg" && "${prev}" == "=") ]]; then
 				return 0
@@ -103,9 +112,15 @@ _complete_image_renderer()
 			elif [[ "${prev}" == "--projection" && "${cur}" == "=" ]]; then
 				COMPREPLY=($(compgen -W "perspective orthogonal"))
 
+			# Complete renderers
+			elif [[ $prev == "-R" || ("${prevprev}" == "--renderer" && "${prev}" == "=") ]]; then
+				COMPREPLY=($(compgen -W "path debug onoff flat" -- $cur))
+			elif [[ "${prev}" == "--renderer" && "${cur}" == "=" ]]; then
+				COMPREPLY=($(compgen -W "path debug onoff flat"))
+
 			# Complete double dash arguments
 			elif [[ "${cur}" == --* ]]; then
-				COMPREPLY=($(compgen -W "--help --width= --height= --projection= --angleDeg= --seed= --antialiasing= --outfile=" -- $cur))
+				COMPREPLY=($(compgen -W "--help --width= --height= --aspectRatio= --projection= --angleDeg= --seed= --antialiasing= --renderer= --outfile= --nRays= --depth= --roulette=" -- $cur))
 				# Remove space if there is a "=" in completion
 				if [[ "${COMPREPLY[@]}" =~ "=" ]]; then
 					compopt -o nospace
@@ -113,7 +128,7 @@ _complete_image_renderer()
 
 			# Complete single dash arguments
 			elif [[ "${cur}" == -* ]]; then
-				COMPREPLY=($(compgen -W "-w -h -p -s -o" -- $cur))
+				COMPREPLY=($(compgen -W "-w -h -a -p -D -s -A -R -o -n -d -r" -- $cur))
 			fi
 
 			# Demo does not have positional arguments to autocomplete
