@@ -25,6 +25,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 #include <vector>
 #include <unordered_map>
 #include <tuple>
+#include <cmath>
 
 #include "color.h"
 #include "geometry.h"
@@ -562,21 +563,21 @@ struct InputStream {
 				expectSymbol('(');
 				float theta{expectNumber(scene)};
 				expectSymbol(')');
-				result *= rotationX(theta);
+				result *= rotationX(theta * M_PI/180);
 				break;
 			}
 			case Keyword::ROTATION_Y: {
 				expectSymbol('(');
 				float theta{expectNumber(scene)};
 				expectSymbol(')');
-				result *= rotationY(theta);
+				result *= rotationY(theta * M_PI/180);
 				break;
 			}
 			case Keyword::ROTATION_Z: {
 				expectSymbol('(');
 				float theta{expectNumber(scene)};
 				expectSymbol(')');
-				result *= rotationZ(theta);
+				result *= rotationZ(theta * M_PI/180);
 				break;
 			}
 			case Keyword::SCALING: {
