@@ -65,8 +65,8 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"Usage: " << programName << " demo [options] <inputfile>" << endl << endl << \
 	"General options:" << endl << \
 	"	-h, --help					Print this message." << endl << \
-	"	-w <value>, --width=<value>			Width of the final image (default 600)." << endl << \
-	"	-h <value>, --height=<value>			Height of the final image (default 400)." << endl << \
+	"	-w <value>, --width=<value>			Width of the final image (default 640)." << endl << \
+	"	-h <value>, --height=<value>			Height of the final image (default 480)." << endl << \
 	"	-a <value>, --aspectRatio=<value>		Aspect ratio of the final image (default width/height)." << endl << \
 	"	-p <string>, --projection=<string>		Projection used (default 'perspective'). Can be 'perspective' or 'orthogonal'" << endl << \
 	"	-D <value>, --angleDeg=<value>			Angle of rotation (on z axis) of the camera (default 0)." << endl << \
@@ -89,10 +89,21 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #define HELP_RENDER \
 	"render: render a scenefile to a pfm image." << endl << endl << \
-	"Available options:" << endl << \
-	"	-h, --help: print this message." << endl << \
-	"	-f <variable1:value1,variable2:value2,...>, --float=<...>	Defines float variables to be used in the scenefile." << endl << \
-	"	-o <string>, --outfile=<string>					Filename of the output image." << endl
+	"Usage: " << programName << " render [options] <inputfile>" << endl << endl << \
+	"General options:" << endl << \
+	"	-h, --help							Print this message." << endl << \
+	"	-f <variable1:value1,variable2:value2,...>, --float=<...>	Define float variables to be used in the scenefile." << endl << \
+	"	-w <value>, --width=<value>					Width of the final image (default 640)." << endl << \
+	"	-h <value>, --height=<value>					Height of the final image (default 480)." << endl << \
+	"	-a <value>, --aspectRatio=<value>				Aspect ratio of the final image (default width/height)." << endl << \
+	"	-A <value>, --antialiasing=<value>				Number of samples per single pixel (default 0). Must be a perfect square, e.g. 4." << endl << \
+	"	-R <renderer>, --renderer=<renderer>				Rendering algorithm (default 'path'). Can be 'path', 'debug', 'onoff', 'flat'." << endl << \
+	"	-o <string>, --outfile=<string>					Filename of output image (default input filename with '.pfm' extension)." << endl << endl <<\
+	"Options for 'path' rendering algorithm:" << endl << \
+	"	-s <value>, --seed=<value>					Random number generator seed (default 42)." << endl << \
+	"	-n <value>, --nRays=<value>					Number of rays started at each intersection (default 3)." << endl << \
+	"	-d <value>, --depth=<value>					Max ray depth (default 4)." << endl << \
+	"	-r <value>, --roulette=<value>					Ray depth to start Russian roulette (default 3)." << endl
 
 using namespace std;
 
@@ -270,8 +281,8 @@ int demo(argh::parser cmdl)
 	}
 
 	int width, height;
-	cmdl({"-w", "--width"}, 600) >> width;
-	cmdl({"-h", "--height"}, 400) >> height;
+	cmdl({"-w", "--width"}, 640) >> width;
+	cmdl({"-h", "--height"}, 480) >> height;
 	float aspectRatio;
 	cmdl({"-a", "--aspectRatio"},  (float) width / height) >> aspectRatio;
 	
@@ -369,7 +380,7 @@ int render(argh::parser cmdl)
 	const string programName = cmdl[0];
 	const string actionName = cmdl[1];
 	if (cmdl[{"-h", "--help"}]) {
-		cerr << HELP_RENDER << endl;
+		cout << HELP_RENDER;
 		return 0;
 	}
 
@@ -379,30 +390,42 @@ int render(argh::parser cmdl)
 	}
 
 	int width, height;
-	cmdl({"-w", "--width"}, 500) >> width;
-	cmdl({"-h", "--height"}, 500) >> height;
-	float aspectRatio = (float) width / height;
+	cmdl({"-w", "--width"}, 640) >> width;
+	cmdl({"-h", "--height"}, 480) >> height;
+	float aspectRatio;
+	cmdl({"-a", "--aspectRatio"},  (float) width / height) >> aspectRatio;
 
 	int seed;
 	cmdl({"-s", "--seed"}, 42) >> seed;
 
 	int samplesPerPixel;
-	cmdl({"--antialiasing"}, 0) >> samplesPerPixel;
+	cmdl({"-A", "--antialiasing"}, 0) >> samplesPerPixel;
 	int samplesPerSide = sqrt(samplesPerPixel);
 	if (samplesPerPixel != samplesPerSide*samplesPerSide){
 		cerr << "Not a perfect square given as --antialiasing parameter."  <<endl;
 		return 1;
 	} 
 
-	ifstream ifile{cmdl[2]};
+	string ifilename = cmdl[2];
+	ifstream ifile{ifilename};
 	if (!ifile.is_open()) {
 		cerr << "Cannot open file " + cmdl[2] << endl;
 		return 1;
 	}
 	InputStream input{ifile, cmdl[2]};
 
+	int nRays;
+	cmdl({"-n", "--nRays"}, 3) >> nRays;
+	int depth;
+	cmdl({"-d", "--depth"}, 4) >> depth;
+	int roulette;
+	cmdl({"-r", "--roulette"}, 3) >> roulette;
+
+	string renderer;
+	cmdl({"-R", "--renderer"}, "path") >> renderer;
+
 	string variablesString;
-	cmdl({"--float", "-f"}, string{}) >> variablesString;
+	cmdl({"-f", "--float"}, string{}) >> variablesString;
 	stringstream variablesStream{variablesString};
 	variablesStream.peek();	// To set eofbit if the stream is empty.
 	unordered_map<string, float> variables;
@@ -433,11 +456,21 @@ int render(argh::parser cmdl)
 		HdrImage image{width, height};
 		ImageTracer tracer{image, *scene.camera, samplesPerSide};
 		PCG pcg{(uint64_t) seed};
-		tracer.fireAllRays(PathTracer{scene.world, pcg, 5, 5, 5});
-		//tracer.fireAllRays(DebugRenderer(scene.world));
+		if (renderer == "path")
+			tracer.fireAllRays(PathTracer{scene.world, pcg, nRays, depth, roulette}, true);
+		else if (renderer == "debug")
+			tracer.fireAllRays(DebugRenderer{scene.world});
+		else if (renderer == "onoff")
+			tracer.fireAllRays(OnOffRenderer{scene.world});
+		else if (renderer == "flat")
+			tracer.fireAllRays(FlatRenderer{scene.world});
+		else {
+			cerr << "Error: renderer " << renderer << " not supported" << endl;
+			return 1;
+		}
 
 		string ofilename;
-		cmdl({"-o", "--outfile"}, "render.pfm") >> ofilename;
+		cmdl({"-o", "--outfile"}, baseFilename(ifilename) + ".pfm") >> ofilename;
 		ofstream outPfm;
 		outPfm.open(ofilename);
 		image.writePfm(outPfm);
