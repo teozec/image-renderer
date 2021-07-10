@@ -47,7 +47,11 @@ _complete_image_renderer()
 
 			# Complete filenames
 			if [[ $prev == "-o" || ("${prevprev}" == "--outfile" && "${prev}" == "=") ]]; then
-				COMPREPLY=($(compgen -A file -- $cur))
+				if declare -Ff _filedir >/dev/null ; then
+					_filedir
+				else
+					COMPREPLY=($(compgen -A file -- $cur))
+				fi
 			elif [[ "${prev}" == "--outfile" && "${cur}" == "=" ]]; then
 				COMPREPLY=($(compgen -A file))
 
@@ -71,7 +75,11 @@ _complete_image_renderer()
 
 			# Complete input filename
 			else
-				COMPREPLY=($(compgen -A file -- $cur))
+				if declare -Ff _filedir >/dev/null ; then
+					_filedir
+				else
+					COMPREPLY=($(compgen -A file -- $cur))
+				fi
 			fi
 			;;
 
@@ -102,7 +110,11 @@ _complete_image_renderer()
 
 			# Complete filenames
 			if [[ $prev == "-o" || ("${prevprev}" == "--outfile" && "${prev}" == "=") ]]; then
-				COMPREPLY=($(compgen -A file -- $cur))
+				if declare -Ff _filedir >/dev/null ; then
+					_filedir
+				else
+					COMPREPLY=($(compgen -A file -- $cur))
+				fi
 			elif [[ "${prev}" == "--outfile" && "${cur}" == "=" ]]; then
 				COMPREPLY=($(compgen -A file))
 
@@ -161,7 +173,11 @@ _complete_image_renderer()
 
 			# Complete filenames
 			if [[ $prev == "-o" || ("${prevprev}" == "--outfile" && "${prev}" == "=") ]]; then
-				COMPREPLY=($(compgen -A file -- $cur))
+				if declare -Ff _filedir >/dev/null ; then
+					_filedir
+				else
+					COMPREPLY=($(compgen -A file -- $cur))
+				fi
 			elif [[ "${prev}" == "--outfile" && "${cur}" == "=" ]]; then
 				COMPREPLY=($(compgen -A file))
 
@@ -185,7 +201,11 @@ _complete_image_renderer()
 
 			# Complete input filename
 			else
-				COMPREPLY=($(compgen -A file -- $cur))
+				if declare -Ff _filedir >/dev/null ; then
+					_filedir
+				else
+					COMPREPLY=($(compgen -A file -- $cur))
+				fi
 			fi
 			;;
 
@@ -202,7 +222,11 @@ _complete_image_renderer()
 
 			# Complete filenames
 			if [[ $prev == "-o" || ("${prevprev}" == "--outfile" && "${prev}" == "=") ]]; then
-				COMPREPLY=($(compgen -A file -- $cur))
+				if declare -Ff _filedir >/dev/null ; then
+					_filedir
+				else
+					COMPREPLY=($(compgen -A file -- $cur))
+				fi
 			elif [[ "${prev}" == "--outfile" && "${cur}" == "=" ]]; then
 				COMPREPLY=($(compgen -A file))
 
@@ -226,7 +250,11 @@ _complete_image_renderer()
 
 			# Complete input filename
 			else
-				COMPREPLY=($(compgen -A file -- $cur))
+				if declare -Ff _filedir >/dev/null ; then
+					_filedir
+				else
+					COMPREPLY=($(compgen -A file -- $cur))
+				fi
 			fi
 			;;
 		esac
