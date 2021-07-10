@@ -80,109 +80,74 @@ source tools/bash-completion.bash
 To make it permanent, you can add it to your `~/.bashrc` file.
 
 ## Basic Tutorial
-We prepared a fun animation for you to start off: from the `image-renderer/` repo run the following
+
+### A `demo` image
+For a quick test, run the following commands from the `build` directory:
 ```bash
-chmod +rx generate-image.sh
-chmod +rx animation.sh
-./animation.sh
+chmod +x ../examples/demo-image.sh
+../examples/demo-image.sh
 ```
-and enjoy the animation saved in the `build/animation_demo/` folder.
-
-![animation](https://media.giphy.com/media/JUbfrBiFQnYfyQ0oM6/giphy.gif)
-
-## Usage examples
-You can choose one of two subcommands: `demo` or `pfm2ldr`.
-
-### Run a demo of our program with `demo`
-
-In order to get used to our program you can run our demo:
+and enjoy the `demo.png` file.
+The script you have just run contains two of the four actions provided by the program: `demo` and `pfm2ldr`.
+The first one renders an example scene, and allows you to conifgure it a bit. For example,
 ```bash
-image-renderer demo
+./image-renderer demo --width=500 --height=500 --antialiasing=9 --angleDeg=30 --nMax=5 --roulette=3
 ```
-
-You can also set some parameters like width and height of the final image, e.g.
-```bash
-image-renderer demo -w 300 -h 200
-```
-This will output a `demo.pfm` which can be then converted to any LDR image supported ([see next pararaph](#Converting-a-PFM-file-to-a-LDR-image-with-pfm2ldr)).
-
-To get a list of all options available run
-```bash
-image-renderer demo --help
-```
-
-#### Remarks about `demo`
-If necessary, `--antialiasing=<value>` is available. It lets you sample each pixel properly avoiding aliasing in the image. Here an example
-
+will render a 500x500 example scene sampling 9 rays per pixel, rotating the camera by 30 degrees on the z axis and considering at most 5 collisions per ray, starting with the Russian roulette algorithm at 3 collisions.
+The antialiasing option is useful to sample each pixel properly, avoiding aliasing. Here an example:
 ![antialiasing](rsc/antialiasing.gif)
 
+Another example of the `demo` action is
+```bash
+./image-renderer demo -p orthogonal -R flat -o output.pfm
+```
+will generate the `output.pfm` image using an orthogonal camera and a flat rendering algorithm.
+As you can see, you can use both long and short options: for a list of all supported arguments, you can always use the `--help` flag.
 
 ### Converting a PFM file to a LDR image with `pfm2ldr`
-
-After rendering a PFM file, you can use the executable to convert it to a LDR image format.
-
-Usage:
+The `demo` action, as well as the `render` and `stack` that we will see later, output a pfm file. However, we would like to convert it to a LDR image format, suh ar `png` or `bmp`.
+This is the purpose of the `pfm2ldr` action. A quick usage example:
 ```bash
-image-renderer pfm2ldr [options] <format> <input> <output>
+./image-renderer pfm2ldr --gamma=1.4 demo.pfm
 ```
-
-For example, to save it as a 24-bit png file you can run:
+will convert `demo.pfm` to the `demo.png` image, using a correction gamma factor of 1.4.
+Of course, you can use a different format if you want: supported formats are `bmp`, `gif`, `jpeg`, `png`, `tiff`, `webp`.
 ```bash
-image-renderer pfm2ldr png input.pfm output.png
+./image-renderer pfm2ldr --format=webp --outfile=output.webp --luminosity=2.0 --quality=50 input.pfm
 ```
+The previous command will convert `input.pfm` to the `output.webp` image, with a total luminosity of 2.0 and a `webp` compression quality of 50.
+In particular, the compression quality is a format-dependent argument (different image formats can be configured differently, so make sure to run `./image-renderer pfm2ldr --help` to get all the details).
+The luminosity instead is a tricky parameter: it is what the program should consider as the total brightness of the scene. This means that if a higher value is passed, single pixels will be less bright with respect to the total luminosity, making the scene darker! In general, you should let the renderer calculate and use the real total luminosity; however, in some cases the results may not be optimal and this parameter might be needed.
 
-If you wish to convert your PFM to a 8-bit colormap PNG (using a palette), with a compression factor of 5, run:
+### `render`ing custom scenes
+We have seen how to render a demo image. However, that can soon get boring: this is why we have also provided a `render` action.
+To see it at work, you can use
 ```bash
-image-renderer pfm2ldr -p -c 5 png input.pfm output.png 
+chmod +x ../examples/cornell.sh
+../examples/cornell.sh
 ```
-
-To generate a webp with a normalization factor a=2.5 and a gamma of 1.3, run:
+Depending on your PC, this script may take some time, but the result is worth the wait.
+The first command in the script makes use of the `render` action, which is used to parse a file describing a scene (or scenefile) and generate a corresponding `pfm` file.
+Many arguments are in common with the `demo` action (except for those about the camera, which is now described in the scenefile). Here is an example:
 ```bash
-image-renderer pfm2ldr --afactor=2.5 --gamma=1.3 webp input.pfm output.webp
+./image-renderer render ../examples/scene.txt --float="red:0.3"
 ```
+renders the scene described in `../examples/scene.txt` assigning a custom value to the red variable that appears in the file.
+If you wish to learn how to make your own scenefiles, `scene.txt` contains a basic tutorial.
 
-To generate a jpeg with a quality of 60 (max is 95) run:
-```bash
-image-renderer pfm2ldr -c 60 jpeg input.pfm output.jpeg
-```
-
-Similarly all other formats. Here a list of all supported formats:
-*	bmp
-*	gif
-*	jpeg
-*	png
-*	tiff
-*	webp
-
-To get a list of supported options for each format, please run
-```bash
-image-renderer pfm2ldr --help
-```
-### Image stacking with `stack`
-Another useful action is `stack`, which lets you stack many noisy images to get a better looking one by increasing the signal to noise ratio.
+### Image `stack`ing
+Finally, you'd have surely noticed that there is another action in the `cornell.sh` script: `stack`.
+It is used to stack many noisy images to get a better looking one by increasing the signal to noise ratio.
 
 ![stack](rsc/stack.png)
-
-Usage:
-```bash
-image-renderer stack [options] <input1> <input2> ... -o <output>
-```
 
 For example, if you want to stack 10 images saved as "image00.pfm", "image01.pfm" and so on, you can simply run:
 ```bash
 image-renderer stack image*.pfm
 ```
 This way you will get a "stack.pfm" image in current directory.
-
-You can choose between `mean`and `median` stacking and you can also choose to use sigma-clipping providing a `alpha` factor.
-
-For more info please run
-```bash
-image-renderer stack --help
-```
-
-#### Remarks about `stack`
-This action is very powerful. As a matter of fact it is not only used to get a better signal to noise ratio, but also for rendering blurry images. Here an example:
+You can choose between `mean`and `median` stacking, and also apply sigma-clipping providing a `alpha` factor: for more info please run `image-renderer stack --help`
+This action is very powerful: as a matter of fact it is not only used to get a better signal to noise ratio, but also for rendering blurry images. Here an example:
 
 ![blurry](rsc/blurry.png)
 
