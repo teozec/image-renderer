@@ -215,7 +215,8 @@ struct ImageTracer {
 				}
 			}
 		}
-		std::cout << "\rRendering: 100% \nDone." << std::endl;
+		if (showProgress)
+			std::cout << "\rRendering: 100% \nDone." << std::endl;
 	}
 };
 

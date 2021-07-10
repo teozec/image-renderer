@@ -105,7 +105,7 @@ It will generate the `output.pfm` image using an orthogonal camera and a flat re
 As you can see, you can use both long and short options: for a list of all supported arguments, you can always use the `--help` flag.
 
 ### Converting a PFM file to a LDR image with `pfm2ldr`
-The `demo` action, as well as the `render` and `stack` that we will see later, output a pfm file. However, we would like to convert it to a LDR image format, suh ar `png` or `bmp`.
+The `demo` action, as well as the `render` and `stack` that we will see later, outputs a pfm file. However, we would like to convert it to a LDR image format, suh ar `png` or `bmp`.
 This is the purpose of the `pfm2ldr` action. A quick usage example:
 ```bash
 ./image-renderer pfm2ldr --gamma=1.4 demo.pfm

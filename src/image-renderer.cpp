@@ -63,6 +63,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"Usage: " << programName << " demo [options]" << endl << endl << \
 	"General options:" << endl << \
 	"	-h, --help					Print this message." << endl << \
+	"	-q, --quiet					Do not show rendering progress." << endl << \
 	"	-w <value>, --width=<value>			Width of the final image (default 640)." << endl << \
 	"	-h <value>, --height=<value>			Height of the final image (default 480)." << endl << \
 	"	-a <value>, --aspectRatio=<value>		Aspect ratio of the final image (default width/height)." << endl << \
@@ -92,6 +93,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"Usage: " << programName << " render [options] <inputfile>" << endl << endl << \
 	"General options:" << endl << \
 	"	-h, --help							Print this message." << endl << \
+	"	-q, --quiet							Do not show rendering progress." << endl << \
 	"	-f <variable1:value1,variable2:value2,...>, --float=<...>	Define float variables to be used in the scenefile." << endl << \
 	"	-w <value>, --width=<value>					Width of the final image (default 640)." << endl << \
 	"	-h <value>, --height=<value>					Height of the final image (default 480)." << endl << \
@@ -351,14 +353,15 @@ int demo(argh::parser cmdl)
 	string renderer;
 	cmdl({"-R", "--renderer"}, "path") >> renderer;
 
+	bool verbose = not cmdl[{"-q", "--quiet"}];
 	if (renderer == "path")
-		tracer.fireAllRays(PathTracer{world, pcg, nRays, depth, roulette}, true);
+		tracer.fireAllRays(PathTracer{world, pcg, nRays, depth, roulette}, verbose);
 	else if (renderer == "debug")
-		tracer.fireAllRays(DebugRenderer{world});
+		tracer.fireAllRays(DebugRenderer{world}, verbose);
 	else if (renderer == "onoff")
-		tracer.fireAllRays(OnOffRenderer{world});
+		tracer.fireAllRays(OnOffRenderer{world}, verbose);
 	else if (renderer == "flat")
-		tracer.fireAllRays(FlatRenderer{world});
+		tracer.fireAllRays(FlatRenderer{world}, verbose);
 	else {
 		cerr << "Error: renderer " << renderer << " not supported" << endl;
 		return 1;
@@ -424,6 +427,8 @@ int render(argh::parser cmdl)
 	string renderer;
 	cmdl({"-R", "--renderer"}, "path") >> renderer;
 
+	bool verbose = not cmdl[{"-q", "--quiet"}];
+
 	string variablesString;
 	cmdl({"-f", "--float"}, string{}) >> variablesString;
 	stringstream variablesStream{variablesString};
@@ -457,13 +462,13 @@ int render(argh::parser cmdl)
 		ImageTracer tracer{image, *scene.camera, samplesPerSide};
 		PCG pcg{(uint64_t) seed};
 		if (renderer == "path")
-			tracer.fireAllRays(PathTracer{scene.world, pcg, nRays, depth, roulette}, true);
+			tracer.fireAllRays(PathTracer{scene.world, pcg, nRays, depth, roulette}, verbose);
 		else if (renderer == "debug")
-			tracer.fireAllRays(DebugRenderer{scene.world});
+			tracer.fireAllRays(DebugRenderer{scene.world}, verbose);
 		else if (renderer == "onoff")
-			tracer.fireAllRays(OnOffRenderer{scene.world});
+			tracer.fireAllRays(OnOffRenderer{scene.world}, verbose);
 		else if (renderer == "flat")
-			tracer.fireAllRays(FlatRenderer{scene.world});
+			tracer.fireAllRays(FlatRenderer{scene.world}, verbose);
 		else {
 			cerr << "Error: renderer " << renderer << " not supported" << endl;
 			return 1;
