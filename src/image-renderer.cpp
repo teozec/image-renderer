@@ -36,9 +36,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	programName << " render [options] <inputfile>" << endl << \
 	programName << " demo [options]" << endl << \
 	programName << " pfm2ldr [options] <inputfile>" << endl << \
-	programName << " stack [options] <inputfiles>" << endl
-
-#define RUN_HELP \
+	programName << " stack [options] <inputfiles>" << endl << endl << \
 	"Run '" << programName << " <action-name> -h|--help' for all supported options." << endl
 
 #define HELP_PFM2LDR \
@@ -81,11 +79,13 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 
 #define HELP_STACK \
 	"stack: stack more pfm images representing the same scene." << endl << endl << \
+	"Usage: " << programName << " stack [options] <inputfile1> [<inputfile2>] ..." << endl << endl << \
 	"Available options:" << endl << \
-	"	-h, --help: print this message." << endl << \
-	"	-m <string>, --method=<string>			The stacking method (can be 'mean' or 'median', default 'mean')." << endl << \
-	"	-S <value>, --nSigma=<value>			Number of sigma clipping iterations (default 0)." << endl << \
-	"	-a <value>, --alpha=<value>			Sigma clipping alpha factor (consider outliers values farther than alpha*sigma from the median, default 2)." << endl
+	"	-h, --help				Print this message." << endl << \
+	"	-m <string>, --method=<string>		The stacking method (default 'mean'). Can be 'mean' or 'median'." << endl << \
+	"	-S <value>, --nSigma=<value>		Number of sigma clipping iterations (default 0)." << endl << \
+	"	-a <value>, --alpha=<value>		Sigma clipping alpha factor (consider outliers values farther than alpha*sigma from the median, default 2)." << endl << \
+	"	-o <string>, --outfile=<string>		Filename of the output image (default 'stack.pfm')." << endl
 
 #define HELP_RENDER \
 	"render: render a scenefile to a pfm image." << endl << endl << \
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 	} else if (actionName == "stack") {
 		return stackPfm(cmdl);
 	} else if (cmdl[{"-h", "--help"}]) {
-		cout << USAGE << endl << RUN_HELP;
+		cout << USAGE;
 		return 0;
 	} else {
 		cout << USAGE;
