@@ -819,6 +819,8 @@ struct InputStream {
 			}
 		}
 		
+		if (scene.camera == nullptr)
+			throw GrammarError{location, "No camera defined"};
 		return scene;
 	}
 };
