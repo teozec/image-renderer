@@ -91,7 +91,9 @@ chmod +x ../examples/demo-image.sh
 ../examples/demo-image.sh
 ```
 and enjoy the `demo.png` file.
+
 ![demo](rsc/demo.png)
+
 The script you have just run contains two of the four actions provided by the program: `demo` and `pfm2ldr`.
 The first one renders an example scene, and allows you to conifgure it a bit. For example,
 ```bash
@@ -99,6 +101,7 @@ The first one renders an example scene, and allows you to conifgure it a bit. Fo
 ```
 will render a 500x500 example scene sampling 9 rays per pixel, rotating the camera by 30 degrees on the z axis and considering at most 5 collisions per ray, starting with the Russian roulette algorithm at 3 collisions.
 The antialiasing option is useful to sample each pixel properly, avoiding aliasing. Here an example:
+
 ![antialiasing](rsc/antialiasing.gif)
 
 Another example of the `demo` action is
@@ -131,6 +134,7 @@ chmod +x ../examples/cornell.sh
 ../examples/cornell.sh
 ```
 Depending on your PC, this script may take some time, but the result is worth the wait:
+
 ![cornell](rsc/cornell.png)
 
 The first command in the script makes use of the `render` action, which is used to parse a file describing a scene (or scenefile) and generate a corresponding `pfm` file.
