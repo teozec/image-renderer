@@ -1,5 +1,6 @@
-# HEAD
+# Version 1.0.0
 
+- Add some example scenefiles and scripts
 - Add bash completions ([#PR17](https://github.com/teozec/image-renderer/pull/17)).
 - Improve the command line interface ([#PR28](https://github.com/teozec/image-renderer/pull/28)).
 - Implement a parser for scene files and a render action ([PR#20](https://github.com/teozec/image-renderer/pull/20), [PR#30](https://github.com/teozec/image-renderer/pull/30), [#29](https://github.com/teozec/image-renderer/issues/29), [#PR32](https://github.com/teozec/image-renderer/pull/32), [#31](https://github.com/teozec/image-renderer/issues/31)).
