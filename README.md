@@ -133,19 +133,25 @@ To see it at work, you can use
 chmod +x ../examples/cornell.sh
 ../examples/cornell.sh
 ```
-Depending on your PC, this script may take some time, but the result is worth the wait:
+If you have [GNU Parallel](https://www.gnu.org/software/parallel/) installed, you can also use the faster `../examples/cornell-parallel.sh`.
+Depending on your PC, this script may take some hours, but the result is worth the wait:
 
 ![cornell](rsc/cornell.png)
 
-The first command in the script makes use of the `render` action, which is used to parse a file describing a scene (or scenefile) and generate a corresponding `pfm` file.
+The first command in the script makes use of the `render` action, which is used to parse a file describing a scene (aka scenefile) and generate a corresponding `pfm` file.
 Many arguments are in common with the `demo` action (except for those about the camera, which is now described in the scenefile). Here is an example:
 ```bash
 ./image-renderer render ../examples/scene.txt --float="red:0.3"
 ```
 renders the scene described in `../examples/scene.txt` assigning a custom value to the red variable that appears in the file.
+The `--float` option is very useful to render custom animations, as shown in `../examples/animation.sh` (or `../examples/animation-parallel.sh`):
+
+![animation](rsc/animation.gif)
+
 If you wish to learn how to make your own scenefiles, `scene.txt` contains a basic tutorial. Don't forget to `:source ../tools/scenefile.vim` for syntax highlighting, if you use vim.
 
 ### Image `stack`ing
+
 Finally, you'd have surely noticed that there is another action in the `cornell.sh` script: `stack`.
 It is used to stack many noisy images to get a better looking one by increasing the signal to noise ratio.
 
@@ -156,7 +162,7 @@ For example, if you want to stack 10 images saved as "image00.pfm", "image01.pfm
 image-renderer stack image*.pfm
 ```
 This way you will get a "stack.pfm" image in current directory.
-You can choose between `mean`and `median` stacking, and also apply sigma-clipping providing a `alpha` factor: for more info please run `image-renderer stack --help`
+You can choose between `mean`and `median` stacking, and also apply sigma-clipping providing a `alpha` factor: for more info please run `image-renderer stack --help`.
 This action is very powerful: as a matter of fact it is not only used to get a better signal to noise ratio, but also for rendering blurry images. Here an example:
 
 ![blurry](rsc/blurry.png)
