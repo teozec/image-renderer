@@ -12,17 +12,20 @@ image-renderer is a C++ tool to generate photo-realistic images.
 It is based on the lectures of the _Numerical tecniques for photorealistic image generation_ course ([EN](https://www.unimi.it/en/education/degree-programme-courses/2021/numerical-tecniques-photorealistic-image-generation), [IT](https://www.unimi.it/it/corsi/insegnamenti-dei-corsi-di-laurea/2021/calcolo-numerico-la-generazione-di-immagini-fotorealistiche)), held by [Prof. Maurizio Tomasi](http://cosmo.fisica.unimi.it/persone/maurizio-tomasi/) in 2021.
 
 ## Table of contents
+
 - [Requirements](#requirements)
 - [Building](#building)
     - [Standard Unix and Windows](#standard-unix-and-windows)
     - [MacOS (Xcode)](#macOS-(Xcode))
-- [Usage examples](#usage-examples)
-	- [Run a demo of our program with `demo`](#Run-a-demo-of-our-program-with-demo)
-    - [Converting a PFM file to a LDR image with `pfm2ldr`](#Converting-a-PFM-file-to-a-LDR-image-with-pfm2ldr)
-	- [Image stacking with `stack`](#Image-stacking-with-stack)
+- [Basic tutorial](#basic-tutorial)
+	- [A `demo` image](#a-demo-image)
+	- [Converting a PFM file to a LDR image with `pfm2ldr`](#Converting-a-PFM-file-to-a-LDR-image-with-pfm2ldr)
+	- [`render`ing custom scenes](#rendering-custom-scenes)
+	- [Image `stack`ing](#image-stacking)
 - [Contributing](#contributing)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
+
 ## Requirements
 
 The following software is required to build the project:
@@ -58,7 +61,7 @@ The executable files are generated in the `build` directory.
 
 If you use `bash`, you can enable autocompletion for the program running
 ```bash
-source tools/bash-completion.bash
+source ../tools/bash-completion.bash
 ```
 To make it permanent, you can add it to your `~/.bashrc` file.
 
@@ -79,7 +82,7 @@ source ../tools/bash-completion.bash
 ```
 To make it permanent, you can add it to your `~/.bashrc` file.
 
-## Basic Tutorial
+## Basic tutorial
 
 ### A `demo` image
 For a quick test, run the following commands from the `build` directory:
@@ -157,13 +160,11 @@ This action is very powerful: as a matter of fact it is not only used to get a b
 
 If you find any problem or wish to contribute, please open an issue or a pull request on [our GitHub repository](https://github.com/teozec/image-renderer). Thank you!
 
-
 ## License
 
 image-renderer is free software, and it is released under version 3 of the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Acknowledgements
-
 
 <img src="https://avatars.githubusercontent.com/u/44500371?v=4" width=100> 
 <img src="https://avatars.githubusercontent.com/u/79975678?s=400&u=6770b5f0354ed29bf9a54e7f27a8250bb812c279&v=4" width=100> 
