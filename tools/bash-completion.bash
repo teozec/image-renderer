@@ -197,7 +197,7 @@ _complete_image_renderer()
 
 			# Complete single dash arguments
 			elif [[ "${cur}" == -* ]]; then
-				COMPREPLY=($(compgen -W "-q -w -h -D -a -s -A -R -o -n -d -r -f" -- $cur))
+				COMPREPLY=($(compgen -W "-q -w -h -y -a -s -A -R -o -n -d -r -f" -- $cur))
 
 			# Complete input filename
 			else
