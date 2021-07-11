@@ -1,0 +1,22 @@
+# Demo scene
+
+material sky(diffuse(uniform(<0, 0, 0>)), uniform(<1, 1, 1>))
+material wall(diffuse(checkered(<0.8, 0.8, 0.8>, <0.2, 0.2, 0.2>, 10)), uniform(<0, 0, 0>))
+material ground(diffuse(uniform(<.2, .5, .1>)), uniform(<0, 0, 0>))
+
+# The following materials use textures.
+# To load a texture, the image keyword is used.
+# Each pixel of the image is multiplied by the color passed as the second argument.
+material marble(diffuse(image("../textures/marble_10.pfm", <0.9, 0.9, 0.8>)), uniform(<0, 0, 0>))
+material wood(diffuse(image("../textures/wood_20.pfm", <0.9, 0.8, 0.2>)), uniform(<0, 0, 0>))
+material noise(diffuse(image("../textures/noise_10.pfm", <0.7, 0.8, 0.9>)), uniform(<0, 0, 0>))
+
+sphere(marble, translation([3.5, 2, 0]))
+sphere(wood, translation([3.5, 0, 0]))
+sphere(noise, translation([3.5, -2, 0]))
+sphere(sky, translation([1.5, 0, -2.4]) * scaling([.5, .5, .5]))
+box(wall, [-1.5, -3.5, -3.5], [5.5, 3.5, 3.5], identity)
+box(sky, [-1.5, -3.5, 3.4], [5.5, 3.5, 3.5], identity)
+box(ground, [-1.5, -3.5, -3.5], [5.5, 3.5, -3.4], identity)
+
+camera(perspective, translation([-1, 0, 0]), 1.0)

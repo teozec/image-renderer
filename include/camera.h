@@ -198,7 +198,7 @@ struct ImageTracer {
 			for (int col = 0; col < image.width; col++) {
 				Color cumColor{0.f, 0.f, 0.f};
 				if (samplesPerSide > 0) {
-					//#pragma omp parallel for collapse(2)
+					#pragma omp parallel for collapse(2)
 					for (int rowPixel = 0; rowPixel<samplesPerSide; rowPixel++) {
 						for (int colPixel = 0; colPixel<samplesPerSide; colPixel++) {
 							float uPixel = (colPixel+pcg.randFloat())/samplesPerSide;
