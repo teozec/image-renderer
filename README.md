@@ -135,7 +135,7 @@ Many arguments are in common with the `demo` action (except for those about the 
 ./image-renderer render ../examples/scene.txt --float="red:0.3"
 ```
 renders the scene described in `../examples/scene.txt` assigning a custom value to the red variable that appears in the file.
-If you wish to learn how to make your own scenefiles, `scene.txt` contains a basic tutorial.
+If you wish to learn how to make your own scenefiles, `scene.txt` contains a basic tutorial. Don't forget to `:source ../tools/scenefile.vim` for syntax highlighting, if you use vim.
 
 ### Image `stack`ing
 Finally, you'd have surely noticed that there is another action in the `cornell.sh` script: `stack`.
