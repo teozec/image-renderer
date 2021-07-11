@@ -91,6 +91,7 @@ chmod +x ../examples/demo-image.sh
 ../examples/demo-image.sh
 ```
 and enjoy the `demo.png` file.
+![demo](rsc/demo.png)
 The script you have just run contains two of the four actions provided by the program: `demo` and `pfm2ldr`.
 The first one renders an example scene, and allows you to conifgure it a bit. For example,
 ```bash
