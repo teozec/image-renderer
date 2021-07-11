@@ -112,7 +112,7 @@ It will generate the `output.pfm` image using an orthogonal camera and a flat re
 As you can see, you can use both long and short options: for a list of all supported arguments, you can always use the `--help` flag.
 
 ### Converting a PFM file to a LDR image with `pfm2ldr`
-The `demo` action, as well as the `render` and `stack` that we will see later, outputs a pfm file. However, we would like to convert it to a LDR image format, suh ar `png` or `bmp`.
+The `demo` action, as well as the `render` and `stack` that we will see later, outputs a pfm file. However, we would like to convert it to a LDR image format, such ar `png` or `bmp`.
 This is the purpose of the `pfm2ldr` action. A quick usage example:
 ```bash
 ./image-renderer pfm2ldr --gamma=1.4 demo.pfm
@@ -144,7 +144,7 @@ Many arguments are in common with the `demo` action (except for those about the 
 ./image-renderer render ../examples/scene.txt --float="red:0.3"
 ```
 renders the scene described in `../examples/scene.txt` assigning a custom value to the red variable that appears in the file.
-The `--float` option is very useful to render custom animations, as shown in `../examples/animation.sh` (or `../examples/animation-parallel.sh`):
+The `--float` option is very useful to render custom animations: if you have [FFmpeg](https://ffmpeg.org/) installed, you can try it with `../examples/animation.sh` (or `../examples/animation-parallel.sh`).
 
 ![animation](rsc/animation.gif)
 
@@ -157,11 +157,11 @@ It is used to stack many noisy images to get a better looking one by increasing 
 
 ![stack](rsc/stack.png)
 
-For example, if you want to stack 10 images saved as "image00.pfm", "image01.pfm" and so on, you can simply run:
+For example, if you want to stack 10 images saved as `image00.pfm`, `image01.pfm` and so on, you can simply run:
 ```bash
 image-renderer stack image*.pfm
 ```
-This way you will get a "stack.pfm" image in current directory.
+This way you will get a `stack.pfm` image in current directory.
 You can choose between `mean`and `median` stacking, and also apply sigma-clipping providing a `alpha` factor: for more info please run `image-renderer stack --help`.
 This action is very powerful: as a matter of fact it is not only used to get a better signal to noise ratio, but also for rendering blurry images. Here an example:
 
