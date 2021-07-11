@@ -1,32 +1,92 @@
 # Materials
 
-material skyMat(diffuse(uniform(<1, 1, 1>)), uniform(<1, 1, 1>))
-material glass(dielectric(uniform(<1, 1, 1>), 1.5, 0), uniform(<0, 0, 0>))
-material glassRough(dielectric(uniform(<1, 1, 1>), 1.5, 0.8), uniform(<0, 0, 0>))
-material matte(diffuse(uniform(<0.8, 0.8, 0.2>)), uniform(<0, 0, 0>))
-material mirror(specular(uniform(<1, 1, 1>), 0), uniform(<0, 0, 0>))
-material mirrorRough(specular(uniform(<1, 1, 1>), 0.8), uniform(<0, 0, 0>))
-material marble(diffuse(image("../textures/marble_10.pfm", <1, 1, 1>)), uniform(<0, 0, 0>))
-material wood(diffuse(image("../textures/wood_20.pfm", <0.5, 0.3, 0.2>)), uniform(<0, 0, 0>))
-material noise(diffuse(image("../textures/noise_10.pfm", <1, 1, 1>)), uniform(<0, 0, 0>))
-material turb(diffuse(image("../textures/turb_5.pfm", <1, 1, 1>)), uniform(<0, 0, 0>))
-material ground(diffuse(checkered(<0.8, 0.8, 0.8>, <0.2, 0.2, 0.2>, 2)), uniform(<0, 0, 0>))
+material skyMat(
+	diffuse(
+		uniform(<1, 1, 1>)
+	), 
+	uniform(<1, 1, 1>)
+)
+material glass(
+	dielectric(
+		uniform(<1, 1, 1>), 
+		1.5, 
+		0
+	), 
+	uniform(<0, 0, 0>)
+)
+material glass_rough(
+	dielectric(
+		uniform(<1, 1, 1>), 
+		1.5, 
+		0.8
+	), 
+	uniform(<0, 0, 0>)
+)
+material matte(
+	diffuse(
+		uniform(<0.8, 0.8, 0.2>)
+	), 
+	uniform(<0, 0, 0>)
+)
+material mirror(
+	specular(
+		uniform(<1, 1, 1>), 
+		0
+	), 
+	uniform(<0, 0, 0>)
+)
+material mirror_rough(
+	specular(
+		uniform(<1, 1, 1>), 
+		0.8
+	), 
+	uniform(<0, 0, 0>)
+)
+material marble(
+	diffuse(
+		image("../textures/marble_10.pfm", <1, 1, 1>)
+	), 
+	uniform(<0, 0, 0>)
+)
+material wood(
+	diffuse(
+		image("../textures/wood_20.pfm", <0.5, 0.3, 0.2>)
+	), 
+	uniform(<0, 0, 0>)
+)
+material noise(
+	diffuse(
+		image("../textures/noise_10.pfm", <1, 1, 1>)
+	), 
+	uniform(<0, 0, 0>)
+)
+material turb(
+	diffuse(
+		image("../textures/turb_5.pfm", <1, 1, 1>)
+	), 
+	uniform(<0, 0, 0>)
+)
+material ground(
+	diffuse(
+		checkered(<0.8, 0.8, 0.8>, <0.2, 0.2, 0.2>, 2)
+	), 
+	uniform(<0, 0, 0>))
 
 # Scene
 
-sphere(glass, rotation_z(0*360/9)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
-sphere(glass_rough, rotation_z(1*360/9)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
-sphere(matte, rotation_z(2*360/9)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
-sphere(mirror, rotation_z(3*360/9)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
-sphere(mirror_rough, rotation_z(4*360/9)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
-sphere(marble, rotation_z(5*360/9)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
-sphere(wood, rotation_z(6*360/9)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
-sphere(noise, rotation_z(7*360/9)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
-sphere(turb, rotation_z(8*360/9)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
+sphere(glass, rotation_z(0)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
+sphere(glass_rough, rotation_z(40)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
+sphere(matte, rotation_z(80)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
+sphere(mirror, rotation_z(120)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
+sphere(mirror_rough, rotation_z(160)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
+sphere(marble, rotation_z(200)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
+sphere(wood, rotation_z(240)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
+sphere(noise, rotation_z(280)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
+sphere(turb, rotation_z(320)*translation([1.3, 0, 0])*scaling([0.3, 0.3, 0.3]))
 plane(ground, translation([0, 0, -1]))
-sphere(skyMat, scaling([0.5, 0.5, 0.5]))
+sphere(skyMat, scaling([0.5, 0.5, 0.5])*scaling([10, 10, 10]))
 
 # Camera
 
-float angle = 0
-camera(perspective, rotation_z(angle)*rotation_y(25)*translation([0, 0, 0.5]), 1, 1)
+float angle(0)
+camera(perspective, rotation_z(angle)*rotation_y(25)*translation([0, 0, 0.5]), 1)
