@@ -289,19 +289,14 @@ int demo(argh::parser cmdl)
 	float aspectRatio;
 	cmdl({"-a", "--aspectRatio"},  (float) width / height) >> aspectRatio;
 	
-	Material skyMat{DiffusiveBRDF{UniformPigment{WHITE}}, UniformPigment{WHITE}};
-	Material wallsMat{DiffusiveBRDF{CheckeredPigment{Color{.8f, .8f, .8f}, Color{.2f, .2f, .2f}, 10}}};
+	Material sky{DiffusiveBRDF{UniformPigment{WHITE}}, UniformPigment{WHITE}};
+	Material ground{DiffusiveBRDF{CheckeredPigment{Color{.2f, .5f, .1f}, Color{.8, .5, .9}, 8}}};
 	
-	Material matteGreen{DiffusiveBRDF{UniformPigment{Color{.2f, .5f, .1f}}}};
-	
-	HdrImage marbleImage{"../textures/marble_10.pfm"};
-	Material marble{DiffusiveBRDF{ImagePigment{marbleImage}}};
+	Material dice{DiffusiveBRDF{UniformPigment{Color{0.8, 0.8, 0.8}}}};
+	Material numbers{SpecularBRDF{0.5, UniformPigment{Color{0.2, 0.3, 0.2}}}};
 
-	HdrImage woodImage{"../textures/wood_20.pfm"};
-	Material wood{DiffusiveBRDF{ImagePigment{woodImage}}};
-	
-	HdrImage noiseImage{"../textures/noise_10.pfm"};
-	Material noise{DiffusiveBRDF{ImagePigment{noiseImage}}};
+	Material box{DielectricBSDF{1.5, 0.1, UniformPigment{Color{0.5, 0.5, 0.5}}}};
+	Material sphere{DiffusiveBRDF{UniformPigment{Color{0.9, 0.1, 0.1}}}};
 
 	int seed;
 	cmdl({"-s", "--seed"}, 42) >> seed;
@@ -324,15 +319,17 @@ int demo(argh::parser cmdl)
 	HdrImage image{width, height};
 	World world;
 
-	world.add(Sphere{translation(Vec{3.5f, 2.f, 0.f}), marble});
-	world.add(Sphere{translation(Vec{3.5f, 0.f, 0.f}), wood});
-	world.add(Sphere{translation(Vec{3.5f, -2.f, 0.f}), noise});
-	world.add(Sphere{translation(Vec{1.5f, 0.f, -2.4f})*scaling(.5f), skyMat});
+	world.add(CSGUnion{
+		Box{Point{-.5, -.5, -1}, Point{.5, .5, 0}, translation(Vec{0, -1, 0}) * rotationZ(45*M_PI/180), box},
+		Sphere{translation(Vec{0, -1, 0.2}) * scaling(0.5), sphere}
+	});
 
+	world.add(Dice(
+		translation(Vec{0.5, 1, -0.5}),
+		dice, numbers));
 
-	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, 3.5f}, wallsMat});
-	world.add(Box{Point{-1.5f, -3.5f, 3.4f}, Point{5.5f, 3.5f, 3.5f}, skyMat});
-	world.add(Box{Point{-1.5f, -3.5f, -3.5f}, Point{5.5f, 3.5f, -3.4f}, matteGreen});
+	world.add(Plane{translation(Vec{0, 0, -1}), ground});
+	world.add(Sphere{scaling(10), sky});
 
 	int samplesPerPixel;
 	cmdl({"-A", "--antialiasing"}, 0) >> samplesPerPixel;

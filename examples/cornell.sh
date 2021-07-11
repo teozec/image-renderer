@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-N=6
+N=20
 
 echo Rendering
 for i in $(seq 1 $N); do
