@@ -86,7 +86,7 @@ _complete_image_renderer()
 		"demo")
 			# The argument after width, height, aspectRatio, angleDeg, seed, antialiasing, nRays, depth or roulette does not require autocompletion because it is a number specified by the user
 			if [[ "${prev}" == "-w" || "${prev}" == "-a" || "${prev}" == "-D" || "${prev}" == "-A" || \
-				"${prev}" == "-s" || "${prev}" == "-n" || "${prev}" == "-d" || "${prev}" == "-r" || \
+				"${prev}" == "-s" || "${prev}" == "-i" || "${prev}" == "-n" || "${prev}" == "-d" || "${prev}" == "-r" || \
 				("${prev}" == "--width" && "${cur}" == "=") || \
 				("${prevprev}" == "--width" && "${prev}" == "=") || \
 				("${prev}" == "--height" && "${cur}" == "=") || \
@@ -97,6 +97,8 @@ _complete_image_renderer()
 				("${prevprev}" == "--antialiasing" && "${prev}" == "=") || \
 				("${prev}" == "--seed" && "${cur}" == "=") || \
 				("${prevprev}" == "--seed" && "${prev}" == "=") || \
+				("${prev}" == "--initSeq" && "${cur}" == "=") || \
+				("${prevprev}" == "--initSeq" && "${prev}" == "=") || \
 				("${prev}" == "--nRays" && "${cur}" == "=") || \
 				("${prevprev}" == "--nRays" && "${prev}" == "=") || \
 				("${prev}" == "--depth" && "${cur}" == "=") || \
@@ -132,7 +134,7 @@ _complete_image_renderer()
 
 			# Complete double dash arguments
 			elif [[ "${cur}" == --* ]]; then
-				COMPREPLY=($(compgen -W "--help --quiet --width= --height= --aspectRatio= --projection= --angleDeg= --seed= --antialiasing= --renderer= --outfile= --nRays= --depth= --roulette=" -- $cur))
+				COMPREPLY=($(compgen -W "--help --quiet --width= --height= --aspectRatio= --projection= --angleDeg= --seed= --initSeq= --antialiasing= --renderer= --outfile= --nRays= --depth= --roulette=" -- $cur))
 				# Remove space if there is a "=" in completion
 				if [[ "${COMPREPLY[@]}" =~ "=" ]]; then
 					compopt -o nospace
@@ -140,7 +142,7 @@ _complete_image_renderer()
 
 			# Complete single dash arguments
 			elif [[ "${cur}" == -* ]]; then
-				COMPREPLY=($(compgen -W "-q -w -h -a -p -D -s -A -R -o -n -d -r" -- $cur))
+				COMPREPLY=($(compgen -W "-q -w -h -a -p -D -s -i -A -R -o -n -d -r" -- $cur))
 			fi
 
 			# Demo does not have positional arguments to autocomplete
@@ -149,7 +151,7 @@ _complete_image_renderer()
 		"render")
 			# The argument after width, height, aspectRatio, float, seed, antialiasing, nRays, depth or roulette does not require autocompletion because it is a number specified by the user
 			if [[ "${prev}" == "-w" || "${prev}" == "-a" || "${prev}" == "-A" || "${prev}" == "-f" || \
-				"${prev}" == "-s" || "${prev}" == "-n" || "${prev}" == "-d" || "${prev}" == "-r" || \
+				"${prev}" == "-s" || "${prev}" == "-i" || "${prev}" == "-n" || "${prev}" == "-d" || "${prev}" == "-r" || \
 				("${prev}" == "--width" && "${cur}" == "=") || \
 				("${prevprev}" == "--width" && "${prev}" == "=") || \
 				("${prev}" == "--height" && "${cur}" == "=") || \
@@ -160,6 +162,8 @@ _complete_image_renderer()
 				("${prevprev}" == "--antialiasing" && "${prev}" == "=") || \
 				("${prev}" == "--seed" && "${cur}" == "=") || \
 				("${prevprev}" == "--seed" && "${prev}" == "=") || \
+				("${prev}" == "--initSeq" && "${cur}" == "=") || \
+				("${prevprev}" == "--initSeq" && "${prev}" == "=") || \
 				("${prev}" == "--nRays" && "${cur}" == "=") || \
 				("${prevprev}" == "--nRays" && "${prev}" == "=") || \
 				("${prev}" == "--depth" && "${cur}" == "=") || \
@@ -189,7 +193,7 @@ _complete_image_renderer()
 
 			# Complete double dash arguments
 			elif [[ "${cur}" == --* ]]; then
-				COMPREPLY=($(compgen -W "--help --quiet --width= --height= --dryRun --aspectRatio= --seed= --antialiasing= --renderer= --outfile= --nRays= --depth= --roulette= --float=" -- $cur))
+				COMPREPLY=($(compgen -W "--help --quiet --width= --height= --dryRun --aspectRatio= --seed= --initSeq= --antialiasing= --renderer= --outfile= --nRays= --depth= --roulette= --float=" -- $cur))
 				# Remove space if there is a "=" in completion
 				if [[ "${COMPREPLY[@]}" =~ "=" ]]; then
 					compopt -o nospace
@@ -197,7 +201,7 @@ _complete_image_renderer()
 
 			# Complete single dash arguments
 			elif [[ "${cur}" == -* ]]; then
-				COMPREPLY=($(compgen -W "-q -w -h -y -a -s -A -R -o -n -d -r -f" -- $cur))
+				COMPREPLY=($(compgen -W "-q -w -h -y -a -s -i -A -R -o -n -d -r -f" -- $cur))
 
 			# Complete input filename
 			else
