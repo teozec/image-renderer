@@ -74,6 +74,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"	-o <string>, --outfile=<string>			Filename of the output image (default 'demo.pfm')." << endl << endl << \
 	"Options for 'path' rendering algorithm:" << endl << \
 	"	-s <value>, --seed=<value>			Random number generator seed (default 42)." << endl << \
+	"	-i <value>, --initSeq=<value>			Random number generator init sequence (default 54)." << endl << \
 	"	-n <value>, --nRays=<value>			Number of rays started at each intersection (default 3)." << endl << \
 	"	-d <value>, --depth=<value>			Max ray depth (default 4)." << endl << \
 	"	-r <value>, --roulette=<value>			Ray depth to start Russian roulette (default 3)." << endl
@@ -104,6 +105,7 @@ along with image-renderer.  If not, see <https://www.gnu.org/licenses/>. */
 	"	-o <string>, --outfile=<string>					Filename of output image (default input filename with '.pfm' extension)." << endl << endl <<\
 	"Options for 'path' rendering algorithm:" << endl << \
 	"	-s <value>, --seed=<value>					Random number generator seed (default 42)." << endl << \
+	"	-i <value>, --initSeq=<value>					Random number generator init sequence (default 54)." << endl << \
 	"	-n <value>, --nRays=<value>					Number of rays started at each intersection (default 3)." << endl << \
 	"	-d <value>, --depth=<value>					Max ray depth (default 4)." << endl << \
 	"	-r <value>, --roulette=<value>					Ray depth to start Russian roulette (default 3)." << endl
@@ -138,6 +140,7 @@ int main(int argc, char *argv[])
 			 "-R", "--renderer",
 			 "-o", "--outfile",
 			 "-s", "--seed",
+			 "-i", "--initSeq",
 			 "-f", "--float", "--format",
 			 "-S", "--nSigma",
 			 "-m", "--method"});
@@ -300,6 +303,8 @@ int demo(argh::parser cmdl)
 
 	int seed;
 	cmdl({"-s", "--seed"}, 42) >> seed;
+	int initSequence;
+	cmdl({"-i", "--initSeq"}, 54) >> initSequence;
 	float angle;
 	cmdl({"-D", "--angleDeg"}, 0) >> angle;
 	Transformation camTransformation{rotationZ(angle*M_PI/180)*translation(Vec{-1.f, 0.f, 0.f})};
@@ -339,7 +344,7 @@ int demo(argh::parser cmdl)
 		return 1;
 	}
 	ImageTracer tracer{image, *cam, samplesPerSide};
-	PCG pcg{(uint64_t) seed};
+	PCG pcg{(uint64_t) seed, (uint64_t) initSequence};
 
 	int nRays;
 	cmdl({"-n", "--nRays"}, 3) >> nRays;
@@ -398,6 +403,8 @@ int render(argh::parser cmdl)
 
 	int seed;
 	cmdl({"-s", "--seed"}, 42) >> seed;
+	int initSequence;
+	cmdl({"-i", "--initSeq"}, 54) >> initSequence;
 
 	int samplesPerPixel;
 	cmdl({"-A", "--antialiasing"}, 0) >> samplesPerPixel;
@@ -458,7 +465,7 @@ int render(argh::parser cmdl)
 		Scene scene{input.parseScene(variables, aspectRatio)};
 		HdrImage image{width, height};
 		ImageTracer tracer{image, *scene.camera, samplesPerSide};
-		PCG pcg{(uint64_t) seed};
+		PCG pcg{(uint64_t) seed, (uint64_t) initSequence};
 
 		if (cmdl[{"-y", "--dryRun"}])
 			return 0;
