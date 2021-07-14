@@ -1,0 +1,44 @@
+# A scene with two mirrors
+# To render the reflections in the mirror, a high depth is required (e.g. >=6).
+# Moreover, since the lamp is relatively small, many rays are required. Stacking is also suggested.
+
+# We are inside a church
+material sky_material(
+	diffuse(image("../textures/memorial.pfm", <0.6, 0.6, 0.6>)),
+	uniform(<0, 0, 0>))
+
+material lamp_material(
+	diffuse(uniform(<1, 1, 1>)),
+	uniform(<0.7, 0.7, 0.7>))
+
+material ground_material(
+	diffuse(checkered(<0.3, 0.5, 0.1>,
+		<0.1, 0.2, 0.5>, 4)),
+	uniform(<0, 0, 0>))
+
+material box_material(
+	dielectric(image("../textures/wood_50.pfm", <0.8, 0.7, 0.3>), 0, 1.5),
+	uniform(<0, 0, 0>))
+
+material sphere_material(
+	specular(uniform(<0.8, 0.2, 0.2>), 0.1),
+	uniform(<0, 0, 0>))
+
+material mirror_material(
+	specular(uniform(<0.4, 0.6, 0.4>), 0.1),
+	uniform(<0, 0, 0>))
+
+# The first mirror: a dielectric box with a specular cavity.
+difference(
+	box(box_material, [-0.5, -0.5, -1], [0.5, 0.5, 0], translation([0.5, -1, 0]) * rotation_z(45)),
+	sphere(mirror_material, translation([0.25, -0.75, -0.5]) * scaling([0.5, 0.5, 0.5])),
+	identity)
+
+# The second mirror: a red sphere.
+sphere(sphere_material, translation([-0.5, 1, -0.5]) * scaling([0.5, 0.5, 0.5]))
+
+plane(ground_material, translation([0, 0, -1]))
+sphere(sky_material, rotation_z(-80) * scaling([15, 15, 15]))
+sphere(lamp_material, translation([0, 0, 12]) * scaling([3, 3, 3]))
+
+camera(perspective, translation([-1, 0, 0]), 1.0)
