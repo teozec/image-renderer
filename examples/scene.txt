@@ -1,12 +1,12 @@
-# An example scene to demonstrate the usage of the scenefale language
+# An example scene to show the usage of the scenefile language
 
-# With float, we can declare varibales that we can use everywhere a float is expected.
+# With 'float' we can declare variables that we can use anywhere (a float is expected).
 float red(0.5)
 float green(0.5)
 float blue(0.5)
 float angle(0)
 
-# With materials, we can declare (guess what) materials. Each of them includes a BRDF and a pigment.
+# With 'materials' we can declare (guess what) materials. Each of them includes a BRDF and a pigment.
 material sky_material(
 	diffuse(uniform(<0.8, 0.1, 1.>)),	# A diffuse BRDF will reflect rays in random directions.
 	uniform(<0.8, 0.8, 1>)			# The sky is a light source, so we assign a non-black pigment to it.
@@ -30,7 +30,7 @@ material sphere_material(
 
 # Now that we have all our materials, we can define the actual shapes that are in the scene.
 
-# At first, we define a CSG union of a box and a sphere.
+# First of all we define a CSG union of a box and a sphere.
 union(
 	# Each shape has a material as its first argument, and a transformation as its last argument.
 	# Depending on the shape, there can be middle parameters: for example, the box takes the minimum and maximum vertices.
@@ -51,7 +51,7 @@ plane (ground_material, translation([0, 0, -1]))
 # Finally, the sky is a big sphere of radius 7.5.
 sphere(sky_material, scaling([7.5, 7.5, 7.5]))
 
-# Without a camera, there is nothing to see.
+# Without a camera there is nothing to see!
 # You can set the type of camera, the tranformation to apply and the distance from the screen.
 # The aspect ratio is calculated from the width and height, and can be overwritten with a parameter to pass to the render action.
 camera(perspective, translation([-1, 0, 0]) * rotation_z(angle), 1.0)
