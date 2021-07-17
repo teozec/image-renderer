@@ -10,6 +10,7 @@
 
 image-renderer is a C++ tool to generate photo-realistic images.
 It is based on the lectures of the _Numerical tecniques for photorealistic image generation_ course ([EN](https://www.unimi.it/en/education/degree-programme-courses/2021/numerical-tecniques-photorealistic-image-generation), [IT](https://www.unimi.it/it/corsi/insegnamenti-dei-corsi-di-laurea/2021/calcolo-numerico-la-generazione-di-immagini-fotorealistiche)), held by [Prof. Maurizio Tomasi](http://cosmo.fisica.unimi.it/persone/maurizio-tomasi/) in 2021.
+A nice presentation of our work is available [here](https://ngrlcu.github.io/Slides/#/)!
 
 ## Table of contents
 
